@@ -1,5 +1,5 @@
-WIFI V2 Extension
-=================
+WIFI Extension 2.0
+==================
 
 This repository contains the hardware design files.
 The software is included in the Master Brick software

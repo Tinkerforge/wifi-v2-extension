@@ -1,4 +1,4 @@
-update=Mo 27 Jul 2015 10:22:14 CEST
+update=Do 06 Aug 2015 16:28:52 CEST
 version=1
 last_client=kicad
 [cvpcb]
@@ -80,3 +80,16 @@ LibName28=atmel
 LibName29=contrib
 LibName30=valves
 LibName31=tinkerforge
+[schematic_editor]
+version=1
+PageLayoutDescrFile=
+PlotDirectoryName=/tmp/wifi.pdf
+SubpartIdSeparator=0
+SubpartFirstId=65
+NetFmtName=
+SpiceForceRefPrefix=0
+SpiceUseNetNumbers=0
+RptD_X=0
+RptD_Y=100
+RptLab=1
+LabSize=60

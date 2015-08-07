@@ -36,12 +36,12 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 2
-Title "Chibi Extension"
-Date "14 jan 2013"
-Rev "1.0"
+Title "Wifi Extension"
+Date "Mo 27 Jul 2015"
+Rev "2.0"
 Comp "Tinkerforge GmbH"
 Comment1 "Licensed under CERN OHL v.1.1"
-Comment2 "Copyright (©) 2011, B.Nordmeyer <bastian@tinkerforge.com>"
+Comment2 "Copyright (©) 2015, B.Nordmeyer <bastian@tinkerforge.com>"
 Comment3 ""
 Comment4 ""
 $EndDescr

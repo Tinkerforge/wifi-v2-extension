@@ -91,8 +91,6 @@ F 3 "" H 8650 3050 60  0001 C CNN
 	1    8650 3050
 	0    1    -1   0   
 $EndComp
-Text GLabel 8650 2850 0    60   Input ~ 0
-EN
 Text GLabel 8650 2750 0    60   Input ~ 0
 FLASH_RX
 Text GLabel 8650 2650 0    60   Output ~ 0
@@ -622,4 +620,6 @@ NoConn ~ 5100 3000
 Connection ~ 2500 4600
 Text Notes 5150 1850 0    60   ~ 0
 high: data mode\nlow: flash mode
+Text GLabel 8650 2850 0    60   Output ~ 0
+SDA_ESP
 $EndSCHEMATC

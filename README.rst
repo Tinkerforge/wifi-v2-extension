@@ -26,3 +26,24 @@ symlink them into hardware/
 (ln -s kicad_path/kicad-libraries project_path/hardware). After that you
 can open the .pro file in hardware/ with kicad and from there view and
 modify the schematics and the PCB layout.
+
+Toolchain
+---------
+
+Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk:
+
+mkdir toolchain
+cd toolchain
+git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
+make STANDALONE=y
+
+
+
+Update toolchain
+----------------
+
+make clean
+$ git pull
+$ git submodule sync
+$ git submodule update
+make STANDALONE=y

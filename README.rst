@@ -30,20 +30,18 @@ modify the schematics and the PCB layout.
 Toolchain
 ---------
 
-Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk:
+Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk
+into toolchain/ directory::
 
-mkdir toolchain
-cd toolchain
-git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
-make STANDALONE=y
+ mkdir toolchain
+ cd toolchain
+ git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
+ make STANDALONE=y
 
+Update toolchain::
 
-
-Update toolchain
-----------------
-
-make clean
-$ git pull
-$ git submodule sync
-$ git submodule update
-make STANDALONE=y
+ make clean
+ git pull
+ git submodule sync
+ git submodule update
+ make STANDALONE=y

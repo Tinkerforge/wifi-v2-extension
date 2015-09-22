@@ -45,4 +45,7 @@ uint32 system_get_time();
 int rand(void);
 void ets_bzero(void *s, size_t n);
 void ets_delay_us(int ms);
+
+// Found by accident, we can use this function for authentication :-D
+int hmac_sha1(const u8 *key, size_t key_len, const u8 *data, size_t data_len, u8 *mac);
 #endif

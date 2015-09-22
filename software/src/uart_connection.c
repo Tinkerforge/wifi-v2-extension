@@ -29,6 +29,7 @@
 #include "tfp_connection.h"
 #include "pearson_hash.h"
 #include "tfp_connection.h"
+#include "logging.h"
 
 #define ACK_TIMEOUT_MS 250
 
@@ -113,7 +114,7 @@ static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
 			uart_con_buffer_recv_expected_length = uart_con_buffer_recv[UART_CON_INDEX_LENGTH];
 
 			if(uart_con_buffer_recv_expected_length > UART_CON_BUFFER_SIZE) {
-				os_printf("Length is malformed: %d > %d\n", uart_con_buffer_recv_expected_length, UART_CON_BUFFER_SIZE);
+				logw("Length is malformed: %d > %d\n", uart_con_buffer_recv_expected_length, UART_CON_BUFFER_SIZE);
 				uart_con_clear_rx_dma();
 			}
 		}
@@ -128,12 +129,12 @@ static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
 
 			const uint8_t checksum_uart = uart_con_buffer_recv[uart_con_buffer_recv_index-1];
 			if(checksum_calculated != checksum_uart) {
-				os_printf("Checksum error: %d (calc) != %d (uart)\n", checksum_calculated, checksum_uart);
-				os_printf("uart recv data: %d %d [", uart_con_buffer_recv_index, uart_con_buffer_recv_expected_length);
+				logw("Checksum error: %d (calc) != %d (uart)\n", checksum_calculated, checksum_uart);
+				logw("uart recv data: %d %d [", uart_con_buffer_recv_index, uart_con_buffer_recv_expected_length);
 				for(uint8_t i = 0; i < uart_con_buffer_recv_expected_length; i++) {
-					os_printf("%d ", uart_con_buffer_recv[i]);
+					logwohw("%d ", uart_con_buffer_recv[i]);
 				}
-				os_printf("]\n");
+				logwohw("]\n");
 
 				uart_con_clear_rx_dma();
 				break;
@@ -218,7 +219,7 @@ uint8_t ICACHE_FLASH_ATTR uart_con_send(const uint8_t *data, const uint8_t lengt
 }
 
 void ICACHE_FLASH_ATTR uart_con_init(void) {
-	uart_swap_uart0();
+	//uart_swap_uart0();
 	uart_configure(UART_CONNECTION, 1000000, UART_PARITY_NONE, UART_STOP_ONE, UART_DATA_EIGHT);
 	uart_enable(UART_CONNECTION);
 

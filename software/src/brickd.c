@@ -26,24 +26,22 @@
 #include "espmissingincludes.h"
 #include "osapi.h"
 
-#include <stddef.h>
+#include "tfp_connection.h"
+#include "communication.h"
+#include "configuration.h"
 
-/*#include "bricklib/utility/sha_1.h"
+#include "ip_addr.h"
+#include "espconn.h"
 
-#include "bricklib/logging/logging.h"
-#include "extensions/ethernet/ethernet_config.h"
-#include "extensions/ethernet/ethernet_low_level.h"
-#include "extensions/wifi/wifi_command.h"
-#include "extensions/wifi/wifi_config.h"*/
+#define SHA1_DIGEST_LENGTH 20
+#define SHA1_BLOCK_LENGTH 64
 
+extern Configuration configuration_current;
+extern TFPConnection tfp_cons[TFP_MAX_CONNECTIONS];
 BrickdRouting brickd_routing_table[BRICKD_ROUTING_TABLE_SIZE];
 
 uint32_t brickd_counter = 0;
-/*uint32_t brickd_authentication_nonce = 42; // Will be randomized
-
-BrickdAuthenticationState brickd_authentication_state[MAX_SOCKETS] = {
-	BRICKD_AUTHENTICATION_STATE_ENABLED
-};*/
+uint32_t brickd_authentication_nonce = 42; // Will be randomized
 
 void ICACHE_FLASH_ATTR brickd_init(void) {
 	for(uint8_t i = 0; i < BRICKD_ROUTING_TABLE_SIZE; i++) {
@@ -204,57 +202,37 @@ void ICACHE_FLASH_ATTR brickd_print_routing_table(void) {
 	logwohd("bc: %d\n", brickd_counter);
 }
 
-/*
-void brickd_disconnect_by_com_and_cid(const ComType com, int8_t cid) {
-	if(com == COM_ETHERNET) {
-		if(cid >= 0 && cid < 7) {
-			ethernet_low_level_emergency_disconnect(cid);
-		}
-	} else if(com == COM_WIFI) {
-		if(cid >= 0 && cid < 16) {
-			wifi_command_send(WIFI_COMMAND_ID_AT_NCLOSE, (void*)(int32_t)cid);
-		}
-	}
-}
-
-void brickd_set_authentication_seed(const uint32_t seed) {
-	logethi("Using seed %u\n\r", seed);
+void ICACHE_FLASH_ATTR brickd_set_authentication_seed(const uint32_t seed) {
+	logi("Using seed %u\n\r", seed);
 	brickd_authentication_nonce = seed;
 }
 
-void brickd_enable_authentication(void) {
-	for(uint8_t i = 0; i < MAX_SOCKETS; i++) {
-		brickd_authentication_state[i] = BRICKD_AUTHENTICATION_STATE_ENABLED;
+void ICACHE_FLASH_ATTR brickd_enable_authentication(void) {
+	for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
+		tfp_cons[i].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
 	}
 }
 
-void brickd_disable_authentication(void) {
-	for(uint8_t i = 0; i < MAX_SOCKETS; i++) {
-		brickd_authentication_state[i] = BRICKD_AUTHENTICATION_STATE_DISABLED;
+void ICACHE_FLASH_ATTR brickd_disable_authentication(void) {
+	for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
+		tfp_cons[i].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_DISABLED;
 	}
 }
 
-void brickd_get_authentication_nonce(const ComType com, const GetAuthenticationNonce *data) {
-	int8_t cid = brickd_route_to(data);
-	if(cid < 0 || cid > 15) {
-		logexte("brickd_get_authentication_nonce: Invalid cid %d\n\r", cid);
-		// TODO: What now?
-		return;
-	}
-
-	BrickdAuthenticationState state = brickd_authentication_state[cid];
+void ICACHE_FLASH_ATTR brickd_get_authentication_nonce(const int8_t cid, const GetAuthenticationNonce *data) {
+	BrickdAuthenticationState state = tfp_cons[cid].brickd_authentication_state;
 	switch(state) {
 		case BRICKD_AUTHENTICATION_STATE_NONCE_SEND:
-			brickd_authentication_state[cid] = BRICKD_AUTHENTICATION_STATE_ENABLED;
+			tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
 		case BRICKD_AUTHENTICATION_STATE_DISABLED: {
-			logexte("Failure during authentication nonce request: %d -> %d\n\r", state, cid);
-			brickd_disconnect_by_com_and_cid(com, cid);
+			loge("Failure during authentication nonce request: %d -> %d\n\r", state, cid);
+			espconn_disconnect(tfp_cons[cid].con); // TODO: Check if disconnect callback is called
 			return;
 		}
 
 		case BRICKD_AUTHENTICATION_STATE_DONE:
 		case BRICKD_AUTHENTICATION_STATE_ENABLED: {
-			logexti("Authentication nonce requested %d\n\r", cid);
+			logi("Authentication nonce requested %d\n\r", cid);
 			break;
 		}
 	}
@@ -266,35 +244,29 @@ void brickd_get_authentication_nonce(const ComType com, const GetAuthenticationN
 	brickd_authentication_nonce++;
 
 	memcpy(ganr.server_nonce, &brickd_authentication_nonce, 4);
-	uint8_t length = send_blocking_with_timeout(&ganr, sizeof(GetAuthenticationNonceReturn), com);
-	if(length != sizeof(GetAuthenticationNonceReturn)) {
-		brickd_authentication_state[cid] = BRICKD_AUTHENTICATION_STATE_ENABLED;
+	/*uint8_t length = */com_send(&ganr, sizeof(GetAuthenticationNonceReturn), cid);
+	tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_NONCE_SEND;
+	/*if(length != sizeof(GetAuthenticationNonceReturn)) {
+		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
 	} else {
-		brickd_authentication_state[cid] = BRICKD_AUTHENTICATION_STATE_NONCE_SEND;
-	}
+		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_NONCE_SEND;
+	}*/
 }
 
-void brickd_authenticate(const ComType com, const Authenticate *data) {
-	int8_t cid = brickd_route_to(data);
-	if(cid < 0 || cid > 15) {
-		logexte("brickd_authenticate: Invalid cid %d\n\r", cid);
-		// TODO: What now?
-		return;
-	}
-
-	BrickdAuthenticationState state = brickd_authentication_state[cid];
+void ICACHE_FLASH_ATTR brickd_authenticate(const int8_t cid, const Authenticate *data) {
+	BrickdAuthenticationState state = tfp_cons[cid].brickd_authentication_state;
 	switch(state) {
 		case BRICKD_AUTHENTICATION_STATE_DISABLED:
 		case BRICKD_AUTHENTICATION_STATE_DONE:
-			brickd_authentication_state[cid] = BRICKD_AUTHENTICATION_STATE_ENABLED;
+			tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
 		case BRICKD_AUTHENTICATION_STATE_ENABLED: {
-			logexte("Failure during authentication request: %d -> %d\n\r", state, cid);
-			brickd_disconnect_by_com_and_cid(com, cid);
+			loge("Failure during authentication request: %d -> %d\n\r", state, cid);
+			espconn_disconnect(tfp_cons[cid].con); // TODO: Check if disconnect callback is called
 			return;
 		}
 
 		case BRICKD_AUTHENTICATION_STATE_NONCE_SEND: {
-			logexti("Authentication requested %d\n\r", cid);
+			loge("Authentication requested %d\n\r", cid);
 			break;
 		}
 	}
@@ -305,33 +277,26 @@ void brickd_authenticate(const ComType com, const Authenticate *data) {
 	memcpy(&nonces[0], &brickd_authentication_nonce, 4);
 	memcpy(&nonces[1], data->client_nonce, 4);
 
-	char secret[AUTHENTICATION_SECRET_LENGTH+1] = {0};
-
-	if(com == COM_ETHERNET) {
-		ethernet_read_config(secret, AUTHENTICATION_SECRET_LENGTH, ETHERNET_AUTHENTICATION_SECRET_POS, ETHERNET_AUTHENTICATION_SECRET_KEY_POS);
-	} else if(com == COM_WIFI) {
-		wifi_read_config(secret, AUTHENTICATION_SECRET_LENGTH, WIFI_AUTHENTICATION_SECRET_POS, WIFI_AUTHENTICATION_SECRET_KEY_POS);
-	} else {
-		brickd_authentication_state[cid] = BRICKD_AUTHENTICATION_STATE_ENABLED;
-		return;
-	}
-
-	hmac_sha1((uint8_t *)secret, strlen(secret), (uint8_t *)nonces, sizeof(nonces), digest);
+	hmac_sha1((uint8_t *)configuration_current.general_authentication_secret,
+	          strlen(configuration_current.general_authentication_secret),
+	          (uint8_t *)nonces,
+	          sizeof(nonces),
+	          digest);
 
 	if(memcmp(data->digest, digest, SHA1_DIGEST_LENGTH) != 0) {
-		brickd_authentication_state[cid] = BRICKD_AUTHENTICATION_STATE_ENABLED;
-		brickd_disconnect_by_com_and_cid(com, cid);
+		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
+		espconn_disconnect(tfp_cons[cid].con); // TODO: Check if disconnect callback is called
 		return;
 	} else {
-		brickd_authentication_state[cid] = BRICKD_AUTHENTICATION_STATE_DONE;
+		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_DONE;
 	}
 
-	com_return_setter(com, data);
+	com_return_setter(cid, data);
 }
 
-bool brickd_check_auth(const MessageHeader *header, const int8_t cid) {
-	if(brickd_authentication_state[cid] == BRICKD_AUTHENTICATION_STATE_DISABLED ||
-	   brickd_authentication_state[cid] == BRICKD_AUTHENTICATION_STATE_DONE) {
+bool ICACHE_FLASH_ATTR brickd_check_auth(const MessageHeader *header, const int8_t cid) {
+	if(tfp_cons[cid].brickd_authentication_state == BRICKD_AUTHENTICATION_STATE_DISABLED ||
+	   tfp_cons[cid].brickd_authentication_state == BRICKD_AUTHENTICATION_STATE_DONE) {
 		return true;
 	}
 
@@ -340,4 +305,4 @@ bool brickd_check_auth(const MessageHeader *header, const int8_t cid) {
 	}
 
 	return false;
-}*/
+}

@@ -26,6 +26,7 @@
 #include <stdbool.h>
 
 #include "espmissingincludes.h"
+#include "communication.h"
 
 #define BRICKD_ROUTING_TABLE_SIZE 10
 
@@ -50,20 +51,6 @@ struct BrickdRouting {
 #define BRICKD_FID_GET_AUTHENTICATION_NONCE 1
 #define BRICKD_FID_AUTHENTICATE 2
 
-#define MESSAGE_HEADER_LENGTH_POSITION 4
-
-typedef struct {
-	uint32_t uid;
-	uint8_t length;
-	uint8_t fid;
-	uint8_t other_options:2,
-	        authentication:1,
-	        return_expected:1,
-			sequence_num:4;
-	uint8_t future_use:6,
-	        error:2;
-} __attribute__((__packed__)) MessageHeader;
-
 typedef struct {
 	MessageHeader header;
 } __attribute__((packed)) GetAuthenticationNonce;
@@ -79,12 +66,12 @@ typedef struct {
 	uint8_t digest[20];
 } __attribute__((packed)) Authenticate;
 
-/*void brickd_get_authentication_nonce(const ComType com, const GetAuthenticationNonce *data);
-void brickd_authenticate(const ComType com, const Authenticate *data);
-void brickd_set_authentication_seed(const uint32_t seed);
-void brickd_enable_authentication(void);
-void brickd_disable_authentication(void);
-bool brickd_check_auth(const MessageHeader *header, const int8_t cid);*/
+void ICACHE_FLASH_ATTR brickd_get_authentication_nonce(const int8_t cid, const GetAuthenticationNonce *data);
+void ICACHE_FLASH_ATTR brickd_authenticate(const int8_t cid, const Authenticate *data);
+void ICACHE_FLASH_ATTR brickd_set_authentication_seed(const uint32_t seed);
+void ICACHE_FLASH_ATTR brickd_enable_authentication(void);
+void ICACHE_FLASH_ATTR brickd_disable_authentication(void);
+bool ICACHE_FLASH_ATTR brickd_check_auth(const MessageHeader *header, const int8_t cid);
 
 void ICACHE_FLASH_ATTR brickd_init(void);
 uint32_t ICACHE_FLASH_ATTR brickd_counter_diff(const uint32_t new, const uint32_t old);

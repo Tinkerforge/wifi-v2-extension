@@ -51,7 +51,7 @@ void ICACHE_FLASH_ATTR uart_enable(uint8_t uart) {
     if(uart == UART1) {
         PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_U1TXD_BK);
     } else {
-#if 1
+#if 0
     	// If swapped
 #else
     	// If unswapped

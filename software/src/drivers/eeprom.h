@@ -1,7 +1,7 @@
-/* WIFI Extension 2.0
+/* ESP8266 drivers
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
  *
- * config: WIFI Extension 2.0 configuration
+ * eeprom.h: Implementation of functions for standard AT24C EEPROMS
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,12 +19,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef EEPROM_H
+#define EEPROM_H
 
-#define UART_CONNECTION UART0
-#define UART_DEBUG UART1
+#include "config.h"
+#include "c_types.h"
+#include "osapi.h"
 
-#define LOGGING_LEVEL LOGGING_NONE
+#define EEPROM_ADDRESS  0x51 // 0b1010001
+#define EEPROM_PAGESIZE 0x20
+
+void ICACHE_FLASH_ATTR eeprom_init(void);
+bool ICACHE_FLASH_ATTR eeprom_read(const uint16_t address, uint8_t *data, const uint16_t length);
+bool ICACHE_FLASH_ATTR eeprom_write(const uint16_t address, const uint8_t *data, const uint16_t length);
 
 #endif

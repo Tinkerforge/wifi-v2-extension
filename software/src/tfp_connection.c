@@ -21,6 +21,7 @@
 
 #include "tfp_connection.h"
 
+#include "gpio.h"
 #include "espmissingincludes.h"
 #include "osapi.h"
 #include "ip_addr.h"
@@ -28,45 +29,54 @@
 #include "uart_connection.h"
 #include "brickd.h"
 #include "ringbuffer.h"
+#include "communication.h"
+#include "configuration.h"
 #include "user_interface.h"
-
-#define TFP_RING_BUFFER_SIZE 1000
-
-#define TFP_SEND_BUFFER_SIZE 80
-#define TFP_RECV_BUFFER_SIZE 80
-#define TFP_MAX_CONNECTIONS 10
-
-#define TFP_CON_STATE_CLOSED  0
-#define TFP_CON_STATE_OPEN    1
-#define TFP_CON_STATE_SENDING 2
-
-typedef struct {
-	uint8_t recv_buffer[TFP_RECV_BUFFER_SIZE];
-	uint8_t recv_buffer_index;
-	uint8_t recv_buffer_expected_length;
-
-	uint8_t send_buffer[TFP_SEND_BUFFER_SIZE];
-	uint8_t state;
-	int8_t cid;
-	espconn *con;
-
-	uint8_t last_seen;
-} TFPConnection;
+#include "logging.h"
 
 Ringbuffer tfp_rb;
 uint8_t tfp_rb_buffer[TFP_RING_BUFFER_SIZE];
 
 TFPConnection tfp_cons[TFP_MAX_CONNECTIONS];
 
+extern Configuration configuration_current;
+
 #define TFP_RECV_INDEX_LENGTH 4
 #define TFP_MIN_LENGTH 8
 
+
+void ICACHE_FLASH_ATTR tfp_init_con(int8_t cid) {
+	tfp_cons[cid].recv_buffer_index = 0;
+	tfp_cons[cid].recv_buffer_expected_length = TFP_MIN_LENGTH;
+	tfp_cons[cid].state = TFP_CON_STATE_CLOSED;
+	tfp_cons[cid].cid   = cid;
+	tfp_cons[cid].con   = NULL;
+	if(configuration_current.general_authentication_secret[0] != '\0') {
+		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
+	} else {
+		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_DISABLED;
+	}
+}
 
 void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
 	espconn *con = (espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 	tfp_con->state = TFP_CON_STATE_OPEN;
-	// os_printf("tfp_sent_callback: %d (cid %d)\n", tfp_con->last_seen, tfp_con->cid);
+}
+
+void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t length) {
+	// If ringbuffer not empty we add data to ringbuffer (we want to keep order)
+	// Else if we can't immediately send to master brick we also add to ringbuffer
+	if(!ringbuffer_is_empty(&tfp_rb) || uart_con_send(data, length) == 0) {
+
+		// TODO: Test free size
+		for(uint8_t i = 0; i < length; i++) {
+			bool ret_ok = ringbuffer_add(&tfp_rb, data[i]);
+			if(!ret_ok) {
+				loge("ringbuffer full!\n");
+			}
+		}
+	}
 }
 
 void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short len) {
@@ -83,21 +93,12 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short 
 
 		tfp_con->recv_buffer_index++;
 		if(tfp_con->recv_buffer_index == tfp_con->recv_buffer_expected_length) {
-			brickd_route_from(tfp_con->recv_buffer, tfp_con->cid);
-			// os_printf("tfp_recv -> d:%d, l:%d, c:%d)\n", tfp_con->recv_buffer[8], tfp_con->recv_buffer_expected_length, tfp_con->cid);
+			if(!com_handle_message(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length, tfp_con->cid)) {
+				brickd_route_from(tfp_con->recv_buffer, tfp_con->cid);
+				// os_printf("tfp_recv -> d:%d, l:%d, c:%d)\n", tfp_con->recv_buffer[8], tfp_con->recv_buffer_expected_length, tfp_con->cid);
 
-			// If ringbuffer not empty we add data to ringbuffer (we want to keep order)
-			// Else if we can't immediately send to master brick we also add to ringbuffer
-			if(!ringbuffer_is_empty(&tfp_rb) || uart_con_send(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length) == 0) {
-				// os_printf("try uart_con_send == 0\n");
-				// TODO: Test free size
+				tfp_handle_packet(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length);
 
-				for(uint8_t i = 0; i < tfp_con->recv_buffer_expected_length; i++) {
-					bool ret_ok = ringbuffer_add(&tfp_rb, tfp_con->recv_buffer[i]);
-					if(!ret_ok) {
-						os_printf("ringbuffer full!\n");
-					}
-				}
 			}
 
 			tfp_con->recv_buffer_index = 0;
@@ -112,8 +113,7 @@ void ICACHE_FLASH_ATTR tfp_disconnect_callback(void *arg) {
 
 	brickd_disconnect(tfp_con->cid);
 
-	tfp_con->state = TFP_CON_STATE_CLOSED;
-	tfp_con->con   = NULL;
+	tfp_init_con(tfp_con->cid);
 
 	os_printf("tfp_disconnect_callback: cid %d\n", tfp_con->cid);
 }
@@ -124,8 +124,7 @@ void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error) {
 
 	brickd_disconnect(tfp_con->cid);
 
-	tfp_con->state = TFP_CON_STATE_CLOSED;
-	tfp_con->con   = NULL;
+	tfp_init_con(tfp_con->cid);
 
 	if(error == ESPCONN_TIMEOUT) {
 		// espconn_disconnect(arg);
@@ -192,13 +191,30 @@ static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const uint8_t *data, const u
 	return true;
 }
 
+bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length, const uint8_t cid) {
+	if(tfp_cons[cid].state == TFP_CON_STATE_OPEN) {
+		tfp_cons[cid].state = TFP_CON_STATE_SENDING;
+		os_memcpy(tfp_cons[cid].send_buffer, data, length);
+		const uint8_t status = espconn_sent(tfp_cons[cid].con, (uint8_t*)data, length);
+		// TODO: Check status?
+		return true;
+	}
+
+	return false;
+}
+
 bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 
 	//os_printf("tfp_send with length %d\n", length);
 
-	// TODO: Sanity check length again
+	// TODO: Sanity check length again?
 
 	// TODO: Are we sure that data is always a full TFP packet?
+
+	// cid == -2 => send back via UART
+	if(com_handle_message(data, length, -2)) {
+		return true;
+	}
 
 	// We only peak at the routing table here (and delete the route manually if
 	// we can fit the data in our buffer). It would be very expensive to first
@@ -235,7 +251,6 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 			}
 		}
 	} else {
-		tfp_cons[cid].last_seen = data[8];
 		//os_printf("tfp_send to cid %d\n", cid);
 		tfp_cons[cid].state = TFP_CON_STATE_SENDING;
 		os_memcpy(tfp_cons[cid].send_buffer, data, length);
@@ -259,11 +274,7 @@ void ICACHE_FLASH_ATTR tfp_open_connection(void) {
 	ets_memset(&tfp_con_listen, 0, sizeof(struct espconn));
 
 	for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
-		tfp_cons[i].recv_buffer_index = 0;
-		tfp_cons[i].recv_buffer_expected_length = TFP_MIN_LENGTH;
-		tfp_cons[i].state = TFP_CON_STATE_CLOSED;
-		tfp_cons[i].cid   = i;
-		tfp_cons[i].con   = NULL;
+		tfp_init_con(i);
 	}
 
 	// Initialize the ESPConn
@@ -273,7 +284,7 @@ void ICACHE_FLASH_ATTR tfp_open_connection(void) {
 
 	// Make it a TCP connection
 	tfp_con_listen.proto.tcp = &tfp_con_listen_tcp;
-	tfp_con_listen.proto.tcp->local_port = 4223;
+	tfp_con_listen.proto.tcp->local_port = configuration_current.general_port;
 
 	espconn_regist_reconcb(&tfp_con_listen, tfp_reconnect_callback);
 	espconn_regist_connectcb(&tfp_con_listen, tfp_connect_callback);

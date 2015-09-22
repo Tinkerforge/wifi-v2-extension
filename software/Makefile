@@ -21,7 +21,7 @@ FW_BASE		= firmware
 SDK_BASE	?= ../toolchain/esp-open-sdk/sdk/
 
 # esptool.py path and port
-ESPTOOL		?= esptool.py
+ESPTOOL		?= /home/olaf/ee/wifi-v2-extension/tests/tf_esptool.py # esptool.py
 ESPPORT		?= /dev/ttyUSB0
 
 # name for the target project
@@ -83,6 +83,7 @@ MODULE_INCDIR	:= $(addsuffix /include,$(INCDIR))
 
 FW_FILE_1	:= $(addprefix $(FW_BASE)/,$(FW_FILE_1_ADDR).bin)
 FW_FILE_2	:= $(addprefix $(FW_BASE)/,$(FW_FILE_2_ADDR).bin)
+FW_FILE_Z   := $(addprefix $(FW_BASE)/,wifi_extension_v2_firmware.zbin)
 
 V ?= $(VERBOSE)
 ifeq ("$(V)","1")
@@ -103,11 +104,15 @@ endef
 
 .PHONY: all checkdirs flash clean
 
-all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2)
+all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_Z)
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
 	$(Q) $(ESPTOOL) elf2image -o $(FW_BASE)/ $(TARGET_OUT)
+
+$(FW_BASE)/%.zbin:
+	$(vecho) "FZ $(FW_FILE_Z)"
+	$(Q) zip -j $(FW_FILE_Z) $(FW_FILE_1) $(FW_FILE_2)
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"

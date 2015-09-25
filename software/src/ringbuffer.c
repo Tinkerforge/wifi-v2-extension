@@ -22,7 +22,7 @@
 #include "ringbuffer.h"
 
 #include "osapi.h"
-#include <stdbool.h>
+#include "logging.h"
 
 void ICACHE_FLASH_ATTR ringbuffer_init(Ringbuffer *rb, uint8_t *buffer, uint32_t buffer_length) {
 	rb->overflow_counter = 0;
@@ -61,7 +61,7 @@ bool ICACHE_FLASH_ATTR ringbuffer_is_full(Ringbuffer *rb) {
 
 bool ICACHE_FLASH_ATTR ringbuffer_add(Ringbuffer *rb, uint8_t data) {
 	if(ringbuffer_is_full(rb)) {
-		os_printf("Ringbuffer Overflow!\n");
+		logw("Ringbuffer Overflow!\n");
 		rb->overflow_counter++;
 		return false;
 	}
@@ -94,8 +94,6 @@ uint32_t ICACHE_FLASH_ATTR ringbuffer_peak(Ringbuffer *rb, uint8_t *data, uint32
 	if(peak_length > used) {
 		peak_length = used;
 	}
-
-	// os_printf("rb peak len: %d\n", peak_length);
 
 	for(uint32_t i = 0; i < peak_length; i++) {
 		data[i] = rb->buffer[p];

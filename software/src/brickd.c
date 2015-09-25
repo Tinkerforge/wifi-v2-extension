@@ -295,6 +295,10 @@ void ICACHE_FLASH_ATTR brickd_authenticate(const int8_t cid, const Authenticate 
 }
 
 bool ICACHE_FLASH_ATTR brickd_check_auth(const MessageHeader *header, const int8_t cid) {
+	if(cid < 0) {
+		return true;
+	}
+
 	if(tfp_cons[cid].brickd_authentication_state == BRICKD_AUTHENTICATION_STATE_DISABLED ||
 	   tfp_cons[cid].brickd_authentication_state == BRICKD_AUTHENTICATION_STATE_DONE) {
 		return true;

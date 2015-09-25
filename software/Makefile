@@ -29,19 +29,19 @@ TARGET		= app
 
 # which modules (subdirectories) of the project to include in compiling
 MODULES		= src src/drivers
-EXTRA_INCDIR    = include
+EXTRA_INCDIR    = include ../toolchain/libesphttpd/include
 
 # libraries used in this project, mainly provided by the SDK
-LIBS		= c gcc hal pp phy net80211 lwip wpa main
+LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd webpages-espfs
 
 # compiler flags using during compilation of source files
 CFLAGS		= -std=c99 -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
 
 # linker flags used to generate the main object file
-LDFLAGS		= -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
+LDFLAGS		= -L../toolchain/libesphttpd -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
 # linker script used for the above linkier step
-LD_SCRIPT	= eagle.app.v6.ld
+LD_SCRIPT	= eagle.app.v6.new.2048.ld 
 
 # various paths from the SDK used in this project
 SDK_LIBDIR	= lib

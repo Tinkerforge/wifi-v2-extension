@@ -31,7 +31,6 @@ extern Configuration configuration_current;
 
 bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t length, const int8_t cid) {
 	const MessageHeader *header = (const MessageHeader*)data;
-	logd("handle message: cid %d, fid %d\n", cid, header->fid);
 
 	if(!brickd_check_auth(header, cid)) {
 		return true;

@@ -121,7 +121,6 @@ static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
 
 		uart_con_buffer_recv_index++;
 		if(uart_con_buffer_recv_index >= uart_con_buffer_recv_expected_length) {
-			// os_printf("uart recv data: %d %d %d ... %d\n", uart_con_buffer_recv[0], uart_con_buffer_recv[1], uart_con_buffer_recv[2], uart_con_buffer_recv[UART_CON_INDEX_CHECKSUM(uart_con_buffer_recv_expected_length)]);
 			uint8_t checksum_calculated = 0;
 			for(uint8_t i = 0; i < uart_con_buffer_recv_index-1; i++) {
 				PEARSON(checksum_calculated, uart_con_buffer_recv[i]);
@@ -154,7 +153,6 @@ static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
 
 			const uint8_t seq_seen_by_master = uart_con_buffer_recv[UART_CON_INDEX_SEQUENCE] >> 4;
 			if(wait_for_ack) {
-				// os_printf("compare seq: %d == %d\n\r", seq_seen_by_master, uart_con_sequence_number);
 				if(seq_seen_by_master == uart_con_sequence_number) {
 					os_timer_disarm(&timeout_timer);
 					wait_for_ack = false;
@@ -184,7 +182,6 @@ static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
 // Otherwise we try again after timeout.
 static void ICACHE_FLASH_ATTR uart_con_send_next_try(void) {
 	uint8_t checksum = 0;
-	// os_printf("uart_con_send_next_try: %d\n", uart_con_buffer_send_size);
 	if(uart_con_buffer_send_size > 0) {
 		const uint8_t length = uart_con_buffer_send_size + 3;
 		const uint8_t seq    = uart_con_sequence_number | (uart_con_last_sequence_number_seen << 4);
@@ -205,7 +202,6 @@ static void ICACHE_FLASH_ATTR uart_con_send_next_try(void) {
 }
 
 uint8_t ICACHE_FLASH_ATTR uart_con_send(const uint8_t *data, const uint8_t length) {
-	// os_printf("uart_con_send: %d\n", length);
 	if(uart_con_buffer_send_size == 0) {
 		for(uint8_t i = 0; i < length; i++) {
 			uart_con_buffer_send[i] =  data[i];

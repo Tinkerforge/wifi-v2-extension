@@ -4,6 +4,8 @@
 #include "user_interface.h"
 #include "drivers/uart.h"
 #include "tfp_connection.h"
+#include "http_connection.h"
+#include "tfp_websocket_connection.h"
 #include "uart_connection.h"
 #include "config.h"
 #include "debug.h"
@@ -11,7 +13,6 @@
 #include "eeprom.h"
 #include "logging.h"
 #include "configuration.h"
-
 
 
 void ICACHE_FLASH_ATTR user_init() {
@@ -37,4 +38,6 @@ void ICACHE_FLASH_ATTR user_init() {
 
 	uart_con_init();
 	tfp_open_connection();
+	tfpw_open_connection();
+	http_open_connection();
 }

@@ -45,12 +45,13 @@ extern Configuration configuration_current;
 #define TFP_MIN_LENGTH 8
 
 
-void ICACHE_FLASH_ATTR tfp_init_con(int8_t cid) {
+void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid) {
 	tfp_cons[cid].recv_buffer_index = 0;
 	tfp_cons[cid].recv_buffer_expected_length = TFP_MIN_LENGTH;
 	tfp_cons[cid].state = TFP_CON_STATE_CLOSED;
 	tfp_cons[cid].cid   = cid;
 	tfp_cons[cid].con   = NULL;
+	tfp_cons[cid].websocket_state = WEBSOCKET_STATE_NO_WEBSOCKET;
 	if(configuration_current.general_authentication_secret[0] != '\0') {
 		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
 	} else {
@@ -61,7 +62,12 @@ void ICACHE_FLASH_ATTR tfp_init_con(int8_t cid) {
 void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
 	espconn *con = (espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
-	tfp_con->state = TFP_CON_STATE_OPEN;
+
+	if(tfp_con->state == TFP_CON_STATE_CLOSED_AFTER_SEND) {
+		espconn_disconnect(tfp_con->con);
+	} else {
+		tfp_con->state = TFP_CON_STATE_OPEN;
+	}
 }
 
 void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t length) {
@@ -83,7 +89,6 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short 
 	espconn *con = (espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
-	// os_printf("tfp_recv_callback: %d\n", len);
 	for(uint32_t i = 0; i < len; i++) {
 		tfp_con->recv_buffer[tfp_con->recv_buffer_index] = pdata[i];
 		if(tfp_con->recv_buffer_index == TFP_RECV_INDEX_LENGTH) {
@@ -95,7 +100,6 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short 
 		if(tfp_con->recv_buffer_index == tfp_con->recv_buffer_expected_length) {
 			if(!com_handle_message(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length, tfp_con->cid)) {
 				brickd_route_from(tfp_con->recv_buffer, tfp_con->cid);
-				// os_printf("tfp_recv -> d:%d, l:%d, c:%d)\n", tfp_con->recv_buffer[8], tfp_con->recv_buffer_expected_length, tfp_con->cid);
 
 				tfp_handle_packet(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length);
 
@@ -115,7 +119,7 @@ void ICACHE_FLASH_ATTR tfp_disconnect_callback(void *arg) {
 
 	tfp_init_con(tfp_con->cid);
 
-	os_printf("tfp_disconnect_callback: cid %d\n", tfp_con->cid);
+	logd("tfp_disconnect_callback: cid %d\n", tfp_con->cid);
 }
 
 void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error) {
@@ -130,7 +134,7 @@ void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error) {
 		// espconn_disconnect(arg);
 	}
 
-	os_printf("tfp_reconnect_callback: cid %d -> %d\n", tfp_con->cid, error);
+	logd("tfp_reconnect_callback: cid %d -> %d\n", tfp_con->cid, error);
 }
 
 void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
@@ -140,13 +144,13 @@ void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 			tfp_cons[i].con = arg;
 			tfp_cons[i].con->reverse = &tfp_cons[i];
 			tfp_cons[i].state = TFP_CON_STATE_OPEN;
-			os_printf("tfp_connect_callback: cid %d\n", tfp_cons[i].cid);
+			logd("tfp_connect_callback: cid %d\n", tfp_cons[i].cid);
 			break;
 		}
 	}
 
 	if(i == TFP_MAX_CONNECTIONS) {
-		os_printf("Too many open connections, can't handle more\n");
+		logw("Too many open connections, can't handle more\n");
 		// TODO: according to the documentation we can not call espconn_disconnect in callback
 		// espconn_disconnect(arg);
 		return;
@@ -173,7 +177,7 @@ void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 	espconn_regist_sentcb(arg, tfp_sent_callback);
 }
 
-static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const uint8_t *data, const uint8_t length, const int8_t cid) {
+static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const int8_t cid) {
 	if(cid == -1) { // Broadcast
 		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
 			if(tfp_cons[i].state == TFP_CON_STATE_SENDING) {
@@ -204,9 +208,6 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length,
 }
 
 bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
-
-	//os_printf("tfp_send with length %d\n", length);
-
 	// TODO: Sanity check length again?
 
 	// TODO: Are we sure that data is always a full TFP packet?
@@ -222,9 +223,19 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 	BrickdRouting *match = NULL;
 	int8_t cid = brickd_route_to_peak(data, &match);
 
+	if(!brickd_check_auth((const MessageHeader*)data, cid)) {
+		return true;
+	}
+
 	// First lets check if everything fits in the buffers
-	if(!tfp_send_check_buffer(data, length, cid)) {
-		//os_printf("bf (c %d)\n", cid);
+	if(!tfp_send_check_buffer(cid)) {
+		return false;
+	}
+
+	// Add websocket header if necessary
+	uint8_t data_with_websocket_header[TFP_SEND_BUFFER_SIZE + sizeof(WebsocketFrameClientToServer)];
+	int16_t length_with_websocket_header = tfpw_insert_websocket_header(cid, data_with_websocket_header, data, length);
+	if(length_with_websocket_header == -1) { // -1 = We use websocket but state is not OK for sending
 		return false;
 	}
 
@@ -237,29 +248,35 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		match->cid = -1;
 	}
 
-
-	//os_printf("tfp_send found cid %d\n", cid);
 	if(cid == -1) { // Broadcast
-		// os_printf("cid == -1\n");
 		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
 			if(tfp_cons[i].state == TFP_CON_STATE_OPEN) {
 				// TODO: sent data (return value)
-				//os_printf("tfp_send to cid %d (broadcast)\n", i);
 				tfp_cons[i].state = TFP_CON_STATE_SENDING;
-				os_memcpy(tfp_cons[i].send_buffer, data, length);
-				espconn_sent(tfp_cons[i].con, tfp_cons[i].send_buffer, length);
+				uint8_t length_to_send = length;
+				if(tfp_cons[i].websocket_state == WEBSOCKET_STATE_NO_WEBSOCKET) {
+					os_memcpy(tfp_cons[i].send_buffer, data, length);
+				} else {
+					os_memcpy(tfp_cons[i].send_buffer, data_with_websocket_header, length_with_websocket_header);
+					length_to_send = length_with_websocket_header;
+				}
+				espconn_sent(tfp_cons[i].con, tfp_cons[i].send_buffer, length_to_send);
 			}
 		}
 	} else {
-		//os_printf("tfp_send to cid %d\n", cid);
 		tfp_cons[cid].state = TFP_CON_STATE_SENDING;
-		os_memcpy(tfp_cons[cid].send_buffer, data, length);
-		const uint8_t status = espconn_sent(tfp_cons[cid].con, (uint8_t*)data, length);
-		// os_printf("tfp_send -> d:%d, s:%d, l:%d, c:%d)\n", data[8], status, length, cid);
+
+		uint8_t length_to_send = length;
+		if(tfp_cons[cid].websocket_state == WEBSOCKET_STATE_NO_WEBSOCKET) {
+			os_memcpy(tfp_cons[cid].send_buffer, data, length);
+		} else {
+			os_memcpy(tfp_cons[cid].send_buffer, data_with_websocket_header, length_with_websocket_header);
+			length_to_send = length_with_websocket_header;
+		}
+		espconn_sent(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
 	}
 
 	return true;
-	// os_printf("tfp_send: %d\n", length_send);
 }
 
 // TODO: Does this have to be available after espconn_regist_time call?
@@ -303,36 +320,26 @@ void ICACHE_FLASH_ATTR tfp_poll(void) {
 
 	uint8_t data[TFP_RECV_BUFFER_SIZE];
 	uint8_t length = ringbuffer_peak(&tfp_rb, data, TFP_RECV_BUFFER_SIZE);
-	// os_printf("tfp_poll peak: %d %d\n", length, data[TFP_RECV_INDEX_LENGTH]);
 
 	if(length > TFP_RECV_BUFFER_SIZE) {
 		ringbuffer_init(&tfp_rb, tfp_rb.buffer, tfp_rb.buffer_length);
-		os_printf("tfp_poll: length > %d: %d\n", TFP_RECV_BUFFER_SIZE, length);
+		logd("tfp_poll: length > %d: %d\n", TFP_RECV_BUFFER_SIZE, length);
 		return;
 	}
 
 	if(length < TFP_MIN_LENGTH) {
 		ringbuffer_init(&tfp_rb, tfp_rb.buffer, tfp_rb.buffer_length);
-		os_printf("tfp_poll: length < TFP_MIN_LENGTH\n");
+		logd("tfp_poll: length < TFP_MIN_LENGTH\n");
 		return;
 	}
 
-	/*if(length != data[TFP_RECV_INDEX_LENGTH]) {
-		os_printf("tfp_poll: l (%d) != d[TFP] (%d)\n", length, data[TFP_RECV_INDEX_LENGTH]);
-		os_printf("data: [%d %d %d %d %d]\n", data[0], data[1], data[2], data[3], data[4]);
-
-		ringbuffer_init(&tfp_rb, tfp_rb.buffer, tfp_rb.buffer_length);
-		return;
-	}*/
-
 	// TODO: Are we sure that this is the only place where ringbuffer_get(&tfp_rb, ...) is called?
 	if(uart_con_send(data, data[TFP_RECV_INDEX_LENGTH]) != 0) {
-		// os_printf("tfp_poll send ok\n");
 		uint8_t dummy;
 		for(uint8_t i = 0; i < data[TFP_RECV_INDEX_LENGTH]; i++) {
 			ringbuffer_get(&tfp_rb, &dummy);
 		}
 	} else {
-		os_printf("tfp_poll send error\n");
+		logd("tfp_poll send error\n");
 	}
 }

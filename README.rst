@@ -45,3 +45,9 @@ Update toolchain::
  git submodule sync
  git submodule update
  make STANDALONE=y
+
+Additionally we use libesphttpd::
+ cd toolchain
+ git clone --recursive http://git.spritesserver.nl/libesphttpd.git/
+ cd libesphttpd
+ make SDK_BASE=../esp-open-sdk/sdk/

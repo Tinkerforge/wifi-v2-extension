@@ -21,12 +21,14 @@
 
 #include "http_connection.h"
 
+#define HTTP_FLASH_START_POS 0x40200000
+#define HTTP_ESPFS_POS       0x00100000
+
 #include "configuration.h"
 
 #include "httpd.h"
 #include "httpdespfs.h"
 #include "espfs.h"
-#include "webpages-espfs.h"
 
 extern Configuration configuration_current;
 
@@ -38,6 +40,6 @@ HttpdBuiltInUrl builtInUrls[]={
 };
 
 void ICACHE_FLASH_ATTR http_open_connection(void) {
-	espFsInit((void*)(webpages_espfs_start));
+	espFsInit((void*)(HTTP_FLASH_START_POS + HTTP_ESPFS_POS));
 	httpdInit(builtInUrls, configuration_current.general_website_port);
 }

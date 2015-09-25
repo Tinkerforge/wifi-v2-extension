@@ -34,12 +34,13 @@ void ets_update_cpu_frequency(int freqmhz);
 int os_printf(const char *format, ...)  __attribute__ ((format (printf, 1, 2)));
 int os_snprintf(char *str, size_t size, const char *format, ...) __attribute__ ((format (printf, 3, 4)));
 int os_printf_plus(const char *format, ...)  __attribute__ ((format (printf, 1, 2)));
-void pvPortFree(void *ptr);
-void *pvPortMalloc(size_t xWantedSize);
-void *pvPortZalloc(size_t);
-void uart_div_modify(int no, unsigned int freq);
-void vPortFree(void *ptr);
+
+void vPortFree(void *ptr, char * file, int line);
+void *pvPortMalloc(size_t xWantedSize, char * file, int line);
+void *pvPortZalloc(size_t, char * file, int line);
 void *vPortMalloc(size_t xWantedSize);
+
+void uart_div_modify(int no, unsigned int freq);
 uint8 wifi_get_opmode(void);
 uint32 system_get_time();
 int rand(void);

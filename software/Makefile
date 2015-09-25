@@ -20,6 +20,8 @@ FW_BASE		= firmware
 # base directory of the ESP8266 SDK package, absolute
 SDK_BASE	?= ../toolchain/esp-open-sdk/sdk/
 
+WEBPAGE     ?= ../toolchain/libesphttpd/webpages.espfs
+
 # esptool.py path and port
 ESPTOOL		?= /home/olaf/ee/wifi-v2-extension/tests/tf_esptool.py # esptool.py
 ESPPORT		?= /dev/ttyUSB0
@@ -32,7 +34,7 @@ MODULES		= src src/drivers
 EXTRA_INCDIR    = include ../toolchain/libesphttpd/include
 
 # libraries used in this project, mainly provided by the SDK
-LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd webpages-espfs
+LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd
 
 # compiler flags using during compilation of source files
 CFLAGS		= -std=c99 -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
@@ -40,7 +42,7 @@ CFLAGS		= -std=c99 -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inlin
 # linker flags used to generate the main object file
 LDFLAGS		= -L../toolchain/libesphttpd -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
-# linker script used for the above linkier step
+# linker script used for the above linker step
 LD_SCRIPT	= eagle.app.v6.new.2048.ld 
 
 # various paths from the SDK used in this project
@@ -51,13 +53,13 @@ SDK_INCDIR	= include include/json
 # we create two different files for uploading into the flash
 # these are the names and options to generate them
 FW_FILE_1_ADDR	= 0x00000
-FW_FILE_2_ADDR	= 0x40000
+FW_FILE_2_ADDR	= 0x10000
+FW_FILE_3_ADDR	= 0x100000
 
 # select which tools to use as compiler, librarian and linker
 CC		:= xtensa-lx106-elf-gcc
 AR		:= xtensa-lx106-elf-ar
 LD		:= xtensa-lx106-elf-gcc
-
 
 
 ####
@@ -83,6 +85,7 @@ MODULE_INCDIR	:= $(addsuffix /include,$(INCDIR))
 
 FW_FILE_1	:= $(addprefix $(FW_BASE)/,$(FW_FILE_1_ADDR).bin)
 FW_FILE_2	:= $(addprefix $(FW_BASE)/,$(FW_FILE_2_ADDR).bin)
+FW_FILE_3	:= $(addprefix $(FW_BASE)/,$(FW_FILE_3_ADDR).bin)
 FW_FILE_Z   := $(addprefix $(FW_BASE)/,wifi_extension_v2_firmware.zbin)
 
 V ?= $(VERBOSE)
@@ -112,7 +115,8 @@ $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 
 $(FW_BASE)/%.zbin:
 	$(vecho) "FZ $(FW_FILE_Z)"
-	$(Q) zip -j $(FW_FILE_Z) $(FW_FILE_1) $(FW_FILE_2)
+	$(Q) cp $(WEBPAGE) $(FW_FILE_3)
+	$(Q) zip -j $(FW_FILE_Z) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_3)
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"
@@ -131,7 +135,7 @@ $(FW_BASE):
 	$(Q) mkdir -p $@
 
 flash: $(FW_FILE_1) $(FW_FILE_2)
-	$(ESPTOOL) --port $(ESPPORT) write_flash -fs 32m -fm qio -ff 40m $(FW_FILE_1_ADDR) $(FW_FILE_1) $(FW_FILE_2_ADDR) $(FW_FILE_2)
+	$(ESPTOOL) --port $(ESPPORT) write_flash -fs 32m -fm qio -ff 40m $(FW_FILE_1_ADDR) $(FW_FILE_1) $(FW_FILE_2_ADDR) $(FW_FILE_2) $(FW_FILE_3_ADDR) $(FW_FILE_3)
 
 clean:
 	$(Q) rm -rf $(FW_BASE) $(BUILD_BASE)

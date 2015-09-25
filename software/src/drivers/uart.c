@@ -26,6 +26,7 @@
 #include "c_types.h"
 #include "osapi.h"
 #include "os_type.h"
+#include "logging.h"
 
 static int8_t uart_printf = -1;
 
@@ -84,7 +85,7 @@ uint8_t ICACHE_FLASH_ATTR uart_rx(uint8_t uart) {
 
 void ICACHE_FLASH_ATTR uart_tx(uint8_t uart, uint8_t c) {
 	while(uart_get_tx_fifo_count(uart) >= 126) {
-		os_printf("uart_get_tx_fifo_count(uart) >= 126");
+		logd("uart_get_tx_fifo_count(uart) >= 126");
 	}
     WRITE_PERI_REG(UART_FIFO(uart), c);
 }

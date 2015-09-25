@@ -26,6 +26,8 @@
 #include "c_types.h"
 
 #include "brickd.h"
+#include "websocket.h"
+#include "tfp_websocket_connection.h"
 
 
 #define TFP_RING_BUFFER_SIZE 1000
@@ -34,23 +36,34 @@
 #define TFP_RECV_BUFFER_SIZE 80
 #define TFP_MAX_CONNECTIONS 10
 
-#define TFP_CON_STATE_CLOSED  0
-#define TFP_CON_STATE_OPEN    1
-#define TFP_CON_STATE_SENDING 2
+#define TFP_CON_STATE_CLOSED            0
+#define TFP_CON_STATE_OPEN              1
+#define TFP_CON_STATE_SENDING           2
+#define TFP_CON_STATE_CLOSED_AFTER_SEND 3
 
 typedef struct {
 	uint8_t recv_buffer[TFP_RECV_BUFFER_SIZE];
 	uint8_t recv_buffer_index;
 	uint8_t recv_buffer_expected_length;
 
-	uint8_t send_buffer[TFP_SEND_BUFFER_SIZE];
+	uint8_t send_buffer[TFP_SEND_BUFFER_SIZE + sizeof(WebsocketFrameClientToServer)];
 	uint8_t state;
 	BrickdAuthenticationState brickd_authentication_state;
+
+	TFPWebsocketState websocket_state;
+	WebsocketFrame websocket_frame;
+	uint8_t websocket_to_read;
+	uint8_t websocket_mask_mod;
 
 	int8_t cid;
 	espconn *con;
 } TFPConnection;
 
+void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short len);
+void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error);
+void ICACHE_FLASH_ATTR tfp_disconnect_callback(void *arg);
+void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg);
+void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid);
 bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length, const uint8_t cid);
 void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t length);
 void ICACHE_FLASH_ATTR tfp_open_connection(void);

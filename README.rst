@@ -36,6 +36,7 @@ into toolchain/ directory::
  mkdir toolchain
  cd toolchain
  git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
+ cd esp-open-sdk
  make STANDALONE=y
 
 Update toolchain::
@@ -45,3 +46,9 @@ Update toolchain::
  git submodule sync
  git submodule update
  make STANDALONE=y
+
+Additionally we use libesphttpd::
+ cd toolchain
+ git clone --recursive http://git.spritesserver.nl/libesphttpd.git/
+ cd libesphttpd
+ make SDK_BASE=../esp-open-sdk/sdk/ COMPRESS_W_YUI=yes

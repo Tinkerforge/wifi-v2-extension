@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 //Missing function prototypes in include folders. Gcc will warn on these if we don't define 'em anywhere.
-//MOST OF THESE ARE GUESSED! but they seem to swork and shut up the compiler.
+//MOST OF THESE ARE GUESSED! but they seem to work and shut up the compiler.
 typedef struct espconn espconn;
 
 int atoi(const char *nptr);
@@ -34,12 +34,13 @@ void ets_update_cpu_frequency(int freqmhz);
 int os_printf(const char *format, ...)  __attribute__ ((format (printf, 1, 2)));
 int os_snprintf(char *str, size_t size, const char *format, ...) __attribute__ ((format (printf, 3, 4)));
 int os_printf_plus(const char *format, ...)  __attribute__ ((format (printf, 1, 2)));
-void pvPortFree(void *ptr);
-void *pvPortMalloc(size_t xWantedSize);
-void *pvPortZalloc(size_t);
-void uart_div_modify(int no, unsigned int freq);
-void vPortFree(void *ptr);
+
+void vPortFree(void *ptr, char * file, int line);
+void *pvPortMalloc(size_t xWantedSize, char * file, int line);
+void *pvPortZalloc(size_t, char * file, int line);
 void *vPortMalloc(size_t xWantedSize);
+
+void uart_div_modify(int no, unsigned int freq);
 uint8 wifi_get_opmode(void);
 uint32 system_get_time();
 int rand(void);
@@ -48,4 +49,19 @@ void ets_delay_us(int ms);
 
 // Found by accident, we can use this function for authentication :-D
 int hmac_sha1(const u8 *key, size_t key_len, const u8 *data, size_t data_len, u8 *mac);
+
+typedef struct {
+    uint32_t state[5];
+    uint32_t count[2];
+    uint8_t buffer[64];
+} SHA1_CTX;
+
+void SHA1Init(SHA1_CTX *context);
+void SHA1Update(SHA1_CTX *context, const uint8_t *data, u_int len);
+void SHA1Final(uint8_t digest[20], SHA1_CTX *context);
+void SHA1Transform(uint32_t state[5], uint8_t buffer[64]);
+char * SHA1End(SHA1_CTX *context, char *buf);
+char * SHA1File(char *filename, char *buf);
+char * SHA1Data(uint8_t *data, size_t len, char *buf);
+
 #endif

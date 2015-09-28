@@ -28,6 +28,6 @@
 
 extern const uint8_t pearson_permutation[PEARSON_PERMUTATION_SIZE];
 
-#define PEARSON(cur, next) do{ cur = pearson_permutation[cur ^ next]; }while(0)
+#define PEARSON(cur, next) do{ cur = pearson_permutation[(cur) ^ (next)]; }while(0)
 
 #endif

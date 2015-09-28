@@ -105,19 +105,23 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	uint8_t status;
-	uint8_t client_rssi;
-	uint8_t client_ip[4];
-	uint8_t client_subnet_mask[4];
-	uint8_t client_gateway[4];
-	uint8_t client_mac_address[6];
-	uint8_t ap_ip[4];
-	uint8_t ap_subnet_mask[4];
-	uint8_t ap_gateway[4];
-	uint8_t ap_mac_address[6];
-	uint32_t rx_count;
-	uint32_t tx_count;
-	// TODO
+	bool     client_enabled;
+	uint8_t  client_status;
+	uint8_t  client_ip[4];
+	uint8_t  client_subnet_mask[4];
+	uint8_t  client_gateway[4];
+	uint8_t  client_mac_address[6];
+	uint32_t client_rx_count;
+	uint32_t client_tx_count;
+	int8_t   client_rssi;
+	bool     ap_enabled;
+	uint8_t  ap_ip[4];
+	uint8_t  ap_subnet_mask[4];
+	uint8_t  ap_gateway[4];
+	uint8_t  ap_mac_address[6];
+	uint32_t ap_rx_count;
+	uint32_t ap_tx_count;
+	uint8_t  ap_connected_count;
 } __attribute__((__packed__)) GetWifi2StatusReturn;
 
 typedef struct {
@@ -183,6 +187,7 @@ typedef struct {
 	uint8_t gateway[4];
 	uint8_t encryption;
 	bool hidden;
+	uint8_t channel;
 	uint8_t mac_address[6];
 } __attribute__((__packed__)) SetWifi2APConfiguration;
 
@@ -199,6 +204,7 @@ typedef struct {
 	uint8_t gateway[4];
 	uint8_t encryption;
 	bool hidden;
+	uint8_t channel;
 	uint8_t mac_address[6];
 } __attribute__((__packed__)) GetWifi2APConfigurationReturn;
 

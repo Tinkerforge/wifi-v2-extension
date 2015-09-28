@@ -199,7 +199,7 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length,
 	if(tfp_cons[cid].state == TFP_CON_STATE_OPEN) {
 		tfp_cons[cid].state = TFP_CON_STATE_SENDING;
 		os_memcpy(tfp_cons[cid].send_buffer, data, length);
-		const uint8_t status = espconn_sent(tfp_cons[cid].con, (uint8_t*)data, length);
+		const uint8_t status = espconn_send(tfp_cons[cid].con, (uint8_t*)data, length);
 		// TODO: Check status?
 		return true;
 	}
@@ -260,7 +260,7 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 					os_memcpy(tfp_cons[i].send_buffer, data_with_websocket_header, length_with_websocket_header);
 					length_to_send = length_with_websocket_header;
 				}
-				espconn_sent(tfp_cons[i].con, tfp_cons[i].send_buffer, length_to_send);
+				espconn_send(tfp_cons[i].con, tfp_cons[i].send_buffer, length_to_send);
 			}
 		}
 	} else {
@@ -273,7 +273,7 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 			os_memcpy(tfp_cons[cid].send_buffer, data_with_websocket_header, length_with_websocket_header);
 			length_to_send = length_with_websocket_header;
 		}
-		espconn_sent(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
+		espconn_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
 	}
 
 	return true;

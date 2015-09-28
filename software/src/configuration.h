@@ -34,9 +34,9 @@
 
 typedef struct {
 	// Configuration info
+	uint8_t  conf_checksum;
 	uint8_t  conf_version;
 	uint16_t conf_length;
-	uint8_t  conf_checksum;
 
 	// General configuration
 	uint16_t general_port;
@@ -67,6 +67,8 @@ typedef struct {
 	uint8_t  ap_encryption;
 	bool     ap_hidden;
 	uint8_t  ap_mac_address[6];
+	uint8_t  ap_channel;
+	char     ap_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH];
 	char     ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
 } Configuration;
 
@@ -74,5 +76,6 @@ void ICACHE_FLASH_ATTR configuration_use_default(void);
 void ICACHE_FLASH_ATTR configuration_load_from_eeprom(void);
 uint8_t ICACHE_FLASH_ATTR configuration_save_to_eeprom(void);
 void ICACHE_FLASH_ATTR configuration_apply(void);
+void ICACHE_FLASH_ATTR configuration_init(void);
 
 #endif

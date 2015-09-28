@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include "osapi.h"
+#include "espmissingincludes.h"
 
 #define LOGGING_DEBUG    0
 #define LOGGING_INFO     1

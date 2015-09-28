@@ -23,22 +23,26 @@
 
 #include "espmissingincludes.h"
 #include "eeprom.h"
+#include "ip_addr.h"
+#include "espconn.h"
 #include "osapi.h"
 #include "user_interface.h"
+#include "pearson_hash.h"
+#include "communication.h"
 
 const Configuration configuration_default = {
 	// Configuration info
+	.conf_checksum = 0,
 	.conf_version = CONFIGURATION_EXPECTED_VERSION,
 	.conf_length = sizeof(Configuration),
-	.conf_checksum = 0,
 
 	// General configuration
 	.general_port = 4223,
 	.general_websocket_port = 4280,
 	.general_website_port = 80,
 	.general_phy_mode = 1,
-	.general_sleep_mode = 0,
-	.general_website = true,
+	.general_sleep_mode = 0, // Currently unused
+	.general_website = 0,    // Currently unused
 	.general_authentication_secret = {0},
 
 	// Client configuration
@@ -49,11 +53,11 @@ const Configuration configuration_default = {
 	.client_gateway = {0, 0, 0, 0},
 	.client_mac_address = {0, 0, 0, 0, 0, 0},
 	.client_bssid = {0, 0, 0, 0, 0, 0},
-	.client_hostname = "wifi-extension-v2",
+	.client_hostname = "wifi-extension-v2x",
 	.client_password = "25842149320894763607",
 
 	// AP configuration
-	.ap_enable = 0,
+	.ap_enable = 1,
 	.ap_ssid = "Wifi Extension 2.0 Access Point",
 	.ap_ip = {0, 0, 0, 0},
 	.ap_subnet_mask = {0, 0, 0, 0},
@@ -61,6 +65,8 @@ const Configuration configuration_default = {
 	.ap_encryption = 4,
 	.ap_hidden = false,
 	.ap_mac_address = {0, 0, 0, 0, 0, 0},
+	.ap_channel = 1,
+	.ap_hostname = "\0", // Currently unused
 	.ap_password = "password"
 };
 
@@ -76,9 +82,20 @@ uint8_t ICACHE_FLASH_ATTR configuration_array_length(const uint8_t *data, const 
 	return max_length;
 }
 
+uint8_t ICACHE_FLASH_ATTR configuration_calculate_checksum(void) {
+	uint8_t checksum = 0;
+
+	uint8_t *conf_array = (uint8_t*)&configuration_current;
+	for(uint16_t i = 1; i < sizeof(Configuration); i++) {
+		PEARSON(checksum, conf_array[i]);
+	}
+
+	return checksum;
+}
+
 bool ICACHE_FLASH_ATTR configuration_check_checksum(void) {
-	// TODO: Implement me
-	return true;
+	const uint8_t checksum = configuration_calculate_checksum();
+	return checksum == configuration_current.conf_checksum;
 }
 
 void ICACHE_FLASH_ATTR configuration_use_default(void) {
@@ -98,8 +115,7 @@ void ICACHE_FLASH_ATTR configuration_load_from_eeprom(void) {
 }
 
 uint8_t ICACHE_FLASH_ATTR configuration_save_to_eeprom(void) {
-	// TODO: Calculate and save checksum
-
+	configuration_current.conf_checksum = configuration_calculate_checksum();
 	if(eeprom_write(CONFIGURATION_ADDRESS, (uint8_t*)&configuration_current, sizeof(Configuration))) {
 		return 0;
 	}
@@ -157,8 +173,6 @@ void ICACHE_FLASH_ATTR configuration_apply_client(void) {
 
 
 	wifi_station_set_hostname(configuration_current.client_hostname);
-
-
 	wifi_station_set_reconnect_policy(true);
 }
 
@@ -171,11 +185,11 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 			  configuration_current.ap_password,
 			  configuration_array_length(configuration_current.ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH));
 	conf.ssid_len = configuration_array_length(configuration_current.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH)-1;
-	conf.channel = 1; // TODO: Should we make this configurable?
+	conf.channel = configuration_current.ap_channel;
 	conf.authmode = configuration_current.ap_encryption;
 	conf.ssid_hidden = configuration_current.ap_hidden;
-	conf.max_connection = 4; // TODO: Should we make this configurable?
-	conf.beacon_interval = 100; // TODO: Should we make this configurable?
+	conf.max_connection = 4; // Max number here is 4
+	conf.beacon_interval = 100;
 	wifi_softap_set_config_current(&conf);
 
 	if(configuration_check_array_null(configuration_current.ap_ip, 4)) {
@@ -216,22 +230,26 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 	if(!configuration_check_array_null(configuration_current.ap_mac_address, 6)) {
 		wifi_set_macaddr(SOFTAP_IF, configuration_current.ap_mac_address);
 	}
+
+	/* TODO: MDNS does not seem to work currently.
+	 *       Check again in later SDK version
+		struct mdns_info dns;
+		struct ip_info sta_ip;
+		wifi_get_ip_info(STATION_IF, &sta_ip);
+		char host_name[] = "host";
+		char server_name[] = "server";
+		dns.host_name = (char*)&host_name;
+		dns.server_name = (char*)&server_name;
+		dns.txt_data[0] = (char*)NULL;
+		dns.ipAddr = sta_ip.ip.addr;
+		dns.server_port = 80;
+		espconn_mdns_init(&dns);
+	*/
 }
 
 void ICACHE_FLASH_ATTR configuration_apply(void) {
 	// TODO: Currently not implemented in brickv
 	wifi_set_sleep_type(NONE_SLEEP_T);
-
-	// General
-	if(configuration_current.client_enable && configuration_current.ap_enable) {
-		wifi_set_opmode_current(STATIONAP_MODE);
-	} else if(configuration_current.client_enable) {
-		wifi_set_opmode_current(STATION_MODE);
-	} else if(configuration_current.ap_enable) {
-		wifi_set_opmode_current(SOFTAP_MODE);
-	} else {
-		wifi_set_opmode_current(NULL_MODE);
-	}
 
 	wifi_set_phy_mode(configuration_current.general_phy_mode+1);
 
@@ -245,8 +263,16 @@ void ICACHE_FLASH_ATTR configuration_apply(void) {
 		configuration_apply_ap();
 	}
 
+	if(configuration_current.client_enable && configuration_current.ap_enable) {
+		wifi_set_opmode_current(STATIONAP_MODE);
+	} else if(configuration_current.client_enable) {
+		wifi_set_opmode_current(STATION_MODE);
+	} else if(configuration_current.ap_enable) {
+		wifi_set_opmode_current(SOFTAP_MODE);
+	} else {
+		wifi_set_opmode_current(NULL_MODE);
+	}
 
 	wifi_station_set_auto_connect(1);
-
 	wifi_station_connect();
 }

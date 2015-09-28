@@ -50,7 +50,7 @@ void tfpw_answer_error(int32_t user_data) {
 	}
 	// We close the socket directly after the error string is send
 	tfp_cons[user_data].state = TFP_CON_STATE_CLOSED_AFTER_SEND;
-	espconn_sent(tfp_cons[user_data].con, (char*)tfpw_answer_error_string, sizeof(tfpw_answer_error_string));
+	espconn_send(tfp_cons[user_data].con, (char*)tfpw_answer_error_string, sizeof(tfpw_answer_error_string));
 }
 
 void tfpw_answer_callback(char *answer, uint8_t length, int32_t user_data) {
@@ -66,7 +66,7 @@ void tfpw_answer_callback(char *answer, uint8_t length, int32_t user_data) {
 		loge("tfpw_answer_callback with invalid state: %d\n", tfp_cons[user_data].state);
 	}
 	tfp_cons[user_data].state = TFP_CON_STATE_SENDING;
-	espconn_sent(tfp_cons[user_data].con, tmp_data, os_strlen(WEBSOCKET_ANSWER_STRING_1) + length + os_strlen(WEBSOCKET_ANSWER_STRING_2));
+	espconn_send(tfp_cons[user_data].con, tmp_data, os_strlen(WEBSOCKET_ANSWER_STRING_1) + length + os_strlen(WEBSOCKET_ANSWER_STRING_2));
 	tfp_cons[user_data].websocket_state = WEBSOCKET_STATE_HANDSHAKE_DONE;
 	tfp_cons[user_data].websocket_to_read = sizeof(WebsocketFrame);
 }

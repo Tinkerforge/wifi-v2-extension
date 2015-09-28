@@ -24,7 +24,7 @@
 #include "uart.h"
 
 void ICACHE_FLASH_ATTR debug_enable(const uint8_t uart) {
-	uart_configure(uart, 115200, UART_PARITY_NONE, UART_STOP_ONE, UART_DATA_EIGHT);
+	uart_configure(uart, 1000000, UART_PARITY_NONE, UART_STOP_ONE, UART_DATA_EIGHT);
 	uart_set_printf(uart);
 	uart_enable(uart);
 }

@@ -26,8 +26,32 @@
 #include "brickd.h"
 #include "osapi.h"
 #include "logging.h"
+#include "user_interface.h"
+#include "ip_addr.h"
+#include "espconn.h"
 
 extern Configuration configuration_current;
+
+// We keep this global, some of the information is set dynamically by callbacks
+GetWifi2StatusReturn gw2sr = {
+	.client_enabled = false,
+	.client_status = 0,
+	.client_ip = {0, 0, 0, 0},
+	.client_subnet_mask = {0, 0, 0, 0},
+	.client_gateway = {0, 0, 0, 0},
+	.client_mac_address = {0, 0, 0, 0, 0, 0},
+	.client_rx_count = 0,
+	.client_tx_count = 0,
+	.client_rssi = 0,
+	.ap_enabled = false,
+	.ap_ip = {0, 0, 0, 0},
+	.ap_subnet_mask = {0, 0, 0, 0},
+	.ap_gateway = {0, 0, 0, 0},
+	.ap_mac_address = {0, 0, 0, 0, 0, 0},
+	.ap_rx_count = 0,
+	.ap_tx_count = 0,
+	.ap_connected_count = 0,
+};
 
 bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t length, const int8_t cid) {
 	const MessageHeader *header = (const MessageHeader*)data;
@@ -143,7 +167,52 @@ void ICACHE_FLASH_ATTR get_wifi2_configuration(const int8_t cid, const GetWifi2C
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *data) {
-	// TODO: Implement me
+	gw2sr.header = data->header;
+	gw2sr.header.length = sizeof(GetWifi2StatusReturn);
+
+	struct ip_info info;
+	wifi_get_ip_info(STATION_IF, &info);
+	gw2sr.client_ip[0] = ip4_addr1(&info.ip);
+	gw2sr.client_ip[1] = ip4_addr2(&info.ip);
+	gw2sr.client_ip[2] = ip4_addr3(&info.ip);
+	gw2sr.client_ip[3] = ip4_addr4(&info.ip);
+	gw2sr.client_subnet_mask[0] = ip4_addr1(&info.netmask);
+	gw2sr.client_subnet_mask[1] = ip4_addr2(&info.netmask);
+	gw2sr.client_subnet_mask[2] = ip4_addr3(&info.netmask);
+	gw2sr.client_subnet_mask[3] = ip4_addr4(&info.netmask);
+	gw2sr.client_gateway[0] = ip4_addr1(&info.gw);
+	gw2sr.client_gateway[1] = ip4_addr2(&info.gw);
+	gw2sr.client_gateway[2] = ip4_addr3(&info.gw);
+	gw2sr.client_gateway[3] = ip4_addr4(&info.gw);
+
+	wifi_get_ip_info(SOFTAP_IF, &info);
+	gw2sr.ap_ip[0] = ip4_addr1(&info.ip);
+	gw2sr.ap_ip[1] = ip4_addr2(&info.ip);
+	gw2sr.ap_ip[2] = ip4_addr3(&info.ip);
+	gw2sr.ap_ip[3] = ip4_addr4(&info.ip);
+	gw2sr.ap_subnet_mask[0] = ip4_addr1(&info.netmask);
+	gw2sr.ap_subnet_mask[1] = ip4_addr2(&info.netmask);
+	gw2sr.ap_subnet_mask[2] = ip4_addr3(&info.netmask);
+	gw2sr.ap_subnet_mask[3] = ip4_addr4(&info.netmask);
+	gw2sr.ap_gateway[0] = ip4_addr1(&info.gw);
+	gw2sr.ap_gateway[1] = ip4_addr2(&info.gw);
+	gw2sr.ap_gateway[2] = ip4_addr3(&info.gw);
+	gw2sr.ap_gateway[3] = ip4_addr4(&info.gw);
+
+	wifi_get_macaddr(STATION_IF, gw2sr.client_mac_address);
+	wifi_get_macaddr(SOFTAP_IF, gw2sr.ap_mac_address);
+
+	gw2sr.client_enabled = configuration_current.client_enable;
+	gw2sr.ap_enabled = configuration_current.ap_enable;
+
+	gw2sr.client_rssi = wifi_station_get_rssi();
+
+	gw2sr.client_status = wifi_station_get_connect_status();
+
+
+	gw2sr.ap_connected_count = wifi_softap_get_station_num();
+
+	com_send(&gw2sr, sizeof(GetWifi2StatusReturn), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_client_configuration(const int8_t cid, const SetWifi2ClientConfiguration *data) {
@@ -212,6 +281,7 @@ void ICACHE_FLASH_ATTR set_wifi2_ap_configuration(const int8_t cid, const SetWif
 	os_memcpy(configuration_current.ap_gateway, data->gateway, 4);
 	configuration_current.ap_encryption = data->encryption;
 	configuration_current.ap_hidden     = data->hidden;
+	configuration_current.ap_channel    = data->channel;
 	os_memcpy(configuration_current.ap_mac_address, data->mac_address, 6);
 
 	com_return_setter(cid, data);
@@ -229,6 +299,7 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_configuration(const int8_t cid, const GetWif
 	os_memcpy(gw2apcr.gateway, configuration_current.ap_gateway, 4);
 	gw2apcr.encryption    = configuration_current.ap_encryption;
 	gw2apcr.hidden        = configuration_current.ap_hidden;
+	gw2apcr.channel       = configuration_current.ap_channel;
 	os_memcpy(gw2apcr.mac_address, configuration_current.ap_mac_address, 6);
 
 	com_send(&gw2apcr, sizeof(GetWifi2APConfigurationReturn), cid);

@@ -23,7 +23,7 @@ SDK_BASE	?= ../toolchain/esp-open-sdk/sdk/
 WEBPAGE     ?= ../toolchain/libesphttpd/webpages.espfs
 
 # esptool.py path and port
-ESPTOOL		?= /home/olaf/ee/wifi-v2-extension/tests/tf_esptool.py # esptool.py
+ESPTOOL		?= ../tests/tf_esptool.py # esptool.py
 ESPPORT		?= /dev/ttyUSB0
 
 # name for the target project
@@ -43,11 +43,11 @@ CFLAGS		= -std=c99 -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inlin
 LDFLAGS		= -L../toolchain/libesphttpd -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
 # linker script used for the above linker step
-LD_SCRIPT	= eagle.app.v6.new.2048.ld 
+LD_SCRIPT	= wifi_v2.ld
 
 # various paths from the SDK used in this project
 SDK_LIBDIR	= lib
-SDK_LDDIR	= ld
+SDK_LDDIR	= ../../../software/src/ld
 SDK_INCDIR	= include include/json
 
 # we create two different files for uploading into the flash

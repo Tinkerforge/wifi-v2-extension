@@ -3,7 +3,7 @@
   (general
     (links 154)
     (no_connects 0)
-    (area 131.027169 88.901269 171.126151 129.000251)
+    (area 130.218659 88.095299 281.571382 165.442583)
     (thickness 1.6002)
     (drawings 56)
     (tracks 625)
@@ -655,6 +655,7 @@
   (module kicad-libraries:SOIC8 (layer Rückseite) (tedit 547F003A) (tstamp 55B6A6BD)
     (at 151.075 116.95 90)
     (path /4CC04613)
+    (attr smd)
     (fp_text reference U1 (at 3.29946 -2.60096 90) (layer B.SilkS)
       (effects (font (size 0.29972 0.29972) (thickness 0.0762)) (justify mirror))
     )
@@ -688,6 +689,7 @@
   (module kicad-libraries:ESP8266_WROOM02 (layer Vorderseite) (tedit 55B5F001) (tstamp 55B6A6CF)
     (at 151.075 118.45 180)
     (path /55B60A24)
+    (attr smd)
     (fp_text reference U2 (at 0 0.5 180) (layer F.SilkS)
       (effects (font (size 1 1) (thickness 0.15)))
     )
@@ -802,6 +804,7 @@
 
   (module kicad-libraries:Logo_31x31 (layer Vorderseite) (tedit 4F1D86B0) (tstamp 55B6EC81)
     (at 134.525 118.65)
+    (attr smd)
     (fp_text reference G*** (at 1.34874 2.97434) (layer F.SilkS) hide
       (effects (font (size 0.29972 0.29972) (thickness 0.0762)))
     )
@@ -6338,6 +6341,7 @@
 
   (module kicad-libraries:WEEE_7mm_back (layer Rückseite) (tedit 0) (tstamp 55B78F87)
     (at 143.775 97.95)
+    (attr smd)
     (fp_text reference VAL (at 0 0) (layer B.SilkS) hide
       (effects (font (size 1.143 1.143) (thickness 0.1778)) (justify mirror))
     )
@@ -6766,6 +6770,7 @@
 
   (module kicad-libraries:CE_5mm (layer Rückseite) (tedit 0) (tstamp 55B7F908)
     (at 158.375 97.95 180)
+    (attr smd)
     (fp_text reference VAL (at 0 0 180) (layer B.SilkS) hide
       (effects (font (size 1.143 1.143) (thickness 0.1778)) (justify mirror))
     )
@@ -7124,6 +7129,7 @@
   (module kicad-libraries:DFN16-33x135 (layer Rückseite) (tedit 54AE5E41) (tstamp 5642DB41)
     (at 163.775 120.45 90)
     (path /5641FE90)
+    (attr smd)
     (fp_text reference FILTER1 (at 0 0.5 90) (layer B.SilkS)
       (effects (font (size 0.127 0.127) (thickness 0.03175)) (justify mirror))
     )

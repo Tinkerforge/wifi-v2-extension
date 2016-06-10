@@ -84,6 +84,7 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		case FID_SET_WIFI2_AP_PASSWORD:           set_wifi2_ap_password(cid, (SetWifi2APPassword*)data);                     return true;
 		case FID_GET_WIFI2_AP_PASSWORD:           get_wifi2_ap_password(cid, (GetWifi2APPassword*)data);                     return true;
 		case FID_SAVE_WIFI2_CONFIGURATION:        save_wifi2_configuration(cid, (SaveWifi2Configuration*)data);              return true;
+		case FID_GET_WIFI2_FIRMWARE_VERSION:      get_wifi2_firmware_version(cid, (GetWifi2FirmwareVersion*)data);           return true;
 	}
 
 	return false;
@@ -328,4 +329,16 @@ void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi
 	sw2cr.value         = configuration_save_to_eeprom();
 
 	com_send(&sw2cr, sizeof(SaveWifi2ConfigurationReturn), cid);
+}
+
+void ICACHE_FLASH_ATTR get_wifi2_firmware_version(const int8_t cid, const GetWifi2FirmwareVersion *data) {
+	GetWifi2FirmwareVersionReturn gw2fvr;
+
+	gw2fvr.header        = data->header;
+	gw2fvr.header.length = sizeof(GetWifi2FirmwareVersionReturn);
+	gw2fvr.version_fw[0] = FIRMWARE_VERSION_MAJOR;
+	gw2fvr.version_fw[1] = FIRMWARE_VERSION_MINOR;
+	gw2fvr.version_fw[2] = FIRMWARE_VERSION_REVISION;
+
+	com_send(&gw2fvr, sizeof(GetWifi2FirmwareVersionReturn), cid);
 }

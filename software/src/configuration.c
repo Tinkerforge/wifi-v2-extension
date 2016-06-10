@@ -53,7 +53,7 @@ const Configuration configuration_default = {
 	.client_gateway = {0, 0, 0, 0},
 	.client_mac_address = {0, 0, 0, 0, 0, 0},
 	.client_bssid = {0, 0, 0, 0, 0, 0},
-	.client_hostname = "wifi-extension-v2x",
+	.client_hostname = "wifi-extension-v2",
 	.client_password = "25842149320894763607",
 
 	// AP configuration

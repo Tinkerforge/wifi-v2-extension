@@ -60,6 +60,7 @@ void ICACHE_FLASH_ATTR com_return_setter(const int8_t cid, const void *data);
 #define FID_SET_WIFI2_AP_PASSWORD 95
 #define FID_GET_WIFI2_AP_PASSWORD 96
 #define FID_SAVE_WIFI2_CONFIGURATION 97
+#define FID_GET_WIFI2_FIRMWARE_VERSION 98
 
 typedef struct {
 	MessageHeader header;
@@ -231,6 +232,15 @@ typedef struct {
 	uint8_t value;
 } __attribute__((__packed__)) SaveWifi2ConfigurationReturn;
 
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) GetWifi2FirmwareVersion;
+
+typedef struct {
+	MessageHeader header;
+	uint8_t version_fw[3];
+} __attribute__((__packed__)) GetWifi2FirmwareVersionReturn;
+
 void ICACHE_FLASH_ATTR set_wifi2_authentication_secret(const int8_t cid, const SetWifi2AuthenticationSecret *data);
 void ICACHE_FLASH_ATTR get_wifi2_authentication_secret(const int8_t cid, const GetWifi2AuthenticationSecret *data);
 void ICACHE_FLASH_ATTR set_wifi2_configuration(const int8_t cid, const SetWifi2Configuration *data);
@@ -247,5 +257,6 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_configuration(const int8_t cid, const GetWif
 void ICACHE_FLASH_ATTR set_wifi2_ap_password(const int8_t cid, const SetWifi2APPassword *data);
 void ICACHE_FLASH_ATTR get_wifi2_ap_password(const int8_t cid, const GetWifi2APPassword *data);
 void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi2Configuration *data);
+void ICACHE_FLASH_ATTR get_wifi2_firmware_version(const int8_t cid, const GetWifi2FirmwareVersion *data);
 
 #endif

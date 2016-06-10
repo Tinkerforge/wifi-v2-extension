@@ -29,7 +29,9 @@
 #include "user_interface.h"
 #include "ip_addr.h"
 #include "espconn.h"
+#include "gpio.h"
 
+bool wifi2_status_led_enabled = true;
 extern Configuration configuration_current;
 
 // We keep this global, some of the information is set dynamically by callbacks
@@ -85,6 +87,9 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		case FID_GET_WIFI2_AP_PASSWORD:           get_wifi2_ap_password(cid, (GetWifi2APPassword*)data);                     return true;
 		case FID_SAVE_WIFI2_CONFIGURATION:        save_wifi2_configuration(cid, (SaveWifi2Configuration*)data);              return true;
 		case FID_GET_WIFI2_FIRMWARE_VERSION:      get_wifi2_firmware_version(cid, (GetWifi2FirmwareVersion*)data);           return true;
+		case FID_ENABLE_WIFI2_STATUS_LED:         enable_wifi2_status_led(cid, (EnableWifi2StatusLED*)data);                 return true;
+		case FID_DISABLE_WIFI2_STATUS_LED:        disable_wifi2_status_led(cid, (DisableWifi2StatusLED*)data);               return true;
+		case FID_IS_WIFI2_STATUS_LED_ENABLED:     is_wifi2_status_led_enabled(cid, (IsWifi2StatusLEDEnabled*)data);          return true;
 	}
 
 	return false;
@@ -341,4 +346,31 @@ void ICACHE_FLASH_ATTR get_wifi2_firmware_version(const int8_t cid, const GetWif
 	gw2fvr.version_fw[2] = FIRMWARE_VERSION_REVISION;
 
 	com_send(&gw2fvr, sizeof(GetWifi2FirmwareVersionReturn), cid);
+}
+
+void ICACHE_FLASH_ATTR enable_wifi2_status_led(const int8_t cid, const EnableWifi2StatusLED *data) {
+	if(!wifi2_status_led_enabled) {
+		wifi_status_led_install(12, PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
+		wifi2_status_led_enabled = true;
+	}
+	com_return_setter(cid, data);
+}
+
+void ICACHE_FLASH_ATTR disable_wifi2_status_led(const int8_t cid, const DisableWifi2StatusLED *data) {
+	if(wifi2_status_led_enabled) {
+		wifi_status_led_uninstall();
+		gpio_output_set(BIT12, 0, BIT12, 0);
+		wifi2_status_led_enabled = false;
+	}
+	com_return_setter(cid, data);
+}
+
+void ICACHE_FLASH_ATTR is_wifi2_status_led_enabled(const int8_t cid, const IsWifi2StatusLEDEnabled *data) {
+	IsWifi2StatusLEDEnabledReturn iw2sleder;
+
+	iw2sleder.header        = data->header;
+	iw2sleder.header.length = sizeof(IsWifi2StatusLEDEnabledReturn);
+	iw2sleder.enabled       = wifi2_status_led_enabled;
+
+	com_send(&iw2sleder, sizeof(IsWifi2StatusLEDEnabledReturn), cid);
 }

@@ -61,6 +61,9 @@ void ICACHE_FLASH_ATTR com_return_setter(const int8_t cid, const void *data);
 #define FID_GET_WIFI2_AP_PASSWORD 96
 #define FID_SAVE_WIFI2_CONFIGURATION 97
 #define FID_GET_WIFI2_FIRMWARE_VERSION 98
+#define FID_ENABLE_WIFI2_STATUS_LED 99
+#define FID_DISABLE_WIFI2_STATUS_LED 100
+#define FID_IS_WIFI2_STATUS_LED_ENABLED 101
 
 typedef struct {
 	MessageHeader header;
@@ -241,6 +244,23 @@ typedef struct {
 	uint8_t version_fw[3];
 } __attribute__((__packed__)) GetWifi2FirmwareVersionReturn;
 
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) EnableWifi2StatusLED;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) DisableWifi2StatusLED;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) IsWifi2StatusLEDEnabled;
+
+typedef struct {
+	MessageHeader header;
+	bool enabled;
+} __attribute__((__packed__)) IsWifi2StatusLEDEnabledReturn;
+
 void ICACHE_FLASH_ATTR set_wifi2_authentication_secret(const int8_t cid, const SetWifi2AuthenticationSecret *data);
 void ICACHE_FLASH_ATTR get_wifi2_authentication_secret(const int8_t cid, const GetWifi2AuthenticationSecret *data);
 void ICACHE_FLASH_ATTR set_wifi2_configuration(const int8_t cid, const SetWifi2Configuration *data);
@@ -258,5 +278,8 @@ void ICACHE_FLASH_ATTR set_wifi2_ap_password(const int8_t cid, const SetWifi2APP
 void ICACHE_FLASH_ATTR get_wifi2_ap_password(const int8_t cid, const GetWifi2APPassword *data);
 void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi2Configuration *data);
 void ICACHE_FLASH_ATTR get_wifi2_firmware_version(const int8_t cid, const GetWifi2FirmwareVersion *data);
+void ICACHE_FLASH_ATTR enable_wifi2_status_led(const int8_t cid, const EnableWifi2StatusLED *data);
+void ICACHE_FLASH_ATTR disable_wifi2_status_led(const int8_t cid, const DisableWifi2StatusLED *data);
+void ICACHE_FLASH_ATTR is_wifi2_status_led_enabled(const int8_t cid, const IsWifi2StatusLEDEnabled *data);
 
 #endif

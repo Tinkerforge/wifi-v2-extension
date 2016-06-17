@@ -17,10 +17,13 @@
 BUILD_BASE	= build
 FW_BASE		= firmware
 
+# specify libesphttpd path (This is Tinkerforge WIFI Extension 2.0 related)
+LIBESPHTTPD_PATH = ../toolchain/libesphttpd
+
 # base directory of the ESP8266 SDK package, absolute
 SDK_BASE	?= ../toolchain/esp-open-sdk/sdk/
 
-WEBPAGE     ?= ../toolchain/libesphttpd/webpages.espfs
+WEBPAGE     ?= $(LIBESPHTTPD_PATH)/webpages.espfs
 
 # esptool.py path and port
 ESPTOOL		?= ../tests/tf_esptool.py # esptool.py
@@ -31,7 +34,7 @@ TARGET		= app
 
 # which modules (subdirectories) of the project to include in compiling
 MODULES		= src src/drivers
-EXTRA_INCDIR    = include ../toolchain/libesphttpd/include
+EXTRA_INCDIR    = include $(LIBESPHTTPD_PATH)/include
 
 # libraries used in this project, mainly provided by the SDK
 LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd
@@ -40,7 +43,7 @@ LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd
 CFLAGS		= -std=c99 -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
 
 # linker flags used to generate the main object file
-LDFLAGS		= -L../toolchain/libesphttpd -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
+LDFLAGS		= -L$(LIBESPHTTPD_PATH)/ -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
 
 # linker script used for the above linker step
 LD_SCRIPT	= wifi_v2.ld
@@ -60,7 +63,6 @@ FW_FILE_3_ADDR	= 0x100000
 CC		:= xtensa-lx106-elf-gcc
 AR		:= xtensa-lx106-elf-ar
 LD		:= xtensa-lx106-elf-gcc
-
 
 ####
 #### no user configurable options below here
@@ -107,7 +109,11 @@ endef
 
 .PHONY: all checkdirs flash clean
 
-all: checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_Z)
+all: buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_Z)
+
+buildlibesphttpd:
+	make clean -C $(LIBESPHTTPD_PATH)
+	make -C $(LIBESPHTTPD_PATH)
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"

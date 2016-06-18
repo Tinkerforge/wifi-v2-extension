@@ -25,6 +25,7 @@
 
 #include "configuration.h"
 
+#include "platform.h"
 #include "httpd.h"
 #include "httpdespfs.h"
 #include "espfs.h"

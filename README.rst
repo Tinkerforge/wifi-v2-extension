@@ -53,8 +53,6 @@ Additionally we use libesphttpd::
 
  cd toolchain
  git clone --recursive http://git.spritesserver.nl/libesphttpd.git/
- cd libesphttpd
- make SDK_BASE=../esp-open-sdk/sdk/ COMPRESS_W_YUI=yes
 
 To be able to build the extension firmware using libesphttpd a patch must be applied to the ESP8266 SDK. This assumes that the toolchain is already successfully built. This patch applies for current ESP8266 SDK version 1.5.4::
 

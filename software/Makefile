@@ -112,8 +112,8 @@ endef
 all: buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_Z)
 
 buildlibesphttpd:
-	make clean -C $(LIBESPHTTPD_PATH)
-	make -C $(LIBESPHTTPD_PATH)
+	make -C $(LIBESPHTTPD_PATH) clean
+	make -C $(LIBESPHTTPD_PATH) SDK_BASE=../esp-open-sdk/sdk/ COMPRESS_W_YUI=yes
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"

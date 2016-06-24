@@ -59,6 +59,11 @@ To be able to build the extension firmware using libesphttpd a patch must be app
  cd software
  patch -b -N -d ../toolchain/esp-open-sdk/sdk -p1 < esp8266sdk-c_types.patch
 
+libesphttpd must also be patched::
+
+ cd software
+ patch -b -N -d ../toolchain/libesphttpd -p1 < libesphttpd-Makefile.patch
+
 Build
 -----
 

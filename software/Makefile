@@ -17,6 +17,9 @@
 BUILD_BASE	= build
 FW_BASE		= firmware
 
+# specify html directory patch for libesphttpd (This is Tinkerforge WIFI Extension 2.0 related)
+LIBESPHTTPD_HTML = ../../software/web_interface
+
 # specify libesphttpd path (This is Tinkerforge WIFI Extension 2.0 related)
 LIBESPHTTPD_PATH = ../toolchain/libesphttpd
 
@@ -113,7 +116,7 @@ all: buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2) $(FW_FIL
 
 buildlibesphttpd:
 	make -C $(LIBESPHTTPD_PATH) clean
-	make -C $(LIBESPHTTPD_PATH) SDK_BASE=../esp-open-sdk/sdk/ COMPRESS_W_YUI=yes
+	make -C $(LIBESPHTTPD_PATH) HTMLDIR=$(LIBESPHTTPD_HTML) SDK_BASE=../esp-open-sdk/sdk/ COMPRESS_W_YUI=yes
 
 $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"

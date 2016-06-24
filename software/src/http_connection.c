@@ -30,12 +30,14 @@
 #include "httpdespfs.h"
 #include "espfs.h"
 #include "logging.h"
+#include "web_interface.h"
 
 extern Configuration configuration_current;
 
 HttpdBuiltInUrl builtInUrls[]={
 	{"*", cgiRedirectApClientToHostname, configuration_current.client_hostname},
-	{"/", cgiRedirect, "/index.html"},
+	//{"/", cgiRedirect, "/index.html"},
+	{"/", myTest, "/index.html"},
 	{"*", cgiEspFsHook, NULL}, //Catch-all cgi function for the filesystem
 	{NULL, NULL, NULL}
 };

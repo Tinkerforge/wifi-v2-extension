@@ -1,14 +1,11 @@
-body
-{
-  padding-top: 105px;
+body {
+    padding-top: 105px;
 }
 
-.navbar-brand
-{
-  padding-top: 12px;
+.navbar-brand {
+    padding-top: 12px;
 }
 
-.spacer-bottom
-{ 
-  margin-bottom: 24px;
+.spacer-bottom {
+    margin-bottom: 24px;
 }

@@ -49,4 +49,18 @@ $(document).ready(function()
                 "hidden");
         }
     });
+    function doAJAXPost(e)
+    {
+        $.post("/",
+                {
+                    name: "Donald Duck",
+                    city: "Duckburg"
+                },
+                function(data, status)
+                {
+                    console.log(data + ' :: ' + status);
+                }
+            );
+    }
+    setInterval(doAJAXPost, 3000);
 });

@@ -34,15 +34,24 @@
 
 extern Configuration configuration_current;
 
-HttpdBuiltInUrl builtInUrls[]={
-	{"*", cgiRedirectApClientToHostname, configuration_current.client_hostname},
-	//{"/", cgiRedirect, "/index.html"},
-	{"/", myTest, "/index.html"},
-	{"*", cgiEspFsHook, NULL}, //Catch-all cgi function for the filesystem
+HttpdBuiltInUrl builtInUrls[] = {
+	{"/", cgiDoRoot, NULL},
+	{"/js/*", cgiEspFsHook, NULL},
+	{"/css/*", cgiEspFsHook, NULL},
+	{"/fonts/*", cgiEspFsHook, NULL},
+	{"/resources/*", cgiEspFsHook, NULL},
+	{"/index.html", cgiDoRoot, NULL},
+	{"/authenticate.html", cgiEspFsHook, "/authenticate.html"},
+	{"/get_status.cgi", cgiGetStatus, NULL},
+	{"/end_session.cgi", cgiEndSession, NULL},
+	{"/authenticate.cgi", cgiDoAuthentication, NULL},
+	{"/update_settings.cgi", cgiUpdateSettings, NULL},
+	{"*", cgiDo404, NULL},
 	{NULL, NULL, NULL}
 };
 
 void ICACHE_FLASH_ATTR http_open_connection(void) {
 	espFsInit((void*)(HTTP_ESPFS_POS));
+	initializeWebInterfaceSessionTracking();
 	httpdInit(builtInUrls, configuration_current.general_website_port);
 }

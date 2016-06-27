@@ -232,7 +232,7 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	uint8_t value;
+	uint8_t result;
 } __attribute__((__packed__)) SaveWifi2ConfigurationReturn;
 
 typedef struct {

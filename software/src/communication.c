@@ -215,7 +215,6 @@ void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *
 
 	gw2sr.client_status = wifi_station_get_connect_status();
 
-
 	gw2sr.ap_connected_count = wifi_softap_get_station_num();
 
 	com_send(&gw2sr, sizeof(GetWifi2StatusReturn), cid);
@@ -331,7 +330,7 @@ void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi
 
 	sw2cr.header        = data->header;
 	sw2cr.header.length = sizeof(SaveWifi2ConfigurationReturn);
-	sw2cr.value         = configuration_save_to_eeprom();
+	sw2cr.result        = configuration_save_to_eeprom();
 
 	com_send(&sw2cr, sizeof(SaveWifi2ConfigurationReturn), cid);
 }

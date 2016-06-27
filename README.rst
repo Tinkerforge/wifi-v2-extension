@@ -35,6 +35,7 @@ Toolchain
 Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk
 into toolchain/ directory::
 
+ sudo apt-get install gperf
  mkdir toolchain
  cd toolchain
  git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
@@ -54,7 +55,9 @@ Additionally we use libesphttpd::
  cd toolchain
  git clone --recursive http://git.spritesserver.nl/libesphttpd.git/
 
-To be able to build the extension firmware using libesphttpd a patch must be applied to the ESP8266 SDK. This assumes that the toolchain is already successfully built. This patch applies for current ESP8266 SDK version 1.5.4::
+To be able to build the extension firmware using libesphttpd a patch must be
+applied to the ESP8266 SDK. This assumes that the toolchain is already
+successfully built. This patch applies for current ESP8266 SDK version 1.5.4::
 
  cd software
  patch -b -N -d ../toolchain/esp-open-sdk/sdk -p1 < esp8266sdk-c_types.patch
@@ -67,7 +70,8 @@ libesphttpd must also be patched::
 Build
 -----
 
-Provided that all the steps of the Toolchain section was followed properly the extension firmware can be built with::
+Provided that all the steps of the Toolchain section was followed properly the
+extension firmware can be built with::
 
  cd software
  make clean

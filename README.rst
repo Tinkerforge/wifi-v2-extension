@@ -1,8 +1,6 @@
 WIFI Extension 2.0
 ==================
 
-**This Extension is currently Work In Progress.**
-
 This repository contains the hardware design files.
 The software is included in the Master Brick software
 and can be found at https://github.com/Tinkerforge/master-brick

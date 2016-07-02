@@ -4,3 +4,4 @@
 *.bin
 *.zbin
 toolchain/
+software/web_interface/build

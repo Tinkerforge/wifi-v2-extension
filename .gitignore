@@ -4,4 +4,6 @@
 *.bin
 *.zbin
 toolchain/
+combined.js
+combined.css
 software/web_interface/build

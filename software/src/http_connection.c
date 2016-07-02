@@ -35,23 +35,23 @@
 extern Configuration configuration_current;
 
 HttpdBuiltInUrl builtInUrls[] = {
-	{"/", cgiDoRoot, NULL},
+	{"/", cgiRoot, NULL},
 	{"/js/*", cgiEspFsHook, NULL},
 	{"/css/*", cgiEspFsHook, NULL},
 	{"/fonts/*", cgiEspFsHook, NULL},
 	{"/resources/*", cgiEspFsHook, NULL},
-	{"/index.html", cgiDoRoot, NULL},
-	{"/authenticate.html", cgiEspFsHook, "/authenticate.html"},
+	{"/index.html", cgiRoot, NULL},
+	{"/authenticate.html", cgiEspFsHook, NULL},
 	{"/get_status.cgi", cgiGetStatus, NULL},
 	{"/end_session.cgi", cgiEndSession, NULL},
-	{"/authenticate.cgi", cgiDoAuthentication, NULL},
+	{"/authenticate.cgi", cgiAuthenticate, NULL},
 	{"/update_settings.cgi", cgiUpdateSettings, NULL},
-	{"*", cgiDo404, NULL},
+	{"*", cgi404, NULL},
 	{NULL, NULL, NULL}
 };
 
 void ICACHE_FLASH_ATTR http_open_connection(void) {
 	espFsInit((void*)(HTTP_ESPFS_POS));
-	initializeWebInterfaceSessionTracking();
+	doInitializeWebInterfaceSessionTracking();
 	httpdInit(builtInUrls, configuration_current.general_website_port);
 }

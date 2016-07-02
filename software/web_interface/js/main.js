@@ -49,18 +49,30 @@ $(document).ready(function()
                 "hidden");
         }
     });
+
     function doAJAXPost(e)
     {
-        $.post("/",
-                {
-                    name: "Donald Duck",
-                    city: "Duckburg"
-                },
-                function(data, status)
-                {
-                    console.log(data + ' :: ' + status);
-                }
-            );
+        $.ajax({
+            type: 'POST',
+            url: '/get_status.cgi',
+            data: {'SID': 'sessionID', 'RID': 1, 'DATA': 'optionalDATA'},
+            dataType: "json",
+            timeout: 16000, // in milliseconds
+            success: function(data) {
+                // process data here
+                console.log('*** success(), data = ' + data);
+                console.log(document.cookie);
+                setTimeout(doAJAXPost, 1000);
+            },
+            error: function(request, status, err) {
+                console.log('*** error(), request = ' + request);
+                console.log('*** error(), status = ' + status);
+                console.log('*** error(), err = ' + err);
+                console.log(document.cookie);
+                setTimeout(doAJAXPost, 1000);
+            }
+        });
     }
-    setInterval(doAJAXPost, 3000);
+
+    setTimeout(doAJAXPost, 1000);
 });

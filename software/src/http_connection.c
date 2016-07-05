@@ -35,23 +35,19 @@
 extern Configuration configuration_current;
 
 HttpdBuiltInUrl builtInUrls[] = {
-	{"/", cgiRoot, NULL},
-	{"/js/*", cgiEspFsHook, NULL},
-	{"/css/*", cgiEspFsHook, NULL},
-	{"/fonts/*", cgiEspFsHook, NULL},
-	{"/resources/*", cgiEspFsHook, NULL},
-	{"/index.html", cgiRoot, NULL},
-	{"/authenticate.html", cgiEspFsHook, NULL},
-	{"/get_status.cgi", cgiGetStatus, NULL},
-	{"/end_session.cgi", cgiEndSession, NULL},
-	{"/authenticate.cgi", cgiAuthenticate, NULL},
-	{"/update_settings.cgi", cgiUpdateSettings, NULL},
-	{"*", cgi404, NULL},
+	{"/", cgi_root, NULL},
+	{"/index.html", cgi_root, NULL},
+	{"/authenticate.html", cgi_do_authenticate_html, NULL},
+	{"/get_status.cgi", cgi_get_status, NULL},
+	{"/end_session.cgi", cgi_end_session, NULL},
+	{"/authenticate.cgi", cgi_authenticate, NULL},
+	{"/update_settings.cgi", cgi_update_settings, NULL},
+	{"*", cgi_404, NULL},
 	{NULL, NULL, NULL}
 };
 
 void ICACHE_FLASH_ATTR http_open_connection(void) {
 	espFsInit((void*)(HTTP_ESPFS_POS));
-	doInitializeWebInterfaceSessionTracking();
+	do_initialize_web_interface_session_tracking();
 	httpdInit(builtInUrls, configuration_current.general_website_port);
 }

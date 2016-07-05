@@ -2,67 +2,43 @@
 #include "c_types.h"
 
 // Defines.
-#define MAX_WEB_INTERFACE_SESSIONS 50
+#define JSON_REQUEST_AUTHENTICATE 1
+#define JSON_REQUEST_GET_STATUS 2
+#define JSON_REQUEST_UPDATE_SETTINGS 3
+#define JSON_REQUEST_END_SESSION 4
+
+#define JSON_STATUS_OK 1
+#define JSON_STATUS_FAILED 2
+
+#define HEADER_FIELD_TYPE_STRING 1
+#define HEADER_FIELD_TYPE_NUMERIC 2
+#define GENERIC_BUFFER_SIZE 1024
+#define MAX_ACTIVE_SESSION_COOKIES 32
 
 // Global variables.
-extern unsigned long active_sessions[MAX_WEB_INTERFACE_SESSIONS];
+extern unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
 
 // Structs.
-struct getStatus {
-	unsigned char client_enabled[4];
-	unsigned char client_status;
-	int client_signal_strength;
-	unsigned char client_ip0;
-	unsigned char client_ip1;
-	unsigned char client_ip2;
-	unsigned char client_ip3;
-	unsigned char client_subnet_mask0;
-	unsigned char client_subnet_mask1;
-	unsigned char client_subnet_mask2;
-	unsigned char client_subnet_mask3;
-	unsigned char client_gateway0;
-	unsigned char client_gateway1;
-	unsigned char client_gateway2;
-	unsigned char client_gateway3;
-	unsigned char client_mac0;
-	unsigned char client_mac1;
-	unsigned char client_mac2;
-	unsigned char client_mac3;
-	unsigned char client_mac4;
-	unsigned char client_mac5;
-	int client_rx_count;
-	int client_tx_count;
-	char ap_enabled[4];
-	int ap_connected_clients;
-	unsigned char ap_ip0;
-	unsigned char ap_ip1;
-	unsigned char ap_ip2;
-	unsigned char ap_ip3;
-	unsigned char ap_subnet_mask0;
-	unsigned char ap_subnet_mask1;
-	unsigned char ap_subnet_mask2;
-	unsigned char ap_subnet_mask3;
-	unsigned char ap_gateway0;
-	unsigned char ap_gateway1;
-	unsigned char ap_gateway2;
-	unsigned char ap_gateway3;
-	unsigned char ap_mac0;
-	unsigned char ap_mac1;
-	unsigned char ap_mac2;
-	unsigned char ap_mac3;
-	unsigned char ap_mac4;
-	unsigned char ap_mac5;
-	int ap_rx_count;
-	int ap_tx_count;
+struct get_status {
 };
 
 // Function prototypes.
-int ICACHE_FLASH_ATTR doGetStatus(struct getStatus *status);
-int ICACHE_FLASH_ATTR cgi404(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR cgiRoot(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR cgiGetStatus(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR cgiEndSession(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR doInitializeWebInterfaceSessionTracking(void);
-int ICACHE_FLASH_ATTR cgiAuthenticate(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR doAuthentication(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR cgiUpdateSettings(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR do_is_auth_enabled(void);
+int ICACHE_FLASH_ATTR do_get_sid(unsigned long *sid);
+int ICACHE_FLASH_ATTR do_get_cookie_field(char *cookie,
+										  char *field,
+										  unsigned char type_field,
+										  void *value);
+int ICACHE_FLASH_ATTR do_has_cookie(HttpdConnData *connection_data,
+								 	char *cookie,
+								  	unsigned long length);
+int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR do_get_status(struct get_status *status);
+int ICACHE_FLASH_ATTR cgi_root(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void);
+int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_do_authenticate_html(HttpdConnData *connection_data);

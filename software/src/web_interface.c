@@ -14,7 +14,11 @@ unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
 int ICACHE_FLASH_ATTR do_get_sid(unsigned long *sid) {
 	for(int i = 0; i < MAX_ACTIVE_SESSION_COOKIES; i++) {
 		if(active_sessions[i] == 0) {
-			*sid = os_random();
+			do {
+				*sid = os_random();
+			}
+			while(*sid <= 0);
+
 			active_sessions[i] = *sid;
 
 			return 1;

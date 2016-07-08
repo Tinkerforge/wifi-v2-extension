@@ -32,7 +32,7 @@
         </style>
     </head>
 
-    <body>
+    <body class="hidden">
         <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
             <div class="container-fluid">
                 <!-- Brand and toggle get grouped for better mobile display -->
@@ -569,6 +569,9 @@
         <script type="text/javascript">
             $(document).ready(function()
             {
+                // Show the body of the page only when the whole page is ready.
+                $("body").toggleClass('hidden show');
+
                 $('#main_toolbar_status').click(function(event)
                 {
                     $('#container_configure').addClass('hidden');

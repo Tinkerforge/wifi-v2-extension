@@ -18,7 +18,7 @@
             /* embed:./css/combined.css */
         </style>
     </head>
-    <body>
+    <body class="hidden">
         <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
             <div class="container-fluid">
                 <div class="navbar-header">
@@ -94,6 +94,9 @@
 
         <script type="text/javascript">
             $(document).ready(function() {
+                // Show the body of the page only when the whole page is ready.
+                $("body").toggleClass('hidden show');
+
                 // Clear all alerts.
                 $("#alert_error").hide();
 

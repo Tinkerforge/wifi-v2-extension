@@ -104,7 +104,7 @@
         </div>
 
         <div class="container show" id="container_client_status">
-            <div class="panel panel-default">
+            <div id="div_panel_client" class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <b>Client Status</b>
@@ -116,7 +116,7 @@
                         <td class="col-xs-6">
                             Enabled:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_client_enabled" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -125,7 +125,7 @@
                         <td class="col-xs-6">
                             Status:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_client_status" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -135,11 +135,11 @@
                             Signal Strength:
                         </td>
                         <td class="col-xs-6">
-                            <div aria-valuemax="100" aria-valuemin="0"
-                            aria-valuenow="2" class=
-                            "progress-bar progress-bar-success" role=
-                            "progressbar" style="min-width: 2em; width: 50%;">
-                                50%
+                            <div id="div_signal_strength" aria-valuemax="100" aria-valuemin="0"
+                            aria-valuenow="0" class=
+                            "progress-bar" role=
+                            "progressbar" style="min-width: 2em; width: 0%;">
+                                0%
                             </div>
                         </td>
                     </tr>
@@ -148,7 +148,7 @@
                         <td class="col-xs-6">
                             IP:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_client_ip" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -157,7 +157,7 @@
                         <td class="col-xs-6">
                             Subnet Mask:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_client_netmask" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -166,7 +166,7 @@
                         <td class="col-xs-6">
                             Gateway:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_client_gateway" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -175,7 +175,7 @@
                         <td class="col-xs-6">
                             MAC Address:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_client_mac" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -184,7 +184,7 @@
                         <td class="col-xs-6">
                             RX Count:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_client_rx" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -193,14 +193,14 @@
                         <td class="col-xs-6">
                             TX Count:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_client_tx" class="col-xs-6">
                             -
                         </td>
                     </tr>
                 </table>
             </div>
 
-            <div class="panel panel-default">
+            <div id="div_panel_ap" class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <b>Access Point Status:</b>
@@ -212,7 +212,7 @@
                         <td class="col-xs-6">
                             Enabled:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_ap_enabled" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -221,7 +221,7 @@
                         <td class="col-xs-6">
                             Connected Clients:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_ap_connected_clients" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -230,7 +230,7 @@
                         <td class="col-xs-6">
                             IP:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_ap_ip" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -239,7 +239,7 @@
                         <td class="col-xs-6">
                             Subnet Mask:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_ap_netmask" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -248,7 +248,7 @@
                         <td class="col-xs-6">
                             Gateway:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_ap_gateway" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -257,7 +257,7 @@
                         <td class="col-xs-6">
                             MAC Address:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_ap_mac" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -266,7 +266,7 @@
                         <td class="col-xs-6">
                             RX Count:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_ap_rx" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -275,7 +275,7 @@
                         <td class="col-xs-6">
                             TX Count:
                         </td>
-                        <td class="col-xs-6">
+                        <td id="td_ap_tx" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -567,6 +567,133 @@
         </script>
 
         <script type="text/javascript">
+            function updateStatusGUI(status) {
+                // Client enabled.
+                if(status.data.operating_mode === 1 ||
+                   status.data.operating_mode === 3) {
+                        $('#div_panel_client').addClass('visible');
+                        $('#div_panel_client').removeClass('hidden');
+                        $('#td_client_enabled').html('Yes');
+                }
+                else if(status.data.operating_mode === 2) {
+                    $('#div_panel_client').addClass('hidden');
+                    $('#div_panel_client').removeClass('visible');
+                    $('#td_client_enabled').html('No');
+                }
+                else
+                    $('#td_client_enabled').html('-');
+
+                // Client status.
+                $('#td_client_status').html(status.data.client_status);
+
+                // Signal strength.
+                if(status.data.signal_strength <= 33) {
+                    $('#div_signal_strength').addClass('progress-bar-danger');
+                    $('#div_signal_strength').removeClass('progress-bar-warning');
+                    $('#div_signal_strength').removeClass('progress-bar-success');
+                }
+                else if(status.data.signal_strength <= 66) {
+                    $('#div_signal_strength').addClass('progress-bar-warning');
+                    $('#div_signal_strength').removeClass('progress-bar-danger');
+                    $('#div_signal_strength').removeClass('progress-bar-success');
+                }
+                else {
+                    $('#div_signal_strength').addClass('progress-bar-success');
+                    $('#div_signal_strength').removeClass('progress-bar-danger');
+                    $('#div_signal_strength').removeClass('progress-bar-warning');
+                }
+
+                $('#div_signal_strength')
+                    .css('width', String(status.data.signal_strength) + '%')
+                    .attr('aria-valuenow', String(status.data.signal_strength));
+                $('#div_signal_strength')
+                    .html(String(status.data.signal_strength) + '%');
+
+                // Client IP.
+                $('#td_client_ip').html(status.data.client_ip);
+
+                // Client subnet mask.
+                $('#td_client_netmask').html(status.data.client_netmask);
+
+                // Client gateway.
+                $('#td_client_gateway').html(status.data.client_gateway);
+
+                // Client MAC.
+                $('#td_client_mac').html(status.data.client_mac);
+
+                // Client RX.
+                $('#td_client_rx').html(status.data.client_rx);
+
+                // Client TX.
+                $('#td_client_tx').html(status.data.client_tx);
+
+                // AP enabled.
+                if(status.data.operating_mode === 2 ||
+                   status.data.operating_mode === 3) {
+                        $('#div_panel_ap').addClass('visible');
+                        $('#div_panel_ap').removeClass('hidden');
+                        $('#td_ap_enabled').html('Yes');
+                }
+                else if(status.data.operating_mode === 1) {
+                    $('#div_panel_ap').addClass('hidden');
+                    $('#div_panel_ap').removeClass('visible');
+                    $('#td_ap_enabled').html('No');
+                }
+                else
+                    $('#td_ap_enabled').html('-');
+
+                // AP connected clients.
+                $('#td_ap_connected_clients').html(status.data.ap_connected_clients);
+
+                // AP IP.
+                $('#td_ap_ip').html(status.data.ap_ip);
+
+                // AP subnet mask.
+                $('#td_ap_netmask').html(status.data.ap_netmask);
+
+                // AP gateway.
+                $('#td_ap_gateway').html(status.data.ap_gateway);
+
+                // AP MAC.
+                $('#td_ap_mac').html(status.data.ap_mac);
+
+                // AP RX.
+                $('#td_ap_rx').html(status.data.ap_rx);
+
+                // AP TX.
+                $('#td_ap_tx').html(status.data.ap_tx);
+            }
+
+            function doAJAXPost(e)
+            {
+                $.ajax({
+                    type: 'POST',
+                    url: '/get_status.cgi',
+                    data: null,
+                    dataType: "json",
+                    timeout: 16000, // in milliseconds
+                    success: function(data) {
+                        // process data here
+                        updateStatusGUI(JSON.parse(JSON.stringify(data)));
+
+                        console.log('*** success(), data.status = ' + data.status);
+                        console.log('cookie: ' + document.cookie);
+                        if(data.status === 2)
+                            window.location.replace(window.location.protocol+'//'+window.location.hostname+'/authenticate.html');
+                        else
+                            setTimeout(doAJAXPost, 4000);
+                    },
+                    error: function(request, status, err) {
+                        console.log('*** error(), responseText = ' + request.responseText);
+                        //console.log('*** error(), request = ' + request);
+                        //console.log('*** error(), status = ' + status);
+                        //console.log('*** error(), err = ' + err);
+                        //console.log('cookie: ' + document.cookie);
+                        setTimeout(doAJAXPost, 4000);
+                    }
+                });
+            }
+
             $(document).ready(function()
             {
                 // Show the body of the page only when the whole page is ready.
@@ -628,43 +755,15 @@
                         url: '/end_session.cgi',
                         data: {'request':4, 'data':null},
                         dataType: 'json',
-                        timeout: 16000, // in milliseconds
+                        timeout: 16000, // In milliseconds.
                         success: function(data) {
-
+                            // Ignored.
                         },
                         error: function(request, status, err) {
-
+                            // Ignored.
                         }
                     });
                 }
-
-                function doAJAXPost(e)
-                {
-                    $.ajax({
-                        type: 'POST',
-                        url: '/get_status.cgi',
-                        data: null,
-                        dataType: "json",
-                        timeout: 16000, // in milliseconds
-                        success: function(data) {
-                            // process data here
-                            console.log('*** success(), data.status = ' + data.status);
-                            console.log('cookie: ' + document.cookie);
-                            if(data.status === 2)
-                                window.location.replace(window.location.protocol+'//'+window.location.hostname+'/authenticate.html');
-                            else
-                                setTimeout(doAJAXPost, 4000);
-                        },
-                        error: function(request, status, err) {
-                            console.log('*** error(), request = ' + request);
-                            console.log('*** error(), status = ' + status);
-                            console.log('*** error(), err = ' + err);
-                            console.log(document.cookie);
-                            window.location.replace(window.location.protocol+'//'+window.location.hostname);
-                        }
-                    });
-                }
-
                 setTimeout(doAJAXPost, 1000);
             });
         </script>

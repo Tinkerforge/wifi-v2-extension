@@ -20,6 +20,18 @@ extern unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
 
 // Structs.
 struct get_status {
+	uint8 operating_mode;
+	char client_status[15];
+	uint8 signal_strength;
+	char client_ip[16];
+	char client_netmask[16];
+	char client_gateway[16];
+	char client_mac[18];
+	uint8 ap_connected_clients;
+	char ap_ip[16];
+	char ap_netmask[16];
+	char ap_gateway[16];
+	char ap_mac[18];
 };
 
 // Function prototypes.
@@ -34,7 +46,8 @@ int ICACHE_FLASH_ATTR do_has_cookie(HttpdConnData *connection_data,
 								  	unsigned long length);
 int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR do_get_status(struct get_status *status);
+int ICACHE_FLASH_ATTR do_get_status(struct get_status *status,
+									unsigned char init_only);
 int ICACHE_FLASH_ATTR cgi_root(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data);

@@ -27,11 +27,15 @@ struct get_status {
 	char client_netmask[16];
 	char client_gateway[16];
 	char client_mac[18];
+	unsigned long client_rx_count;
+	unsigned long client_tx_count;
 	uint8 ap_connected_clients;
 	char ap_ip[16];
 	char ap_netmask[16];
 	char ap_gateway[16];
 	char ap_mac[18];
+	unsigned long ap_rx_count;
+	unsigned long ap_tx_count;
 };
 
 // Function prototypes.

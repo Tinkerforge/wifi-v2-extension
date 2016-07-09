@@ -103,7 +103,9 @@
             </div>
         </div>
 
+        <!-- Main container. -->
         <div class="container show" id="container_client_status">
+            <!-- Client status panel. -->
             <div id="div_panel_client" class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
@@ -184,7 +186,7 @@
                         <td class="col-xs-6">
                             RX Count:
                         </td>
-                        <td id="td_client_rx" class="col-xs-6">
+                        <td id="td_client_rx_count" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -193,13 +195,14 @@
                         <td class="col-xs-6">
                             TX Count:
                         </td>
-                        <td id="td_client_tx" class="col-xs-6">
+                        <td id="td_client_tx_count" class="col-xs-6">
                             -
                         </td>
                     </tr>
                 </table>
             </div>
 
+            <!-- AP status panel. -->
             <div id="div_panel_ap" class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
@@ -266,7 +269,7 @@
                         <td class="col-xs-6">
                             RX Count:
                         </td>
-                        <td id="td_ap_rx" class="col-xs-6">
+                        <td id="td_ap_rx_count" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -275,7 +278,7 @@
                         <td class="col-xs-6">
                             TX Count:
                         </td>
-                        <td id="td_ap_tx" class="col-xs-6">
+                        <td id="td_ap_tx_count" class="col-xs-6">
                             -
                         </td>
                     </tr>
@@ -283,7 +286,9 @@
             </div>
         </div>
 
+        <!-- Configure settings container. -->
         <div class="container hidden" id="container_configure">
+            <!-- Common settings. -->
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
@@ -389,6 +394,7 @@
                 </div>
             </div>
 
+            <!-- Client settings. -->
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
@@ -561,6 +567,7 @@
             <button class="btn btn-block spacer-bottom" type="button">Save WiFi
             Configuration</button>
         </div>
+
         <!-- Placed at the end of the document so the pages load faster -->
         <script type="text/javascript">
             // embed:./js/combined.js
@@ -622,10 +629,10 @@
                 $('#td_client_mac').html(status.data.client_mac);
 
                 // Client RX.
-                $('#td_client_rx').html(status.data.client_rx);
+                $('#td_client_rx_count').html(status.data.client_rx_count);
 
                 // Client TX.
-                $('#td_client_tx').html(status.data.client_tx);
+                $('#td_client_tx_count').html(status.data.client_tx_count);
 
                 // AP enabled.
                 if(status.data.operating_mode === 2 ||
@@ -658,10 +665,10 @@
                 $('#td_ap_mac').html(status.data.ap_mac);
 
                 // AP RX.
-                $('#td_ap_rx').html(status.data.ap_rx);
+                $('#td_ap_rx_count').html(status.data.ap_rx_count);
 
                 // AP TX.
-                $('#td_ap_tx').html(status.data.ap_tx);
+                $('#td_ap_tx_count').html(status.data.ap_tx_count);
             }
 
             function doAJAXPost(e)
@@ -684,11 +691,6 @@
                             setTimeout(doAJAXPost, 4000);
                     },
                     error: function(request, status, err) {
-                        console.log('*** error(), responseText = ' + request.responseText);
-                        //console.log('*** error(), request = ' + request);
-                        //console.log('*** error(), status = ' + status);
-                        //console.log('*** error(), err = ' + err);
-                        //console.log('cookie: ' + document.cookie);
                         setTimeout(doAJAXPost, 4000);
                     }
                 });

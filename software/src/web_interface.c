@@ -3,6 +3,9 @@
 #include "httpdespfs.h"
 #include "web_interface.h"
 #include "configuration.h"
+#include "communication.h"
+
+extern GetWifi2StatusReturn gw2sr;
 
 const char *fmt_response_json = \
 	"{\"request\":%d,\"status\":%d,\"data\":%s}";
@@ -15,11 +18,15 @@ const char *fmt_response_json_status_data = \
 \"client_netmask\":\"%s\", \
 \"client_gateway\":\"%s\", \
 \"client_mac\":\"%s\", \
+\"client_rx_count\":%d, \
+\"client_tx_count\":%d, \
 \"ap_connected_clients\":%d, \
 \"ap_ip\":\"%s\", \
 \"ap_netmask\":\"%s\", \
 \"ap_gateway\":\"%s\", \
-\"ap_mac\":\"%s\"\
+\"ap_mac\":\"%s\", \
+\"ap_rx_count\":%d, \
+\"ap_tx_count\":%d\
 }";
 
 const char *fmt_set_session_cookie = "sid=%lu; expires=0; path=/";
@@ -156,11 +163,15 @@ int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data) {
 				status.client_netmask,
 				status.client_gateway,
 				status.client_mac,
+				status.client_rx_count,
+				status.client_tx_count,
 				status.ap_connected_clients,
 				status.ap_ip,
 				status.ap_netmask,
 				status.ap_gateway,
-				status.ap_mac);
+				status.ap_mac,
+				status.ap_rx_count,
+				status.ap_tx_count);
 
 		sprintf(response,
 				fmt_response_json,
@@ -180,11 +191,15 @@ int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data) {
 				status.client_netmask,
 				status.client_gateway,
 				status.client_mac,
+				status.client_rx_count,
+				status.client_tx_count,
 				status.ap_connected_clients,
 				status.ap_ip,
 				status.ap_netmask,
 				status.ap_gateway,
-				status.ap_mac);
+				status.ap_mac,
+				status.ap_rx_count,
+				status.ap_tx_count);
 
 		sprintf(response,
 				fmt_response_json,
@@ -222,6 +237,11 @@ int ICACHE_FLASH_ATTR do_get_status(struct get_status *status,
 	status->operating_mode = 0;
 	status->signal_strength = 0;
 	status->ap_connected_clients = 0;
+	status->ap_rx_count = gw2sr.ap_rx_count;
+	status->ap_tx_count = gw2sr.ap_tx_count;
+	status->client_rx_count = gw2sr.client_rx_count;
+	status->client_tx_count = gw2sr.client_tx_count;
+
 	strcpy(status->client_status, "-1");
 	strcpy(status->client_ip, "-");
 	strcpy(status->client_netmask, "-");

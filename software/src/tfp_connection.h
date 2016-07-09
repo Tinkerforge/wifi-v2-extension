@@ -69,7 +69,6 @@ void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t leng
 void ICACHE_FLASH_ATTR tfp_open_connection(void);
 bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length);
 void ICACHE_FLASH_ATTR tfp_poll(void);
-void ICACHE_FLASH_ATTR tfp_packet_count_rx(espconn *con);
-void ICACHE_FLASH_ATTR tfp_packet_count_tx(espconn *con);
+void ICACHE_FLASH_ATTR tfp_packet_count(espconn *con, uint8_t direction);
 
 #endif

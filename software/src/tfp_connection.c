@@ -39,6 +39,7 @@ uint8_t tfp_rb_buffer[TFP_RING_BUFFER_SIZE];
 
 TFPConnection tfp_cons[TFP_MAX_CONNECTIONS];
 
+extern GetWifi2StatusReturn gw2sr;
 extern Configuration configuration_current;
 
 #define TFP_RECV_INDEX_LENGTH 4
@@ -62,6 +63,8 @@ void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid) {
 void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
 	espconn *con = (espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
+
+	tfp_packet_count_tx(con);
 
 	if(tfp_con->state == TFP_CON_STATE_CLOSED_AFTER_SEND) {
 		espconn_disconnect(tfp_con->con);
@@ -88,6 +91,8 @@ void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t leng
 void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short len) {
 	espconn *con = (espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
+
+	tfp_packet_count_rx(con);
 
 	for(uint32_t i = 0; i < len; i++) {
 		tfp_con->recv_buffer[tfp_con->recv_buffer_index] = pdata[i];
@@ -341,5 +346,163 @@ void ICACHE_FLASH_ATTR tfp_poll(void) {
 		}
 	} else {
 		logd("tfp_poll send error\n");
+	}
+}
+
+void ICACHE_FLASH_ATTR tfp_packet_count_rx(espconn *con) {
+	uint8 ap_ip[4];
+	uint8 ap_netmask[4];
+	uint8 station_ip[4];
+	uint8 station_netmask[4];
+	uint8 connection_remote_ip[4];
+	struct ip_info info_ap;
+	struct ip_info info_station;
+
+	switch(con->type) {
+		case ESPCONN_TCP:
+			connection_remote_ip[0] = con->proto.tcp->remote_ip[0];
+			connection_remote_ip[1] = con->proto.tcp->remote_ip[1];
+			connection_remote_ip[2] = con->proto.tcp->remote_ip[2];
+			connection_remote_ip[3] = con->proto.tcp->remote_ip[3];
+			break;
+
+		case ESPCONN_UDP:
+			connection_remote_ip[0] = con->proto.udp->remote_ip[0];
+			connection_remote_ip[1] = con->proto.udp->remote_ip[1];
+			connection_remote_ip[2] = con->proto.udp->remote_ip[2];
+			connection_remote_ip[3] = con->proto.udp->remote_ip[3];
+			break;
+
+		default:
+			return;
+	}
+
+	if(configuration_current.ap_enable) {
+		wifi_get_ip_info(SOFTAP_IF, &info_ap);
+
+		ap_ip[0] = ip4_addr1(&info_ap.ip);
+		ap_ip[1] = ip4_addr2(&info_ap.ip);
+		ap_ip[2] = ip4_addr3(&info_ap.ip);
+		ap_ip[3] = ip4_addr4(&info_ap.ip);
+
+		ap_netmask[0] = ip4_addr1(&info_ap.netmask);
+		ap_netmask[1] = ip4_addr2(&info_ap.netmask);
+		ap_netmask[2] = ip4_addr3(&info_ap.netmask);
+		ap_netmask[3] = ip4_addr4(&info_ap.netmask);
+
+		if(((connection_remote_ip[0] & ap_netmask[0]) == \
+			(ap_ip[0] & ap_netmask[0])) &&
+		   ((connection_remote_ip[1] & ap_netmask[1]) == \
+			(ap_ip[1] & ap_netmask[1])) &&
+		   ((connection_remote_ip[2] & ap_netmask[2]) == \
+			(ap_ip[2] & ap_netmask[2])) &&
+		   ((connection_remote_ip[3] & ap_netmask[3]) == \
+			(ap_ip[3] & ap_netmask[3]))) {
+				gw2sr.ap_rx_count++;
+		}
+	}
+
+	if(configuration_current.client_enable) {
+		wifi_get_ip_info(STATION_IF, &info_station);
+
+		station_ip[0] = ip4_addr1(&info_station.ip);
+		station_ip[1] = ip4_addr2(&info_station.ip);
+		station_ip[2] = ip4_addr3(&info_station.ip);
+		station_ip[3] = ip4_addr4(&info_station.ip);
+
+		station_netmask[0] = ip4_addr1(&info_station.netmask);
+		station_netmask[1] = ip4_addr2(&info_station.netmask);
+		station_netmask[2] = ip4_addr3(&info_station.netmask);
+		station_netmask[3] = ip4_addr4(&info_station.netmask);
+
+		if(((connection_remote_ip[0] & station_netmask[0]) == \
+			(station_ip[0] & station_netmask[0])) &&
+		   ((connection_remote_ip[1] & station_netmask[1]) == \
+			(station_ip[1] & station_netmask[1])) &&
+		   ((connection_remote_ip[2] & station_netmask[2]) == \
+			(station_ip[2] & station_netmask[2])) &&
+		   ((connection_remote_ip[3] & station_netmask[3]) == \
+			(station_ip[3] & station_netmask[3]))) {
+				gw2sr.client_rx_count++;
+		}
+	}
+}
+
+void ICACHE_FLASH_ATTR tfp_packet_count_tx(espconn *con) {
+	uint8 ap_ip[4];
+	uint8 ap_netmask[4];
+	uint8 station_ip[4];
+	uint8 station_netmask[4];
+	uint8 connection_remote_ip[4];
+	struct ip_info info_ap;
+	struct ip_info info_station;
+
+	switch(con->type) {
+		case ESPCONN_TCP:
+			connection_remote_ip[0] = con->proto.tcp->remote_ip[0];
+			connection_remote_ip[1] = con->proto.tcp->remote_ip[1];
+			connection_remote_ip[2] = con->proto.tcp->remote_ip[2];
+			connection_remote_ip[3] = con->proto.tcp->remote_ip[3];
+			break;
+
+		case ESPCONN_UDP:
+			connection_remote_ip[0] = con->proto.udp->remote_ip[0];
+			connection_remote_ip[1] = con->proto.udp->remote_ip[1];
+			connection_remote_ip[2] = con->proto.udp->remote_ip[2];
+			connection_remote_ip[3] = con->proto.udp->remote_ip[3];
+			break;
+
+		default:
+			return;
+	}
+
+	if(configuration_current.ap_enable) {
+		wifi_get_ip_info(SOFTAP_IF, &info_ap);
+
+		ap_ip[0] = ip4_addr1(&info_ap.ip);
+		ap_ip[1] = ip4_addr2(&info_ap.ip);
+		ap_ip[2] = ip4_addr3(&info_ap.ip);
+		ap_ip[3] = ip4_addr4(&info_ap.ip);
+
+		ap_netmask[0] = ip4_addr1(&info_ap.netmask);
+		ap_netmask[1] = ip4_addr2(&info_ap.netmask);
+		ap_netmask[2] = ip4_addr3(&info_ap.netmask);
+		ap_netmask[3] = ip4_addr4(&info_ap.netmask);
+
+		if(((connection_remote_ip[0] & ap_netmask[0]) == \
+			(ap_ip[0] & ap_netmask[0])) &&
+		   ((connection_remote_ip[1] & ap_netmask[1]) == \
+			(ap_ip[1] & ap_netmask[1])) &&
+		   ((connection_remote_ip[2] & ap_netmask[2]) == \
+			(ap_ip[2] & ap_netmask[2])) &&
+		   ((connection_remote_ip[3] & ap_netmask[3]) == \
+			(ap_ip[3] & ap_netmask[3]))) {
+				gw2sr.ap_tx_count++;
+		}
+	}
+
+	if(configuration_current.client_enable) {
+		wifi_get_ip_info(STATION_IF, &info_station);
+
+		station_ip[0] = ip4_addr1(&info_station.ip);
+		station_ip[1] = ip4_addr2(&info_station.ip);
+		station_ip[2] = ip4_addr3(&info_station.ip);
+		station_ip[3] = ip4_addr4(&info_station.ip);
+
+		station_netmask[0] = ip4_addr1(&info_station.netmask);
+		station_netmask[1] = ip4_addr2(&info_station.netmask);
+		station_netmask[2] = ip4_addr3(&info_station.netmask);
+		station_netmask[3] = ip4_addr4(&info_station.netmask);
+
+		if(((connection_remote_ip[0] & station_netmask[0]) == \
+			(station_ip[0] & station_netmask[0])) &&
+		   ((connection_remote_ip[1] & station_netmask[1]) == \
+			(station_ip[1] & station_netmask[1])) &&
+		   ((connection_remote_ip[2] & station_netmask[2]) == \
+			(station_ip[2] & station_netmask[2])) &&
+		   ((connection_remote_ip[3] & station_netmask[3]) == \
+			(station_ip[3] & station_netmask[3]))) {
+				gw2sr.client_tx_count++;
+		}
 	}
 }

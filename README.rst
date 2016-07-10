@@ -64,6 +64,7 @@ libesphttpd must also be patched::
 
  cd software
  patch -b -N -d ../toolchain/libesphttpd -p1 < libesphttpd-Makefile.patch
+ patch -b -N -d ../toolchain/libesphttpd -p1 < libesphttpd-httpd-nonos.patch
 
 Build
 -----

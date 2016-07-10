@@ -42,8 +42,8 @@ TFPConnection tfp_cons[TFP_MAX_CONNECTIONS];
 extern GetWifi2StatusReturn gw2sr;
 extern Configuration configuration_current;
 
-#define TFP_PACKET_COUNT_RX 1
-#define TFP_PACKET_COUNT_TX 2
+#define PACKET_COUNT_RX 1
+#define PACKET_COUNT_TX 2
 #define TFP_RECV_INDEX_LENGTH 4
 #define TFP_MIN_LENGTH 8
 
@@ -66,7 +66,7 @@ void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
 	espconn *con = (espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
-	tfp_packet_count(con, TFP_PACKET_COUNT_TX);
+	packet_counter(con, PACKET_COUNT_TX);
 
 	if(tfp_con->state == TFP_CON_STATE_CLOSED_AFTER_SEND) {
 		espconn_disconnect(tfp_con->con);
@@ -94,7 +94,7 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short 
 	espconn *con = (espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
-	tfp_packet_count(con, TFP_PACKET_COUNT_RX);
+	packet_counter(con, PACKET_COUNT_RX);
 
 	for(uint32_t i = 0; i < len; i++) {
 		tfp_con->recv_buffer[tfp_con->recv_buffer_index] = pdata[i];
@@ -351,7 +351,7 @@ void ICACHE_FLASH_ATTR tfp_poll(void) {
 	}
 }
 
-void ICACHE_FLASH_ATTR tfp_packet_count(espconn *con, uint8_t direction) {
+void ICACHE_FLASH_ATTR packet_counter(espconn *con, uint8_t direction) {
 	uint8 ap_ip[4];
 	uint8 ap_netmask[4];
 	uint8 station_ip[4];
@@ -401,9 +401,9 @@ void ICACHE_FLASH_ATTR tfp_packet_count(espconn *con, uint8_t direction) {
 			(ap_ip[2] & ap_netmask[2])) &&
 		   ((connection_remote_ip[3] & ap_netmask[3]) == \
 			(ap_ip[3] & ap_netmask[3]))) {
-				if(direction == TFP_PACKET_COUNT_RX)
+				if(direction == PACKET_COUNT_RX)
 					gw2sr.ap_rx_count++;
-				else if(direction == TFP_PACKET_COUNT_TX)
+				else if(direction == PACKET_COUNT_TX)
 					gw2sr.ap_tx_count++;
 		}
 	}
@@ -430,9 +430,9 @@ void ICACHE_FLASH_ATTR tfp_packet_count(espconn *con, uint8_t direction) {
 			(station_ip[2] & station_netmask[2])) &&
 		   ((connection_remote_ip[3] & station_netmask[3]) == \
 			(station_ip[3] & station_netmask[3]))) {
-				if(direction == TFP_PACKET_COUNT_RX)
+				if(direction == PACKET_COUNT_RX)
 					gw2sr.client_rx_count++;
-				else if(direction == TFP_PACKET_COUNT_TX)
+				else if(direction == PACKET_COUNT_TX)
 					gw2sr.client_tx_count++;
 		}
 	}

@@ -37,7 +37,7 @@ extern Configuration configuration_current;
 HttpdBuiltInUrl builtInUrls[] = {
 	{"/", cgi_root, NULL},
 	{"/index.html", cgi_root, NULL},
-	{"/authenticate.html", cgi_do_authenticate_html, NULL},
+	{"/authenticate.html", cgi_authenticate_html, NULL},
 	{"/get_status.cgi", cgi_get_status, NULL},
 	{"/end_session.cgi", cgi_end_session, NULL},
 	{"/authenticate.cgi", cgi_authenticate, NULL},

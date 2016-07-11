@@ -58,4 +58,4 @@ int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void);
 int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR cgi_do_authenticate_html(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_authenticate_html(HttpdConnData *connection_data);

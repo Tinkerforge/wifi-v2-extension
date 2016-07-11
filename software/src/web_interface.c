@@ -464,7 +464,7 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 	return HTTPD_CGI_DONE;
 }
 
-int ICACHE_FLASH_ATTR cgi_do_authenticate_html(HttpdConnData *connection_data) {
+int ICACHE_FLASH_ATTR cgi_authenticate_html(HttpdConnData *connection_data) {
 	if((do_check_session(connection_data)) == 1) {
 		connection_data->cgiArg = "/index.html";
 		

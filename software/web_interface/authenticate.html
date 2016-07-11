@@ -72,8 +72,9 @@
                             <div class="col-sm-offset-4 col-sm-6">
                                 <div class="checkbox">
                                     <label>
-                                        <input id="common_use_authentication" type="checkbox" />
-                                        Show Characters
+                                        <input id="input_checkbox_show_hide_characters_secret"
+                                        type="checkbox" />
+                                            Show Characters
                                     </label>
                                 </div>
                             </div>
@@ -115,6 +116,16 @@
                 $("#modal_submit").on('show.bs.modal', function () {
                     $("#alert_error").addClass('hidden');
                     $("#alert_error").hide();
+                });
+
+                // Show/hide characters.
+                $('#input_checkbox_show_hide_characters_secret').change(function(){
+                    if(this.checked) {
+                        $('#secret').attr("type", "text");
+                    }
+                    else {
+                        $('#secret').attr("type", "password");
+                    }
                 });
 
                 // After the modal is already being shown event handler.

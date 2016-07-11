@@ -681,14 +681,21 @@
                     timeout: 16000, // in milliseconds
                     success: function(data) {
                         // process data here
-                        updateStatusGUI(JSON.parse(JSON.stringify(data)));
-
                         console.log('*** success(), data.status = ' + data.status);
                         console.log('cookie: ' + document.cookie);
-                        if(data.status === 2)
+                        if(data.status === 2){
+                            // Hide the body of the page.
+                            $("body").addClass('hidden');
+                            $("body").removeClass('show');
                             window.location.replace(window.location.protocol+'//'+window.location.hostname+'/authenticate.html');
-                        else
+                        }
+                        else {
+                            updateStatusGUI(JSON.parse(JSON.stringify(data)));
+                            // Show the body of the page.
+                            $("body").addClass('show');
+                            $("body").removeClass('hidden');
                             setTimeout(doAJAXPost, 4000);
+                        }
                     },
                     error: function(request, status, err) {
                         setTimeout(doAJAXPost, 4000);
@@ -698,9 +705,6 @@
 
             $(document).ready(function()
             {
-                // Show the body of the page only when the whole page is ready.
-                $("body").toggleClass('hidden show');
-
                 $('#main_toolbar_status').click(function(event)
                 {
                     $('#container_configure').addClass('hidden');
@@ -766,7 +770,7 @@
                         }
                     });
                 }
-                setTimeout(doAJAXPost, 1000);
+                doAJAXPost();
             });
         </script>
     </body>

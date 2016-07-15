@@ -475,3 +475,29 @@ int ICACHE_FLASH_ATTR cgi_authenticate_html(HttpdConnData *connection_data) {
 	
 	return cgiEspFsHook(connection_data);
 }
+
+int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_data) {
+	char response[GENERIC_BUFFER_SIZE];
+
+	httpdStartResponse(connection_data, 200);
+
+	if((do_check_session(connection_data)) == 1) {
+		sprintf(response,
+				fmt_response_json,
+				JSON_REQUEST_IS_ALREADY_AUTHENTICATED,
+				JSON_STATUS_OK,
+				"null");
+	}
+	else {
+		sprintf(response,
+				fmt_response_json,
+				JSON_REQUEST_IS_ALREADY_AUTHENTICATED,
+				JSON_STATUS_FAILED,
+				"null");
+	}
+
+	httpdEndHeaders(connection_data);
+	httpdSend(connection_data, response, -1);
+
+	return HTTPD_CGI_DONE;
+}

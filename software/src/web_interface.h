@@ -6,6 +6,7 @@
 #define JSON_REQUEST_GET_STATUS 2
 #define JSON_REQUEST_UPDATE_SETTINGS 3
 #define JSON_REQUEST_END_SESSION 4
+#define JSON_REQUEST_IS_ALREADY_AUTHENTICATED 5
 
 #define JSON_STATUS_OK 1
 #define JSON_STATUS_FAILED 2
@@ -59,3 +60,4 @@ int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void);
 int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_authenticate_html(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_data);

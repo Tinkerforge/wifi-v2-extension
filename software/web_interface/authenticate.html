@@ -95,8 +95,45 @@
 
         <script type="text/javascript">
             $(document).ready(function() {
-                // Show the body of the page only when the whole page is ready.
-                $("body").toggleClass('hidden show');
+                $.ajax({
+                    type: 'POST',
+                    url: '/is_already_authenticated.cgi',
+                    data: null,
+                    //dataType: "json",
+                    timeout: 16000, // in milliseconds
+                    success: function(data) {
+                        // process data here
+                        console.log('*** success(), data = ' + data);
+
+                        var o= JSON.parse(data);
+                        if(o.status === 1) {
+                            console.log('*** cookie = ' + document.cookie);
+                            //$(window).attr('location', window.location.protocol+'//'+window.location.hostname+'/index.html');
+                            //$(location).attr('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
+                            //$(location).prop('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
+                            window.location.replace(window.location.protocol+'//'+window.location.hostname);
+                            //window.location.href = window.location.protocol+'//'+window.location.hostname+'/';
+                            //window.location = window.location.protocol+'//'+window.location.hostname+'/';
+                            //setTimeout(function(){
+
+                            //}, 2000);
+                        }
+                        else {
+                            // Show the body of the page only when the whole page is ready.
+                            $("body").toggleClass('hidden show');
+                        }
+                    },
+                    error: function(request, status, err) {
+                        console.log('*** error()');
+                        console.log(request);
+                        console.log(status);
+                        console.log(err);
+
+                        $("#modal_submit").modal('hide');
+                        $("#alert_error").removeClass('hidden');
+                        $("#alert_error").show();
+                    }
+                });
 
                 // Clear all alerts.
                 $("#alert_error").hide();

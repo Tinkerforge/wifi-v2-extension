@@ -480,6 +480,7 @@ int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_dat
 	char response[GENERIC_BUFFER_SIZE];
 
 	httpdStartResponse(connection_data, 200);
+	httpdEndHeaders(connection_data);
 
 	if((do_check_session(connection_data)) == 1) {
 		sprintf(response,
@@ -496,7 +497,6 @@ int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_dat
 				"null");
 	}
 
-	httpdEndHeaders(connection_data);
 	httpdSend(connection_data, response, -1);
 
 	return HTTPD_CGI_DONE;

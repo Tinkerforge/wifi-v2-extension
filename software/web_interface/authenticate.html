@@ -94,52 +94,53 @@
         </script>
 
         <script type="text/javascript">
-            $(document).ready(function() {
-                $.ajax({
-                    type: 'POST',
-                    url: '/is_already_authenticated.cgi',
-                    data: null,
-                    //dataType: "json",
-                    timeout: 16000, // in milliseconds
-                    success: function(data) {
-                        // process data here
-                        console.log('*** success(), data = ' + data);
+            $(document).ready(function(e) {
+                function doPost(e) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/is_already_authenticated.cgi',
+                        data: null,
+                        //dataType: "json",
+                        timeout: 16000, // in milliseconds
+                        success: function(data) {
+                            // process data here
+                            console.log('*** success(), data = ' + data);
 
-                        var o= JSON.parse(data);
-                        if(o.status === 1) {
-                            console.log('*** cookie = ' + document.cookie);
-                            //$(window).attr('location', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                            //$(location).attr('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                            //$(location).prop('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                            window.location.replace(window.location.protocol+'//'+window.location.hostname);
-                            //window.location.href = window.location.protocol+'//'+window.location.hostname+'/';
-                            //window.location = window.location.protocol+'//'+window.location.hostname+'/';
-                            //setTimeout(function(){
+                            var o= JSON.parse(data);
+                            if(o.status === 1) {
+                                $('#modal_submit').off('shown.bs.modal');
+                                $('#modal_submit').modal('show');
+                                console.log('*** cookie = ' + document.cookie);
+                                //$(window).attr('location', window.location.protocol+'//'+window.location.hostname+'/index.html');
+                                //$(location).attr('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
+                                //$(location).prop('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
+                                window.location.replace(window.location.protocol+'//'+window.location.hostname);
+                                //window.location.href = window.location.protocol+'//'+window.location.hostname+'/';
+                                //window.location = window.location.protocol+'//'+window.location.hostname+'/';
+                                //setTimeout(function(){
 
-                            //}, 2000);
+                                //}, 2000);
+                            }
+                            else {
+                                // Show the body of the page only when the whole page is ready.
+                                $("body").addClass('show');
+                                $("body").removeClass('hidden');
+                                setTimeout(doPost, 4000);
+                            }
+                        },
+                        error: function(request, status, err) {
+                            setTimeout(doPost, 4000);
                         }
-                        else {
-                            // Show the body of the page only when the whole page is ready.
-                            $("body").toggleClass('hidden show');
-                        }
-                    },
-                    error: function(request, status, err) {
-                        console.log('*** error()');
-                        console.log(request);
-                        console.log(status);
-                        console.log(err);
+                    });
+                }
 
-                        $("#modal_submit").modal('hide');
-                        $("#alert_error").removeClass('hidden');
-                        $("#alert_error").show();
-                    }
-                });
+                doPost();
 
                 // Clear all alerts.
                 $("#alert_error").hide();
 
                 // Secret field's keyup event handler.
-                $("#secret").keyup(function() {
+                $("#secret").keyup(function(e) {
                     if($( "#secret" ).val().length < 1)
                         $('#submit').prop('disabled', true);
                     else
@@ -150,13 +151,13 @@
                  * Clear all alerts when authenticate modal is shown.
                  * This implies a new submit.
                  */
-                $("#modal_submit").on('show.bs.modal', function () {
+                $("#modal_submit").on('show.bs.modal', function (e) {
                     $("#alert_error").addClass('hidden');
                     $("#alert_error").hide();
                 });
 
                 // Show/hide characters.
-                $('#input_checkbox_show_hide_characters_secret').change(function(){
+                $('#input_checkbox_show_hide_characters_secret').change(function(e){
                     if(this.checked) {
                         $('#secret').attr("type", "text");
                     }
@@ -166,7 +167,7 @@
                 });
 
                 // After the modal is already being shown event handler.
-                $("#modal_submit").on('shown.bs.modal', function () {
+                $("#modal_submit").on('shown.bs.modal', function (e) {
                     // Submit the form here.
 
                     console.log($("#form_authenticate").serialize());

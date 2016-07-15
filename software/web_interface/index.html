@@ -330,7 +330,7 @@
 
                         <div class="form-group row">
                             <label class="col-sm-4 control-label" for=
-                            "common_phy_mode">Phy Mode:</label>
+                            "common_phy_mode">PHY Mode:</label>
                             <div class="col-sm-6">
                                 <select class="form-control" id=
                                 "common_phy_mode">
@@ -390,7 +390,7 @@
                                 </select>
                             </div>
                         </div>
-                    </form>
+
                 </div>
             </div>
 
@@ -403,7 +403,7 @@
                 </div>
 
                 <div class="panel-body">
-                    <form class="form-horizontal">
+
                         <div class="form-group row">
                             <label class="col-sm-4 control-label" for=
                             "common_hostname">Hostname:</label>
@@ -561,9 +561,153 @@
                                 "client_mac_5" type="number">
                             </div>
                         </div>
+
+                </div>
+            </div>
+
+
+
+
+
+
+
+            <!-- Access Point settings. -->
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        <b>Access Point Settings</b>
+                    </h3>
+                </div>
+
+                <div class="panel-body">
+                        <div class="form-group row">
+                            <label class="col-sm-4 control-label" for=
+                            "ap_ip_configuration">IP Configuration:</label>
+                            <div class="col-sm-6">
+                                <select class="form-control" id=
+                                "ap_ip_configuration">
+                                    <option>
+                                        DHCP
+                                    </option>
+                                    <option>
+                                        Static
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-4 control-label" for=
+                            "ap_ssid">SSID:</label>
+                            <div class="col-sm-6">
+                                <input class="form-control" id="common_ssid"
+                                placeholder=
+                                "SSID to broadcast" type=
+                                "text">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="col-sm-4 control-label" for=
+                            "ap_encryption">Encryption:</label>
+                            <div class="col-sm-6">
+                                <select class="form-control" id=
+                                "ap_encryption">
+                                    <option>
+                                        Open (No Encryption)
+                                    </option>
+                                    <option>
+                                        WPA/WPA2
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="control-label col-sm-4" for=
+                            "ap_password">Password:</label>
+                            <div class="col-sm-4">
+                                <input class="form-control" id=
+                                "ap_password" placeholder=
+                                "Password for connecting to the SSID" type=
+                                "password">
+                            </div>
+
+                            <div class="checkbox col-sm-2">
+                                <label><input id="ap_password_characters" type=
+                                "checkbox"> Show Characters</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <label class="control-label col-sm-4" for=
+                            "ap_channel-label">Channel:</label>
+
+                            <div class="checkbox col-sm-6">
+                                <input class="form-control" id=
+                                "ap_channel" type="number">
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-sm-offset-4 col-sm-6">
+                                <div class="checkbox">
+                                    <label><input id=
+                                    "ap_hide_ssid" type=
+                                    "checkbox"> Hide SSID</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-sm-offset-4 col-sm-6">
+                                <div class="checkbox">
+                                    <label><input id=
+                                    "ap_custom_mac_address" type=
+                                    "checkbox"> Use Custom MAC Address</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group hidden row" id=
+                        "ap_custom_mac_address_elements">
+                            <label class="col-sm-4 control-label" for=
+                            "">MAC Address:</label>
+                            <div class="col-sm-1">
+                                <input class="form-control col-sm-1" id=
+                                "ap_mac_0" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control col-sm-1" id=
+                                "ap_mac_1" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control col-sm-1" id=
+                                "ap_mac_2" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control col-sm-1" id=
+                                "ap_mac_3" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control col-sm-1" id=
+                                "ap_mac_4" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control col-sm-1" id=
+                                "ap_mac_5" type="number">
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
+
+
             <button class="btn btn-block spacer-bottom" type="button">Save WiFi
             Configuration</button>
         </div>
@@ -671,6 +815,31 @@
                 $('#td_ap_tx_count').html(status.data.ap_tx_count);
             }
 
+            function doAJAXPostGetSettings(e)
+            {
+                $.ajax({
+                    type: 'POST',
+                    url: '/get_settings.cgi',
+                    data: {'request':6, 'data':null},
+                    dataType: "json",
+                    timeout: 16000, // in milliseconds
+                    success: function(data) {
+                        // process data here
+                        console.log('*** success(), data.status = ' + data.status);
+                        console.log('cookie: ' + document.cookie);
+
+                        if(data.status === 1){
+                            console.log(data);
+                        }
+                        else {
+                        }
+                    },
+                    error: function(request, status, err) {
+                        console.log('*** doAJAXPostGetSettings(), request = ' + request + ', status = ' + status + ', err = ' + err);
+                    }
+                });
+            }
+
             function doAJAXPost(e)
             {
                 $.ajax({
@@ -753,6 +922,12 @@
                         $("#client_use_custom_mac_address_elements").toggleClass(
                             "hidden");
                     }
+                    if ($(this).attr("id") ==
+                        "ap_custom_mac_address")
+                    {
+                        $("#ap_custom_mac_address_elements").toggleClass(
+                            "hidden");
+                    }
                 });
 
                 window.onbeforeunload = function() {
@@ -771,6 +946,7 @@
                     });
                 }
                 doAJAXPost();
+                doAJAXPostGetSettings();
             });
         </script>
     </body>

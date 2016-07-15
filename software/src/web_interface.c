@@ -6,6 +6,7 @@
 #include "communication.h"
 
 extern GetWifi2StatusReturn gw2sr;
+extern Configuration configuration_current;
 
 const char *fmt_response_json = \
 	"{\"request\":%d,\"status\":%d,\"data\":%s}";
@@ -29,7 +30,37 @@ const char *fmt_response_json_status_data = \
 \"ap_tx_count\":%d\
 }";
 
-const char *fmt_set_session_cookie = "sid=%lu; expires=0; path=/";
+const char *fmt_response_json_settings_data = \
+	"{\"general_port\":%d, \
+\"general_websocket_port\":%d, \
+\"general_website_port\":%d, \
+\"general_phy_mode\":%d, \
+\"general_sleep_mode\":%d, \
+\"general_website\":%d, \
+\"general_authentication_secret\":\"%s\", \
+\"client_enable\":%d, \
+\"client_ssid\":\"%s\", \
+\"client_ip\":[%d,%d,%d,%d], \
+\"client_subnet_mask\":[%d,%d,%d,%d], \
+\"client_gateway\":[%d,%d,%d,%d], \
+\"client_mac_address\":[%d,%d,%d,%d,%d,%d], \
+\"client_bssid\":[%d,%d,%d,%d,%d,%d], \
+\"client_hostname\":\"%s\", \
+\"client_password\":\"%s\", \
+\"ap_enable\":%d, \
+\"ap_ssid\":\"%s\", \
+\"ap_ip\":[%d,%d,%d,%d], \
+\"ap_subnet_mask\":[%d,%d,%d,%d], \
+\"ap_gateway\":[%d,%d,%d,%d], \
+\"ap_encryption\":%d, \
+\"ap_hidden\":%d, \
+\"ap_mac_address\":[%d,%d,%d,%d,%d,%d], \
+\"ap_channel\":%d, \
+\"ap_hostname\":\"%s\", \
+\"ap_password\":\"%s\"\
+}";
+
+const char *fmt_set_session_cookie = "sid=%lu";
 
 extern Configuration configuration_current;
 unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
@@ -445,6 +476,98 @@ int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data) {
 			JSON_REQUEST_AUTHENTICATE,
 			JSON_STATUS_FAILED,
 			"null");
+
+	httpdSend(connection_data, response, -1);
+
+	return HTTPD_CGI_DONE;
+}
+
+int ICACHE_FLASH_ATTR cgi_get_settings(HttpdConnData *connection_data) {
+	char response[GENERIC_BUFFER_SIZE];
+	char response_settings[GENERIC_BUFFER_SIZE];
+
+	httpdStartResponse(connection_data, 200);
+	httpdEndHeaders(connection_data);
+
+	if((do_check_session(connection_data)) == 1) {
+		printf("\n\n*** cgi_get_settings(): SENDING SETTINGS ***\n\n");
+	 	sprintf(response_settings,
+				fmt_response_json_settings_data,
+				configuration_current.general_port,
+				configuration_current.general_websocket_port,
+				configuration_current.general_website_port,
+				configuration_current.general_phy_mode,
+				configuration_current.general_sleep_mode,
+				configuration_current.general_website,
+				configuration_current.general_authentication_secret,
+				configuration_current.client_enable,
+				configuration_current.client_ssid,
+				configuration_current.client_ip[0],
+				configuration_current.client_ip[1],
+				configuration_current.client_ip[2],
+				configuration_current.client_ip[3],
+				configuration_current.client_subnet_mask[0],
+				configuration_current.client_subnet_mask[1],
+				configuration_current.client_subnet_mask[2],
+				configuration_current.client_subnet_mask[3],
+				configuration_current.client_gateway[0],
+				configuration_current.client_gateway[1],
+				configuration_current.client_gateway[2],
+				configuration_current.client_gateway[3],
+				configuration_current.client_mac_address[0],
+				configuration_current.client_mac_address[1],
+				configuration_current.client_mac_address[2],
+				configuration_current.client_mac_address[3],
+				configuration_current.client_mac_address[4],
+				configuration_current.client_mac_address[5],
+				configuration_current.client_bssid[0],
+				configuration_current.client_bssid[1],
+				configuration_current.client_bssid[2],
+				configuration_current.client_bssid[3],
+				configuration_current.client_bssid[4],
+				configuration_current.client_bssid[5],
+				configuration_current.client_hostname,
+				configuration_current.client_password,
+				configuration_current.ap_enable,
+				configuration_current.ap_ssid,
+				configuration_current.ap_ip[0],
+				configuration_current.ap_ip[1],
+				configuration_current.ap_ip[2],
+				configuration_current.ap_ip[3],
+				configuration_current.ap_subnet_mask[0],
+				configuration_current.ap_subnet_mask[1],
+				configuration_current.ap_subnet_mask[2],
+				configuration_current.ap_subnet_mask[3],
+				configuration_current.ap_gateway[0],
+				configuration_current.ap_gateway[1],
+				configuration_current.ap_gateway[2],
+				configuration_current.ap_gateway[3],
+				configuration_current.ap_encryption,
+				configuration_current.ap_hidden,
+				configuration_current.ap_mac_address[0],
+				configuration_current.ap_mac_address[1],
+				configuration_current.ap_mac_address[2],
+				configuration_current.ap_mac_address[3],
+				configuration_current.ap_mac_address[4],
+				configuration_current.ap_mac_address[5],
+				configuration_current.ap_channel,
+				configuration_current.ap_hostname,
+				configuration_current.ap_password);
+
+		sprintf(response,
+				fmt_response_json,
+				JSON_REQUEST_GET_SETTINGS,
+				JSON_STATUS_OK,
+				response_settings);
+	}
+	else {
+		printf("\n\n*** cgi_get_settings(): NO SESSION ***\n\n");
+		sprintf(response,
+				fmt_response_json,
+				JSON_REQUEST_GET_SETTINGS,
+				JSON_STATUS_FAILED,
+				"null");
+	}
 
 	httpdSend(connection_data, response, -1);
 

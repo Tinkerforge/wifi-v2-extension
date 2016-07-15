@@ -45,6 +45,9 @@
         </div>
 
         <div class="container">
+            <div id="alert_cookie" class="alert alert-danger hidden" role="alert">
+                <strong>Error!</strong> Failed to authenticate. Make sure the browser supports session cookies.
+            </div>
             <div id="alert_error" class="alert alert-danger hidden" role="alert">
                 <strong>Error!</strong> Failed to authenticate. Please check your secret.
             </div>
@@ -101,7 +104,7 @@
                         url: '/is_already_authenticated.cgi',
                         data: null,
                         //dataType: "json",
-                        timeout: 16000, // in milliseconds
+                        timeout: 8000, // in milliseconds
                         success: function(data) {
                             // process data here
                             console.log('*** success(), data = ' + data);
@@ -110,11 +113,13 @@
                             if(o.status === 1) {
                                 $('#modal_submit').off('shown.bs.modal');
                                 $('#modal_submit').modal('show');
+                                console.log('*** data = ' + data);
                                 console.log('*** cookie = ' + document.cookie);
                                 //$(window).attr('location', window.location.protocol+'//'+window.location.hostname+'/index.html');
                                 //$(location).attr('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
                                 //$(location).prop('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                                window.location.replace(window.location.protocol+'//'+window.location.hostname);
+                                setTimeout(function(){window.location.replace(window.location.protocol+'//'+window.location.hostname);}, 3000);
+                                //window.location.replace(window.location.protocol+'//'+window.location.hostname);
                                 //window.location.href = window.location.protocol+'//'+window.location.hostname+'/';
                                 //window.location = window.location.protocol+'//'+window.location.hostname+'/';
                                 //setTimeout(function(){
@@ -137,6 +142,7 @@
                 doPost();
 
                 // Clear all alerts.
+                $("#alert_cookie").hide();
                 $("#alert_error").hide();
 
                 // Secret field's keyup event handler.
@@ -152,6 +158,8 @@
                  * This implies a new submit.
                  */
                 $("#modal_submit").on('show.bs.modal', function (e) {
+                    $("#alert_cookie").addClass('hidden');
+                    $("#alert_cookie").hide();
                     $("#alert_error").addClass('hidden');
                     $("#alert_error").hide();
                 });
@@ -184,11 +192,23 @@
 
                             var o= JSON.parse(data);
                             if(o.status === 1) {
+                                console.log('*** data = ' + data)
                                 console.log('*** cookie = ' + document.cookie);
                                 //$(window).attr('location', window.location.protocol+'//'+window.location.hostname+'/index.html');
                                 //$(location).attr('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
                                 //$(location).prop('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                                window.location.replace(window.location.protocol+'//'+window.location.hostname);
+                                if(!document.cookie) {
+                                    $("#alert_cookie").removeClass('hidden');
+                                    $("#alert_cookie").show();
+                                    $("#alert_error").addClass('hidden');
+                                    $("#alert_error").hide();
+                                    $("#modal_submit").modal('hide');
+
+                                    return;
+                                }
+
+                                setTimeout(function(){window.location.replace(window.location.protocol+'//'+window.location.hostname);}, 3000);
+                                //window.location.replace(window.location.protocol+'//'+window.location.hostname);
                                 //window.location.href = window.location.protocol+'//'+window.location.hostname+'/';
                                 //window.location = window.location.protocol+'//'+window.location.hostname+'/';
                                 //setTimeout(function(){
@@ -196,9 +216,11 @@
                                 //}, 2000);
                             }
                             else {
-                                $("#modal_submit").modal('hide');
+                                $("#alert_cookie").addClass('hidden');
+                                $("#alert_cookie").hide();
                                 $("#alert_error").removeClass('hidden');
                                 $("#alert_error").show();
+                                $("#modal_submit").modal('hide');
                             }
                         },
                         error: function(request, status, err) {
@@ -208,6 +230,8 @@
                             console.log(err);
 
                             $("#modal_submit").modal('hide');
+                            $("#alert_cookie").addClass('hidden');
+                            $("#alert_cookie").hide();
                             $("#alert_error").removeClass('hidden');
                             $("#alert_error").show();
                         }

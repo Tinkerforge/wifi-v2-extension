@@ -33,7 +33,7 @@ Toolchain
 Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk
 into toolchain/ directory::
 
- sudo apt-get install gperf
+ sudo apt-get install gperf libtool libtool-bin help2man texinfo libncurses5-dev python2.7-dev
  mkdir toolchain
  cd toolchain
  git clone --recursive https://github.com/pfalcon/esp-open-sdk.git

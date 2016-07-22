@@ -212,18 +212,18 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 	} else {
 		wifi_softap_dhcps_stop();
 		struct ip_info info;
-		IP4_ADDR(&info.ip, configuration_current.client_ip[0],
-		                   configuration_current.client_ip[1],
-		                   configuration_current.client_ip[2],
-		                   configuration_current.client_ip[3]);
-		IP4_ADDR(&info.gw, configuration_current.client_gateway[0],
-		                   configuration_current.client_gateway[1],
-		                   configuration_current.client_gateway[2],
-		                   configuration_current.client_gateway[3]);
-		IP4_ADDR(&info.netmask, configuration_current.client_subnet_mask[0],
-		                        configuration_current.client_subnet_mask[1],
-		                        configuration_current.client_subnet_mask[2],
-		                        configuration_current.client_subnet_mask[3]);
+		IP4_ADDR(&info.ip, configuration_current.ap_ip[0],
+		                   configuration_current.ap_ip[1],
+		                   configuration_current.ap_ip[2],
+		                   configuration_current.ap_ip[3]);
+		IP4_ADDR(&info.gw, configuration_current.ap_gateway[0],
+		                   configuration_current.ap_gateway[1],
+		                   configuration_current.ap_gateway[2],
+		                   configuration_current.ap_gateway[3]);
+		IP4_ADDR(&info.netmask, configuration_current.ap_subnet_mask[0],
+		                        configuration_current.ap_subnet_mask[1],
+		                        configuration_current.ap_subnet_mask[2],
+		                        configuration_current.ap_subnet_mask[3]);
 		wifi_set_ip_info(SOFTAP_IF, &info);
 	}
 

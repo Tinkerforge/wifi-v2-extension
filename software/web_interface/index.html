@@ -288,6 +288,7 @@
 
         <!-- Configure settings container. -->
         <div class="container hidden" id="container_configure">
+            <form id="form_settings" class="form-horizontal">
             <!-- Common settings. -->
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -297,12 +298,12 @@
                 </div>
 
                 <div class="panel-body">
-                    <form class="form-horizontal">
                         <div class="form-group row">
                             <label class="col-sm-4 control-label" for=
                             "common_port">Port:</label>
                             <div class="col-sm-6">
                                 <input class="form-control" id="common_port"
+                                name="common_port" min="1" step="1" max="65535"
                                 placeholder="Port to listen on" type="number">
                             </div>
                         </div>
@@ -312,7 +313,8 @@
                             "common_websocket_port">WebSocket Port:</label>
                             <div class="col-sm-6">
                                 <input class="form-control" id=
-                                "common_websocket_port" placeholder=
+                                "common_websocket_port" min="1" step="1" max="65535"
+                                name="common_websocket_port" placeholder=
                                 "Websocket port to listen on" type="number">
                             </div>
                         </div>
@@ -322,7 +324,8 @@
                             "common_website_port">Website Port:</label>
                             <div class="col-sm-6">
                                 <input class="form-control" id=
-                                "common_website_port" placeholder=
+                                "common_website_port" min="1" step="1" max="65535"
+                                name="common_website_port" placeholder=
                                 "Port on which this web interface is available"
                                 type="number">
                             </div>
@@ -333,14 +336,14 @@
                             "common_phy_mode">PHY Mode:</label>
                             <div class="col-sm-6">
                                 <select class="form-control" id=
-                                "common_phy_mode">
-                                    <option>
+                                "common_phy_mode" name="select_common_phy_mode">
+                                    <option value="1">
                                         B
                                     </option>
-                                    <option>
+                                    <option value="2">
                                         G
                                     </option>
-                                    <option>
+                                    <option value="3">
                                         N
                                     </option>
                                 </select>
@@ -390,7 +393,6 @@
                                 </select>
                             </div>
                         </div>
-
                 </div>
             </div>
 
@@ -403,173 +405,238 @@
                 </div>
 
                 <div class="panel-body">
+                    <div class="form-group row">
+                        <label class="col-sm-4 control-label" for=
+                        "client_hostname">Hostname:</label>
+                        <div class="col-sm-6">
+                            <input class="form-control" id=
+                            "client_hostname" placeholder=
+                            "Hostname of the node" type="text">
+                        </div>
+                    </div>
 
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for=
-                            "common_hostname">Hostname:</label>
-                            <div class="col-sm-6">
+                    <div class="form-group row">
+                        <label class="col-sm-4 control-label" for=
+                        "client_ip_configuration">IP Configuration:</label>
+                        <div class="col-sm-6">
+                            <select class="form-control" id=
+                            "client_ip_configuration">
+                                <option>
+                                    DHCP
+                                </option>
+                                <option>
+                                    Static
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Client static IP configuration -->
+                    <div class="form-group row" id=
+                    "client_ip_configuration_static_group">
+                            <label class="col-sm-4 control-label">IP:</label>
+                            <div class="col-sm-1">
                                 <input class="form-control" id=
-                                "common_hostname" placeholder=
-                                "Hostname of the node" type="text">
+                                "client_static_ip_1" type="number">
                             </div>
-                        </div>
 
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for=
-                            "common_ip_configuration">IP Configuration:</label>
-                            <div class="col-sm-6">
-                                <select class="form-control" id=
-                                "common_ip_configuration">
-                                    <option>
-                                        DHCP
-                                    </option>
-                                    <option>
-                                        Static
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for=
-                            "common_ssid">SSID:</label>
-                            <div class="col-sm-6">
-                                <input class="form-control" id="common_ssid"
-                                placeholder=
-                                "SSID of the access point to connect to" type=
-                                "text">
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for=
-                            "common_encryption">Encryption:</label>
-                            <div class="col-sm-6">
-                                <select class="form-control" id=
-                                "common_encryption">
-                                    <option>
-                                        Open (No Encryption)
-                                    </option>
-                                    <option>
-                                        WPA/WPA2
-                                    </option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label class="control-label col-sm-4" for=
-                            "common_password">Password:</label>
-                            <div class="col-sm-4">
+                            <div class="col-sm-1">
                                 <input class="form-control" id=
-                                "common_password" placeholder=
-                                "Password for connecting to the SSID" type=
-                                "password">
+                                "client_static_ip_2" type="number">
                             </div>
 
-                            <div class="checkbox col-sm-2">
-                                <label><input id="common_show_characters" type=
-                                "checkbox"> Show Characters</label>
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_ip_3" type="number">
                             </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_ip_4" type="number">
+                            </div>
+                    </div>
+
+                    <div class="form-group row" id=
+                        "client_static_netmask">
+                            <label class="col-sm-4 control-label">Subnet Mask:</label>
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_netmask_1" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_netmask_2" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_netmask_3" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_netmask_4" type="number">
+                            </div>
+                    </div>
+
+                    <div class="form-group row" id=
+                        "client_static_gateway">
+                            <label class="col-sm-4 control-label">Gateway:</label>
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_gateway_1" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_gateway_2" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_gateway_3" type="number">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control" id=
+                                "client_static_gateway_4" type="number">
+                            </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 control-label" for=
+                        "common_ssid">SSID:</label>
+                        <div class="col-sm-6">
+                            <input class="form-control" id="common_ssid"
+                            placeholder=
+                            "SSID of the access point to connect to" type=
+                            "text">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 control-label" for=
+                        "common_encryption">Encryption:</label>
+                        <div class="col-sm-6">
+                            <select class="form-control" id=
+                            "common_encryption">
+                                <option>
+                                    Open (No Encryption)
+                                </option>
+                                <option>
+                                    WPA/WPA2
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="control-label col-sm-4" for=
+                        "common_password">Password:</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id=
+                            "common_password" placeholder=
+                            "Password for connecting to the SSID" type=
+                            "password">
                         </div>
 
-                        <div class="form-group row">
-                            <div class="checkbox col-sm-offset-4 col-sm-6">
+                        <div class="checkbox col-sm-2">
+                            <label><input id="common_show_characters" type=
+                            "checkbox"> Show Characters</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="checkbox col-sm-offset-4 col-sm-6">
+                            <label><input id=
+                            "client_connect_to_ap_with_specific_bssid" type=
+                            "checkbox"> Only Connect to AP with specific
+                            BSSID</label>
+                        </div>
+                    </div>
+
+                    <div class="form-group hidden row" id=
+                    "client_connect_to_ap_with_specific_bssid_elements">
+                        <label class="col-sm-4 control-label" for=
+                        "client_bssid">BSSID:</label>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "common_ssid_0" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "common_ssid_1" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "common_ssid_2" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "common_ssid_3" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "common_ssid_4" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control col-sm-1" id=
+                            "common_ssid_5" type="number">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-offset-4 col-sm-6">
+                            <div class="checkbox">
                                 <label><input id=
-                                "client_connect_to_ap_with_specific_bssid" type=
-                                "checkbox"> Only Connect to AP with specific
-                                BSSID</label>
+                                "client_use_custom_mac_address" type=
+                                "checkbox"> Use Custom MAC Address</label>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group hidden row" id=
-                        "client_connect_to_ap_with_specific_bssid_elements">
-                            <label class="col-sm-4 control-label" for=
-                            "client_bssid">BSSID:</label>
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "common_ssid_0" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "common_ssid_1" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "common_ssid_2" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "common_ssid_3" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "common_ssid_4" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "common_ssid_5" type="number">
-                            </div>
+                    <div class="form-group hidden row" id=
+                    "client_use_custom_mac_address_elements">
+                        <label class="col-sm-4 control-label" for=
+                        "client_bssid">MAC Address:</label>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "client_mac_0" type="number">
                         </div>
 
-                        <div class="form-group row">
-                            <div class="col-sm-offset-4 col-sm-6">
-                                <div class="checkbox">
-                                    <label><input id=
-                                    "client_use_custom_mac_address" type=
-                                    "checkbox"> Use Custom MAC Address</label>
-                                </div>
-                            </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "client_mac_1" type="number">
                         </div>
 
-                        <div class="form-group hidden row" id=
-                        "client_use_custom_mac_address_elements">
-                            <label class="col-sm-4 control-label" for=
-                            "client_bssid">MAC Address:</label>
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "client_mac_0" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "client_mac_1" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "client_mac_2" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "client_mac_3" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "client_mac_4" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "client_mac_5" type="number">
-                            </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "client_mac_2" type="number">
                         </div>
 
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "client_mac_3" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "client_mac_4" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "client_mac_5" type="number">
+                        </div>
+                    </div>
                 </div>
             </div>
-
-
-
-
-
-
 
             <!-- Access Point settings. -->
             <div class="panel panel-default">
@@ -580,137 +647,214 @@
                 </div>
 
                 <div class="panel-body">
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for=
-                            "ap_ip_configuration">IP Configuration:</label>
-                            <div class="col-sm-6">
-                                <select class="form-control" id=
-                                "ap_ip_configuration">
-                                    <option>
-                                        DHCP
-                                    </option>
-                                    <option>
-                                        Static
-                                    </option>
-                                </select>
-                            </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 control-label" for="ap_ip_configuration">
+                        IP Configuration:</label>
+                        <div class="col-sm-6">
+                            <select class="form-control" id="ap_ip_configuration">
+                                <option>
+                                    DHCP
+                                </option>
+                                
+                                <option>
+                                    Static
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- AP static IP configuration -->
+                    <div class="form-group row" id="ap_ip_configuration_static_group">
+                        <label class="col-sm-4 control-label" for="ap_static_ip">IP:</label>
+                        <div class="col-sm-1">
+                            <input class="form-control" id="ap_static_ip_1" type="number">
+                        </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" id="ap_static_ip_2" type="number">
+                        </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" id="ap_static_ip_3" type="number">
+                        </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" id="ap_static_ip_4" type="number">
+                        </div>
+                    </div>
+
+                    <div class="form-group row" id="ap_static_netmask">
+                        <label class="col-sm-4 control-label" for="ap_static_netmask">
+                            Subnet Mask:
+                        </label>
+                        <div class="col-sm-1">
+                            <input class="form-control"
+                            id="ap_static_netmask_1"
+                            type="number">
                         </div>
 
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for=
-                            "ap_ssid">SSID:</label>
-                            <div class="col-sm-6">
-                                <input class="form-control" id="common_ssid"
-                                placeholder=
-                                "SSID to broadcast" type=
-                                "text">
-                            </div>
+                        <div class="col-sm-1">
+                            <input class="form-control"
+                            id="ap_static_netmask_2"
+                            type="number">
                         </div>
 
-                        <div class="form-group row">
-                            <label class="col-sm-4 control-label" for=
-                            "ap_encryption">Encryption:</label>
-                            <div class="col-sm-6">
-                                <select class="form-control" id=
-                                "ap_encryption">
-                                    <option>
-                                        Open (No Encryption)
-                                    </option>
-                                    <option>
-                                        WPA/WPA2
-                                    </option>
-                                </select>
-                            </div>
+                        <div class="col-sm-1">
+                            <input class="form-control"
+                            id="ap_static_netmask_3"
+                            type="number">
                         </div>
 
-                        <div class="form-group row">
-                            <label class="control-label col-sm-4" for=
-                            "ap_password">Password:</label>
-                            <div class="col-sm-4">
-                                <input class="form-control" id=
-                                "ap_password" placeholder=
-                                "Password for connecting to the SSID" type=
-                                "password">
-                            </div>
+                        <div class="col-sm-1">
+                            <input class="form-control"
+                            id="ap_static_netmask_4"
+                            type="number">
+                        </div>
+                    </div>
 
-                            <div class="checkbox col-sm-2">
-                                <label><input id="ap_password_characters" type=
-                                "checkbox"> Show Characters</label>
-                            </div>
+                    <div class="form-group row" id="ap_static_gateway">
+                        <label class="col-sm-4 control-label"
+                        for="ap_static_gateway">
+                            Gateway:
+                        </label>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_static_gateway_1" type="number">
                         </div>
 
-                        <div class="form-group row">
-                            <label class="control-label col-sm-4" for=
-                            "ap_channel-label">Channel:</label>
-
-                            <div class="checkbox col-sm-6">
-                                <input class="form-control" id=
-                                "ap_channel" type="number">
-                            </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_static_gateway_2" type="number">
                         </div>
 
-                        <div class="form-group row">
-                            <div class="col-sm-offset-4 col-sm-6">
-                                <div class="checkbox">
-                                    <label><input id=
-                                    "ap_hide_ssid" type=
-                                    "checkbox"> Hide SSID</label>
-                                </div>
-                            </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_static_gateway_3" type="number">
                         </div>
 
-                        <div class="form-group row">
-                            <div class="col-sm-offset-4 col-sm-6">
-                                <div class="checkbox">
-                                    <label><input id=
-                                    "ap_custom_mac_address" type=
-                                    "checkbox"> Use Custom MAC Address</label>
-                                </div>
-                            </div>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_static_gateway_4" type="number">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 control-label"
+                        for="ap_ssid">
+                            SSID:
+                        </label>
+                        <div class="col-sm-6">
+                            <input class="form-control" id="common_ssid"
+                            placeholder=
+                            "SSID to broadcast" type=
+                            "text">
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 control-label"
+                        for="ap_encryption">
+                            Encryption:
+                        </label>
+                        <div class="col-sm-6">
+                            <select class="form-control" id=
+                            "ap_encryption">
+                                <option>
+                                    Open (No Encryption)
+                                </option>
+                                <option>
+                                    WPA/WPA2
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="control-label col-sm-4" for=
+                        "ap_password">Password:</label>
+                        <div class="col-sm-4">
+                            <input class="form-control" id=
+                            "ap_password" placeholder=
+                            "Password for connecting to the SSID" type=
+                            "password">
                         </div>
 
-                        <div class="form-group hidden row" id=
-                        "ap_custom_mac_address_elements">
-                            <label class="col-sm-4 control-label" for=
-                            "">MAC Address:</label>
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "ap_mac_0" type="number">
-                            </div>
+                        <div class="checkbox col-sm-2">
+                            <label><input id="ap_password_characters" type=
+                            "checkbox"> Show Characters</label>
+                        </div>
+                    </div>
 
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "ap_mac_1" type="number">
-                            </div>
+                    <div class="form-group row">
+                        <label class="control-label col-sm-4" for=
+                        "ap_channel-label">Channel:</label>
 
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "ap_mac_2" type="number">
-                            </div>
+                        <div class="checkbox col-sm-6">
+                            <input class="form-control" id=
+                            "ap_channel" type="number">
+                        </div>
+                    </div>
 
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "ap_mac_3" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "ap_mac_4" type="number">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control col-sm-1" id=
-                                "ap_mac_5" type="number">
+                    <div class="form-group row">
+                        <div class="col-sm-offset-4 col-sm-6">
+                            <div class="checkbox">
+                                <label><input id=
+                                "ap_hide_ssid" type=
+                                "checkbox"> Hide SSID</label>
                             </div>
                         </div>
-                    </form>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-offset-4 col-sm-6">
+                            <div class="checkbox">
+                                <label><input id=
+                                "ap_custom_mac_address" type=
+                                "checkbox"> Use Custom MAC Address</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group hidden row"
+                    id="ap_custom_mac_address_elements">
+                        <label class="col-sm-4 control-label">
+                            MAC Address:
+                        </label>
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_mac_0" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_mac_1" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_mac_2" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_mac_3" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_mac_4" type="number">
+                        </div>
+
+                        <div class="col-sm-1">
+                            <input class="form-control" id=
+                            "ap_mac_5" type="number">
+                        </div>
+                    </div>
                 </div>
             </div>
+        </form> <!-- Close form which was opened at just after opening common settings panel's body -->
 
-
-            <button class="btn btn-block spacer-bottom" type="button">Save WiFi
-            Configuration</button>
-        </div>
+            <button id="button_save_wifi_configuration" class="btn btn-block spacer-bottom" type="button">
+                Save and Reset
+            </button>
+        </div> <!-- End of container for configuration elements -->
 
         <!-- Placed at the end of the document so the pages load faster -->
         <script type="text/javascript">
@@ -830,6 +974,39 @@
 
                         if(data.status === 1){
                             console.log(data);
+                            /*
+                            data.ap_channel (num)
+                            data.ap_enable (num)
+                            data.ap_encryption (num)
+                            data.ap_gateway (arr[4])
+                            data.ap_hidden (num)
+                            data.ap_hostname (arr[4])
+                            data.ap_ip (arr[4])
+                            data.ap_mac_address (arr[6])
+                            data.ap_password (string)
+                            data.ap_ssid (string)
+                            data.ap_subnet_mask (arr[4])
+                            data.client_bssid (arr[6])
+                            data.client_enable (num)
+                            data.client_gateway (arr[4])
+                            data.client_hostname (string)
+                            data.client_ip (arr[4])
+                            data.client_mac_address (arr[6])
+                            data.client_password (string)
+                            data.client_ssid (string)
+                            data.client_subnet_mask (arr[4])
+                            data.general_authentication_secret (string)
+                            data.general_phy_mode (num)
+                            data.general_port (num)
+                            data.general_sleep_mode (num)
+                            data.general_website (num)
+                            data.general_website_port (num)
+                            data.general_websocket_port (num)
+                            */
+                            $("#common_port").val(data.data.general_port);
+                            $("#common_website_port").val(data.data.general_website_port);
+                            $("#common_websocket_port").val(data.data.general_websocket_port);
+                            $("#common_phy_mode").val(data.data.general_phy_mode);
                         }
                         else {
                         }
@@ -874,6 +1051,11 @@
 
             $(document).ready(function()
             {
+                $('#button_save_wifi_configuration').click(function(event)
+                {
+                    console.log("*** Save settings button clicked ***");
+                    console.log($("#form_settings").serialize());
+                });
                 $('#main_toolbar_status').click(function(event)
                 {
                     $('#container_configure').addClass('hidden');
@@ -899,9 +1081,6 @@
                 $('#main_toolbar_about').click(function(event)
                 {
                     $('#main_toolbar_about').removeClass('active');
-                    $('#main_toolbar_configure').removeClass('active');
-                    $('#main_toolbar_status').removeClass('active');
-                    $('#main_toolbar_about').addClass('active');
                 });
                 $('input[type="checkbox"]').click(function()
                 {

@@ -7,26 +7,18 @@
         <meta content="width=device-width, initial-scale=1" name="viewport">
 
         <!--
-        The above 3 meta tags *must* come first in the head.
-        Any other head content must come *after* these tags.
-        -->
-
-        <!--
-        Don't cache this page. This is required for the
-        session mechanism.
-        -->
-        <!--
-        <meta http-equiv="expires" content="0" />
-        <meta http-equiv="pragma" content="no-cache" />
-        <meta http-equiv="cache-control" content="no-cache" />
-        <meta http-equiv="cache-control" content="max-age=0" />
-        <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+        The above 3 meta tags *must* come first in the head. Any other head
+        content must come *after* these tags.
         -->
 
         <title>
             Tinkerforge WIFI Extension 2.0
         </title>
 
+        <!--
+        The "embed:" tags are used to inplace replacement with contents from
+        other files.
+        -->
         <style type="text/css">
             /* embed:./css/combined.css */
         </style>
@@ -35,56 +27,134 @@
     <body class="hidden">
         <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
             <div class="container-fluid">
-                <!-- Brand and toggle get grouped for better mobile display -->
+                <!-- Brand and toggle get grouped for better mobile display. -->
                 <div class="navbar-header">
                     <button class="navbar-toggle" data-target="#navbar"
                     data-toggle="collapse" type="button">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">
-                        <img alt="Brand" src="data:image/png;base64,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">
+                        <!-- Base64 encoded image. -->
+                        <img alt="Brand" src="data:image/png;base64,iVBORw0KGgo\
+                        AAAANSUhEUgAAAPEAAAA0CAYAAABb7t4OAAAAAXNSR0IArs4c6QAAAA\
+                        RnQU1BAACxjwv8YQUAAAAJcEhZcwAABWEAAAVhAQHYffEAAAAYdEVYd\
+                        FNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuNWWFMmUAAAyQSURBVHhe7Z0F\
+                        jDRZFYVZ3N0XAguLu7vbolkI7i7B3RIsWEiQxYJbluAS3HVxX9wli7v\
+                        DIsv5+p87nL51W6qmZnr+nneSr3an3u1XXdV16mm9/1jHrI84l0Zjz8\
+                        FmXdQ5uUZjL8BmXdQ5uUZjL1Du3I9wVemNxtpT7tyPcFXpjcbaU+7cj\
+                        3BV6Y3G2sPmH0YnYJfjqtIbjbWHjasTsMtxVemNxtrDxtUJ2OW4qvT9\
+                        nZOKOxacSFTxjT0IG1cnYIOXiI+siGeJ6juBq0pfxPtEdcwxOURUx16\
+                        Gs4tKZxRV/G7mrOIXI3GYqI6xJ2Hj6gRs8GWxKmGE6juBq0pfBP0A2y\
+                        1KzurYy7BOJp51LkP0ClEdY0/CxtUJ2KCZeLiaiffRTLxNsHF1AjZoJ\
+                        h6uZuJ9zGrfD+GKojrGnoSNqxOwQTPxcHHTVcdehnUycWObYOPqBGxw\
+                        G/GABXxWZH1RVLF9uKmovhO4qvRF3EdUx8z8UmS9RVSxmfOL6tjL0Ez\
+                        cWAgbVyegB7RTsl4rqtixcFXpY/EtkYVBq9gxaSZuLISNqxPQg2bi8T\
+                        mV+KHIaiZubMLG1QnoQTPxcI4tLiDuIK4lMG+knUy8WLjGNPGJxeXFX\
+                        QTHPpOo4oZwgLjKxv+fRrzAuKTI8VvlBOIigibY5QTXroobwinF+dK+\
+                        4LjiXOIG4obivOL4oopdltMLfg/ypEbGtazidtzE/P2jxMOFx/TBVaW\
+                        PxSITv0vk84q2/LVtX3CE4Aa7r3i/+KNw/Vd8RzxFYHDyeZIIzTPx80\
+                        U+3g+E34DckMR9VfxbZP1WfEBcQnjewQdFPgY3b6SfQzxesD/m5Oemw\
+                        S1FxG+Fqwv6J7he+Vy4jpz7W8WNRfX5e4k/GJ7GQ+FugvP9l8gTjy4m\
+                        uE5Hi6z/CGpR9BV9SXxdfFf8WPxM/EZgVM/vooJ76eci68/iU+I6wj+\
+                        z4yampznrqcJj+uCq0sdikYmr3vvolT508te0/i64YZbRa8TxxHFEXL\
+                        9ZJr6yqPRyETF0tHHDLyNu3McKSho/TnU9MCU39YcE5gltl4m5Jq8Uf\
+                        YRBTiI8H35HF/soRR8oMJsrTIy5XyYw6lbkv+PdBffFInFt+R58h8ln\
+                        2bgiwyE0E09rnon7ipKGvKhyo8rEGO1rIouHRTzxKS3/JPqKksiPVV0\
+                        PaheYPmu7TPxGkYWpeEC9Q8yqZXxY8ECMfLKJaVpQalYKEz9j8tf/9R\
+                        dBifxs8VzxHlE9pLkWzhkE+fFAcPG9vyFeJw4XR4pc2n9MTM6BjWuyc\
+                        yDNxNMa08SIdhb5YZbKxA8Rle4vSKf6/jt2zJCXnpU4jzhWdT1maTtM\
+                        THvX9U9Bmz6/GEJ7/xbir8J1MxEx2cTVdfipwLg0SWinegwPhbMJPy7\
+                        QB/AiEeIBcxmR42gOuL4gaI7kOPoqPilck9+ERFf+YB+aiae1jIlpF/\
+                        EEf6agOsV/acNVoo1JfvcQ2cRnEbSZsiiNoipM30MWT3f2X0hQPT23u\
+                        KegZMmidIr2+apNTAkV4rxpRlRxAeahnR/6tIi0bOIQvw0dcFcVcd5A\
+                        CRjC3PM6z+iM8njukxzDQyBEjWezmlxANd/zo4Q+gARX/lAfmomnNc/\
+                        Evxd0eHm1LuAJTudHFtVE0jFcNvEbRCVuQNIpoXj7x0VpQing+QR0sF\
+                        RV0TDeMibmBuftt+hQGsvEvA3l1XaMVsVlHi1cVxDszyamtvIgUfUuY\
+                        0rvhKRjMsdkrilcPHAj7UrsMF1a+Gcrridch7LTlT/Qh6EmfpW47Bzm\
+                        zXhyVeljMbaJ6bWNz1ZQ3avEDYDxTy4ilt7KSn7tKb2z3ikivYJ2eBZ\
+                        VStJmmfjb4lGCh0DOL5sYA7BvWeLmp8PJRdU6H6uCz3tHFA8Y9mcTn1\
+                        rkzwZUc12YsIpzDhQuTBhpdFqG3iv8c7PgQfI9EXoiO135A30YauJF4\
+                        jOeh+Oq0sdip01MR1Qlen89jqoXwxZZVIf9ie9ts9DNheeVua3IYqiG\
+                        tOp6PEbMHMsUGHErimv29Mlf+0Rpn48zj1x1ZV82cf6MQ+3JdZCo4hw\
+                        eut6GZqpvpH2eHRt6pPDPzeNNInQ4O1w5uA/NxNPaionhJyKLThXSTi\
+                        joZKG3tNIjhOfFUz5r0WQLquJZtLFJq67HourxWCZ+9eSvffqcyMeZB\
+                        6Vv6JuCfX1MzEQSV0xkmQdGd11fRNqv2bGhWwn/3DzoAQ8dwQ5XDu5D\
+                        M/G0tmpiJghkxQ/NeOcs0XbO7bnq+zMZBaPOgtljWZTws/LbKRMzDh1\
+                        iKCcfZx5PFiHatuzrY+JTCFf0/M+DPgEX14H9jFe7lm0WgLfvj2KHKw\
+                        f3oZl4Wls1cXWtoir2tslftfxJH/xNjCF6s6kyj2Hi6GVfltMJ8mH8N\
+                        ESpnI8zj9yexkh9TAxeBT5KMIxVxQHNHR9z5iEYTQ76elz0OvNQWga/\
+                        BkeTmcu/QF+GmpgvRNwsaGt5Ho6rSh+LVZiYHysrpqjSNp0lzOH5cPO\
+                        PJar45DmGiYf2TnPtQtE5tSx3FS7GXvuaOOdB27oa18WkrOHmoiYQ6b\
+                        M6JPvqV2TmigMMYaiJ9+IQ01ATR1t3nomZd+tTCxnHHEsxvrpKE3tJ+\
+                        HpRxcwil8Q0O/qamHF3jOuihkJ/AR1O9PpT+uYhOiZxMBYf+bA6iYsJ\
+                        Kz6ba1mOJDNXHGAIzcTT2k4TMy7MMMOsOdDMd/a8qqmWnxH8Hn3gJQz\
+                        yW6WJ3y1CXKMqZhaPEyHG6tnX18TAMFQ28jxx7Q4Wnsc5hWvwkkNsXJ\
+                        2AHjQTT2s7TRxQHaxmatH2oh0ZcfTEZvXpSMms0sTMKwgxDbGKmYXPe\
+                        WZMm31DTAzM4qJNXIkhJYa/GBWYNaEmd2z5VNBesHF1AnrQTDytnTAx\
+                        MLmiks9kYmpn1u2E59OHVZrYx4mZhTZvbDrDixGhjwv2DTUx7/mGyJe\
+                        XGRiCooStZntV+AN4mdlfJWxcnYAeNBNPa6dMzJhxtfoHUxPjpYnqlb\
+                        2Y7DCEVZqYm93FrL4qLsPUU++l580h9g81sT8QePmiilmE91zHRJres\
+                        HF1AnrQTDytnTIxMOZbKW6MG03+6opZWTmvZViliSnx/LW8Ze+fPOc4\
+                        JmoMMfFphX+HM4sqbhE+3stDd9CqKmxcnYAeNBNPaydNDB8VlZjfS5X\
+                        TxxZdlNJ8R5aXYbon1UGqhXS0XFcwPfPOgokNvJzBsVZpYvB3iXlhYd\
+                        YKJAHG9/OPl0lgiInjve7QeUQVt4j8QOLd4bwAw0LYuDoBPWgmntZOm\
+                        5h51dVKEzEsdKfJX1sTb1CR16pNnOcw09McbyVlOG5eLMGXhBpiYtq8\
+                        bj7y5z7m7Sf6GhgDvrjg2P6ySgUecTG2HBNbloKNqxPQg2biae20iSE\
+                        vqBei55Mbb1ZpvKxivvWqTUzNorqXWB+c60bnF2O2Ve8xvdK+EOEQE8\
+                        OsDsVKVJW/Ih4qeKvJ86HWk0cY6N3me1JL4h3zlwrGxDk3euR5aDDxh\
+                        ofXgWTi8sz70kw8rVWYmOpZXnQP8aYTEw0Ydpq19MwyYukajrNqEwMl\
+                        3CdEH/G98yocQ03MP6gwREwC8dcR4Rqi+t2W0cFk4PKM+9JMPK1VmBg\
+                        eJirFEAYl8oMF51S9+J9Fjy5V8ueJeL1xN5gYGKtlNUpKp3lrh7FaCi\
+                        VnNfQzxMRMbY2mC/99oeDNInq8ueffLnjtkbesqgUeKEHz5A9KaEpe7\
+                        o1FomRnET9ekjmID7s8077wpGe4w/FpZsBFzDG9G/KGq0ofi+p7+6oc\
+                        89K50XLavCVYgup6ViuBZKhq5s9B/i2A73FhwdtRzFGnTXdrcTXBq45\
+                        e7XSq8/UlbCry91oUPwRKWcZvqbby0GJ9rWjHz4Jr6t+rinF8iAsD31\
+                        5UcQ6GzQv7PUdUscCMMCaJME30foIHHr8J87HpXJwaG2fj2kzYT3BV6\
+                        Y3GmNB774vu9VkznQefN2V4pbKK6w0bVydgl+Oq0huNMbm3cPnqKcvA\
+                        LLoQs82qmN6wcXUCGo3GJoeJUMy97gNNlhAl+lS1eChsXJ2ARqOxyRN\
+                        EiGGhvu16X3xwc/H3rcLG1QloNBqb3ES4LiWquAqmVPra108TVVxv2K\
+                        yLOifXaIxMXrKWoSvG5qtYh95m/sF9Vx4rHgybdVHn5BqNkaENmxcDY\
+                        JIGSwIfIi4oeDkCGNpiH51Z+Z+RIb7KfxBs1kWdk2s0tgHGzunUGiom\
+                        gVRj9oMpdzYajbnwphedVP7PySwSM7f4R+/G/IfPJ5Q7G43GUtBZxb/\
+                        c8GbBPO7vC5ZGoorNwnmsD051mtc5tzIzcQ7HHOt/GtcmbdT+URwAAA\
+                        AASUVORK5CYII=">
                         <b>WIFI Extension 2.0</b>
                     </a>
                 </div>
 
                 <!--
-                Collect the nav links, forms, and other content for toggling
+                Collect the nav links, forms, and other content for toggling.
                 -->
                 <div class="collapse navbar-collapse" id="navbar">
                     <ul class="nav navbar-nav navbar-right">
                         <li class="active" id="main_toolbar_status">
                             <a href="#">Status</a>
                         </li>
-
                         <li id="main_toolbar_configure">
                             <a href="#">Configure</a>
                         </li>
-
                         <li id="main_toolbar_about">
                             <a data-target="#modal_about" data-toggle="modal"
                             href="#">About</a>
                         </li>
                     </ul>
                 </div>
-                <!-- /.navbar-collapse -->
             </div>
-            <!-- /.container-fluid -->
         </nav>
 
         <div aria-labelledby="modal_aboutLabel"
         class="modal fade bs-example-modal-lg"
-        data-backdrop="static" id="modal_about"
-        role="dialog" tabindex="-1">
+        data-backdrop="static" id="modal_about" role="dialog" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button aria-hidden="true" class="close"
-                            data-dismiss="modal" type="button">&times;
+                        <button aria-hidden="true" class="close" 
+                        data-dismiss="modal" type="button">&times;
                         </button>
-                        <h4 class="modal-title" id="myModalLabel">
+                        <h4 class="modal-title">
                             About
                         </h4>
                     </div>
@@ -103,10 +173,10 @@
             </div>
         </div>
 
-        <!-- Main container. -->
+        <!-- Status container. -->
         <div class="container show" id="container_client_status">
             <!-- Client status panel. -->
-            <div id="div_panel_client" class="panel panel-default">
+            <div class="panel panel-default" id="div_panel_client">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <b>Client Status</b>
@@ -118,7 +188,7 @@
                         <td class="col-xs-6">
                             Enabled:
                         </td>
-                        <td id="td_client_enabled" class="col-xs-6">
+                        <td class="col-xs-6" id="td_client_enabled">
                             -
                         </td>
                     </tr>
@@ -127,7 +197,7 @@
                         <td class="col-xs-6">
                             Status:
                         </td>
-                        <td id="td_client_status" class="col-xs-6">
+                        <td class="col-xs-6" id="td_client_status">
                             -
                         </td>
                     </tr>
@@ -137,10 +207,11 @@
                             Signal Strength:
                         </td>
                         <td class="col-xs-6">
-                            <div id="div_signal_strength" aria-valuemax="100" aria-valuemin="0"
-                            aria-valuenow="0" class=
-                            "progress-bar progress-bar-danger" role=
-                            "progressbar" style="min-width: 2em; width: 0%;">
+                            <div class="progress-bar progress-bar-danger"
+                            id="div_signal_strength"
+                            aria-valuenow="0" role="progressbar"
+                            style="min-width: 2em; width: 0%;"
+                            aria-valuemax="100" aria-valuemin="0">
                                 0%
                             </div>
                         </td>
@@ -150,7 +221,7 @@
                         <td class="col-xs-6">
                             IP:
                         </td>
-                        <td id="td_client_ip" class="col-xs-6">
+                        <td class="col-xs-6" id="td_client_ip">
                             -
                         </td>
                     </tr>
@@ -159,7 +230,7 @@
                         <td class="col-xs-6">
                             Subnet Mask:
                         </td>
-                        <td id="td_client_netmask" class="col-xs-6">
+                        <td class="col-xs-6" id="td_client_netmask">
                             -
                         </td>
                     </tr>
@@ -168,7 +239,7 @@
                         <td class="col-xs-6">
                             Gateway:
                         </td>
-                        <td id="td_client_gateway" class="col-xs-6">
+                        <td class="col-xs-6" id="td_client_gateway">
                             -
                         </td>
                     </tr>
@@ -177,7 +248,7 @@
                         <td class="col-xs-6">
                             MAC Address:
                         </td>
-                        <td id="td_client_mac" class="col-xs-6">
+                        <td class="col-xs-6" id="td_client_mac">
                             -
                         </td>
                     </tr>
@@ -186,7 +257,7 @@
                         <td class="col-xs-6">
                             RX Count:
                         </td>
-                        <td id="td_client_rx_count" class="col-xs-6">
+                        <td class="col-xs-6" id="td_client_rx_count">
                             -
                         </td>
                     </tr>
@@ -195,7 +266,7 @@
                         <td class="col-xs-6">
                             TX Count:
                         </td>
-                        <td id="td_client_tx_count" class="col-xs-6">
+                        <td class="col-xs-6" id="td_client_tx_count">
                             -
                         </td>
                     </tr>
@@ -203,7 +274,7 @@
             </div>
 
             <!-- AP status panel. -->
-            <div id="div_panel_ap" class="panel panel-default">
+            <div class="panel panel-default" id="div_panel_ap">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <b>Access Point Status:</b>
@@ -215,7 +286,7 @@
                         <td class="col-xs-6">
                             Enabled:
                         </td>
-                        <td id="td_ap_enabled" class="col-xs-6">
+                        <td class="col-xs-6" id="td_ap_enabled">
                             -
                         </td>
                     </tr>
@@ -224,7 +295,7 @@
                         <td class="col-xs-6">
                             Connected Clients:
                         </td>
-                        <td id="td_ap_connected_clients" class="col-xs-6">
+                        <td class="col-xs-6" id="td_ap_connected_clients">
                             -
                         </td>
                     </tr>
@@ -233,7 +304,7 @@
                         <td class="col-xs-6">
                             IP:
                         </td>
-                        <td id="td_ap_ip" class="col-xs-6">
+                        <td class="col-xs-6" id="td_ap_ip">
                             -
                         </td>
                     </tr>
@@ -242,7 +313,7 @@
                         <td class="col-xs-6">
                             Subnet Mask:
                         </td>
-                        <td id="td_ap_netmask" class="col-xs-6">
+                        <td class="col-xs-6" id="td_ap_netmask">
                             -
                         </td>
                     </tr>
@@ -251,7 +322,7 @@
                         <td class="col-xs-6">
                             Gateway:
                         </td>
-                        <td id="td_ap_gateway" class="col-xs-6">
+                        <td class="col-xs-6" id="td_ap_gateway">
                             -
                         </td>
                     </tr>
@@ -260,7 +331,7 @@
                         <td class="col-xs-6">
                             MAC Address:
                         </td>
-                        <td id="td_ap_mac" class="col-xs-6">
+                        <td class="col-xs-6" id="td_ap_mac">
                             -
                         </td>
                     </tr>
@@ -269,7 +340,7 @@
                         <td class="col-xs-6">
                             RX Count:
                         </td>
-                        <td id="td_ap_rx_count" class="col-xs-6">
+                        <td class="col-xs-6" id="td_ap_rx_count">
                             -
                         </td>
                     </tr>
@@ -278,7 +349,7 @@
                         <td class="col-xs-6">
                             TX Count:
                         </td>
-                        <td id="td_ap_tx_count" class="col-xs-6">
+                        <td class="col-xs-6" id="td_ap_tx_count">
                             -
                         </td>
                     </tr>
@@ -856,7 +927,12 @@
             </button>
         </div> <!-- End of container for configuration elements -->
 
-        <!-- Placed at the end of the document so the pages load faster -->
+        <!--
+        Placed at the end of the document so the pages load faster.
+
+        The "embed:" tags are used to inplace replacement with contents from
+        other files.
+        -->
         <script type="text/javascript">
             // embed:./js/combined.js
         </script>

@@ -556,42 +556,40 @@
                             <label class="col-sm-2 control-label" for=
                             "client_bssid">BSSID:</label>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_bssid_0" name="client_bssid_0"
-                                 type="text" pattern="[a-fA-F\d]+">
+                                 type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_bssid_1" name="client_bssid_1"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_bssid_2" name="client_bssid_2"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
-                        </div>
 
-                        <div class="form-group row">
-                            <div class="col-sm-offset-2 col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_bssid_3" name="client_bssid_3"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_bssid_4" name="client_bssid_4"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control col-sm-1" id=
+                            <div class="col-sm-1">
+                                <input class="form-control col-sm-1 input_hex" id=
                                 "client_bssid_5" name="client_bssid_5"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
                         </div>
                     </div>
@@ -600,53 +598,51 @@
                         <div class="col-sm-offset-2 col-sm-10">
                             <div class="checkbox">
                                 <label><input id=
-                                "client_use_custom_mac_address" type=
+                                "client_mac_address" type=
                                 "checkbox"> Use Custom MAC Address</label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-group hidden" id="client_use_custom_mac_address_elements">
+                    <div class="form-group hidden" id="client_mac_address_elements">
                         <div class="form-group row">
                             <label class="col-sm-2 control-label" for=
                             "client_mac_address">MAC Address:</label>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_mac_address_0" name="client_mac_address_0"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_mac_address_1" name="client_mac_address_1"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_mac_address_2" nameclient_mac_address_2
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
-                        </div>
 
-                        <div class="form-group row">
-                            <div class="col-sm-offset-2 col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_mac_address_3" name="client_mac_address_3"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_mac_address_4" name="client_mac_address_4"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
                                 "client_mac_address_5" name="client_mac_address_5"
-                                type="text" pattern="[a-fA-F\d]+">
+                                type="text" maxlength="2">
                             </div>
                         </div>
                     </div>
@@ -783,6 +779,7 @@
                                 <option value="0">
                                     Open (No Encryption)
                                 </option>
+
                                 <option value="1">
                                     WPA/WPA2
                                 </option>
@@ -790,18 +787,19 @@
                         </div>
                     </div>
 
-                    <div class="form-group row">
+                    <div class="form-group row hidden"
+                    id="ap_encryption_password_elements">
                         <label class="control-label col-sm-2" for=
                         "ap_password">Password:</label>
                         <div class="col-sm-5">
                             <input class="form-control" id=
                             "ap_password" placeholder=
-                            "Password for connecting to the SSID" type=
+                            "Password for connecting to the access point" type=
                             "password">
                         </div>
 
                         <div class="checkbox col-sm-5">
-                            <label><input id="ap_password_characters" type=
+                            <label><input id="ap_password_show_characters" type=
                             "checkbox"> Show Characters</label>
                         </div>
                     </div>
@@ -820,7 +818,7 @@
                         <div class="col-sm-offset-2 col-sm-10">
                             <div class="checkbox">
                                 <label><input id=
-                                "ap_hide_ssid" type=
+                                "ap_hidden" type=
                                 "checkbox"> Hide SSID</label>
                             </div>
                         </div>
@@ -830,48 +828,46 @@
                         <div class="col-sm-offset-2 col-sm-10">
                             <div class="checkbox">
                                 <label><input id=
-                                "ap_custom_mac_address" type=
+                                "ap_mac_address" type=
                                 "checkbox"> Use Custom MAC Address</label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="hidden" id="ap_custom_mac_address_elements">
+                    <div class="hidden" id="ap_mac_address_elements">
                         <div class="form-group row">
                             <label class="col-sm-2 control-label">
                                 MAC Address:
                             </label>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_mac_0" type="number">
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
+                                "ap_mac_address_0" type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_mac_1" type="number">
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
+                                "ap_mac_address_1" type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_mac_2" type="number">
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <div class="col-sm-offset-2 col-sm-2">
-                                <input class="form-control" id=
-                                "ap_mac_3" type="number">
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
+                                "ap_mac_address_2" type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_mac_4" type="number">
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
+                                "ap_mac_address_3" type="text" maxlength="2">
                             </div>
 
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_mac_5" type="number">
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
+                                "ap_mac_address_4" type="text" maxlength="2">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control input_hex" id=
+                                "ap_mac_address_5" type="text" maxlength="2">
                             </div>
                         </div>
                     </div>
@@ -1091,8 +1087,6 @@
                         $('#client_encryption').val(1).change();
                 }
 
-                settings.data.client_bssid[0] = 256;
-
                 $('#client_bssid_0').val(settings.data.client_bssid[0].toString(16));
                 $('#client_bssid_1').val(settings.data.client_bssid[1].toString(16));
                 $('#client_bssid_2').val(settings.data.client_bssid[2].toString(16));
@@ -1114,8 +1108,6 @@
                     $('#client_connect_to_ap_with_specific_bssid').prop('checked', true).change();
                 }
 
-                settings.data.client_mac_address[0] = 128;
-
                 $('#client_mac_address_0').val(settings.data.client_mac_address[0].toString(16));
                 $('#client_mac_address_1').val(settings.data.client_mac_address[1].toString(16));
                 $('#client_mac_address_2').val(settings.data.client_mac_address[2].toString(16));
@@ -1129,12 +1121,12 @@
                    settings.data.client_mac_address[3] === 0 &&
                    settings.data.client_mac_address[4] === 0 &&
                    settings.data.client_mac_address[5] === 0) {
-                        if($('#client_use_custom_mac_address').checked)
-                            $('#client_use_custom_mac_address').prop('checked', false).change();
+                        if($('#client_mac_address').checked)
+                            $('#client_mac_address').prop('checked', false).change();
                 }
                 else {
-                    if(!$('#client_use_custom_mac_address').checked)
-                        $('#client_use_custom_mac_address').prop('checked', true).change();
+                    if(!$('#client_mac_address').checked)
+                        $('#client_mac_address').prop('checked', true).change();
                 }
 
 
@@ -1165,7 +1157,47 @@
                     if($('#ap_ip_configuration').val() != 1)
                         $('#ap_ip_configuration').val(1).change();
                 }
+
                 $('#ap_ssid').val(settings.data.ap_ssid);
+
+                $('#ap_password').val(settings.data.ap_password)
+
+                if(settings.data.ap_password === '') {
+                    $('#ap_encryption').val(0).change();
+                }
+                else {
+                    $('#ap_encryption').val(1).change();
+                }
+
+                $('#ap_channel').val(settings.data.ap_channel);
+
+                if(settings.data.ap_hidden) {
+                    $('#ap_hidden').prop('checked', true).change();
+                }
+                else {
+                    $('#ap_hidden').prop('checked', false).change();
+                }
+
+                $('#ap_mac_address_0').val(settings.data.ap_mac_address[0].toString(16));
+                $('#ap_mac_address_1').val(settings.data.ap_mac_address[1].toString(16));
+                $('#ap_mac_address_2').val(settings.data.ap_mac_address[2].toString(16));
+                $('#ap_mac_address_3').val(settings.data.ap_mac_address[3].toString(16));
+                $('#ap_mac_address_4').val(settings.data.ap_mac_address[4].toString(16));
+                $('#ap_mac_address_5').val(settings.data.ap_mac_address[5].toString(16));
+
+                if(settings.data.ap_mac_address[0] === 0 &&
+                   settings.data.ap_mac_address[1] === 0 &&
+                   settings.data.ap_mac_address[2] === 0 &&
+                   settings.data.ap_mac_address[3] === 0 &&
+                   settings.data.ap_mac_address[4] === 0 &&
+                   settings.data.ap_mac_address[5] === 0) {
+                        if($('#ap_mac_address').checked)
+                            $('#ap_mac_address').prop('checked', false).change();
+                }
+                else {
+                    if(!$('#ap_mac_address').checked)
+                        $('#ap_mac_address').prop('checked', true).change();
+                }
             }
 
             function doAJAXPostGetSettings(e)
@@ -1281,15 +1313,15 @@
                             "hidden");
                     }
                     if ($(this).attr("id") ===
-                        "client_use_custom_mac_address")
+                        "client_mac_address")
                     {
-                        $("#client_use_custom_mac_address_elements").toggleClass(
+                        $("#client_mac_address_elements").toggleClass(
                             "hidden");
                     }
                     if ($(this).attr("id") ===
-                        "ap_custom_mac_address")
+                        "ap_mac_address")
                     {
-                        $("#ap_custom_mac_address_elements").toggleClass(
+                        $("#ap_mac_address_elements").toggleClass(
                             "hidden");
                     }
                     if ($(this).attr("id") === "client_password_show_characters")
@@ -1301,6 +1333,16 @@
                             $('#client_password').attr("type", "password");
                         }
                     }
+                    if ($(this).attr("id") === "ap_password_show_characters")
+                    {
+                        if(this.checked) {
+                            $('#ap_password').attr("type", "text");
+                        }
+                        else {
+                            $('#ap_password').attr("type", "password");
+                        }
+                    }
+                    
                 });
 
                 $('#client_ip_configuration').change(function(e)
@@ -1335,6 +1377,20 @@
                     else if($('#ap_ip_configuration').val() === '1') {
                         $('#ap_ip_configuration_static_group').removeClass('hidden');
                     }
+                });
+
+                $('#ap_encryption').change(function(e)
+                {
+                    if($('#ap_encryption').val() === '0') {
+                        $('#ap_encryption_password_elements').addClass('hidden');
+                    }
+                    else if($('#ap_encryption').val() === '1') {
+                        $('#ap_encryption_password_elements').removeClass('hidden');
+                    }
+                });
+
+                $('.input_hex').keypress(function(e) {
+                    console.log(event.target.value + ' : ' + e.keyCode);
                 });
 
                 window.onbeforeunload = function() {

@@ -1390,7 +1390,11 @@
                 });
 
                 $('.input_hex').keypress(function(e) {
-                    console.log(event.target.value + ' : ' + e.keyCode);
+                    if(!(e.keyCode >= 48 && e.keyCode <= 57) &&
+                       !(e.keyCode >= 65 && e.keyCode <= 70) &&
+                       !(e.keyCode >= 97 && e.keyCode <= 102)) {
+                        e.preventDefault();
+                    }
                 });
 
                 window.onbeforeunload = function() {

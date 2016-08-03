@@ -63,12 +63,12 @@
             </div>
         </nav>
 
-        <div aria-labelledby="modal_aboutLabel"
+        <div aria-labelledby="modal_about"
         class="modal fade bs-example-modal-lg"
         data-backdrop="static" id="modal_about" role="dialog" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
-                    <div class="modal-header">
+                    <div class="modal-header modal-header-tf">
                         <button aria-hidden="true" class="close" 
                         data-dismiss="modal" type="button">&times;
                         </button>
@@ -703,6 +703,12 @@
 
                             <div class="col-sm-2">
                                 <input class="form-control"
+                                id="ap_static_netmask_0"
+                                type="number">
+                            </div>
+
+                            <div class="col-sm-2">
+                                <input class="form-control"
                                 id="ap_static_netmask_1"
                                 type="number">
                             </div>
@@ -718,12 +724,6 @@
                                 id="ap_static_netmask_3"
                                 type="number">
                             </div>
-
-                            <div class="col-sm-2">
-                                <input class="form-control"
-                                id="ap_static_netmask_4"
-                                type="number">
-                            </div>
                         </div>
 
                         <div class="form-group row" id="ap_static_gateway">
@@ -731,6 +731,11 @@
                             for="ap_static_gateway">
                                 Gateway:
                             </label>
+
+                            <div class="col-sm-2">
+                                <input class="form-control" id=
+                                "ap_static_gateway_0" type="number">
+                            </div>
 
                             <div class="col-sm-2">
                                 <input class="form-control" id=
@@ -745,11 +750,6 @@
                             <div class="col-sm-2">
                                 <input class="form-control" id=
                                 "ap_static_gateway_3" type="number">
-                            </div>
-
-                            <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_static_gateway_4" type="number">
                             </div>
                         </div>
                     </div>

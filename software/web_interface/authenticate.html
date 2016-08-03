@@ -31,27 +31,81 @@
             <!-- /.container-fluid -->
         </nav>
 
+        <div aria-labelledby="modal_auth_failed_secret"
+        class="modal fade bs-example-modal-lg"
+        data-backdrop="static" id="modal_auth_failed_secret" role="dialog" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-danger">
+                        <button aria-hidden="true" class="close"
+                        data-dismiss="modal" type="button">&times;
+                        </button>
+                        <h4 class="modal-title">
+                            Error
+                        </h4>
+                    </div>
+
+                    <div class="modal-body">
+                        Authentication failed. Please check your secret.
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-default" data-dismiss="modal"
+                        type="button">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div aria-labelledby="modal_auth_failed_cookie"
+        class="modal fade bs-example-modal-lg"
+        data-backdrop="static" id="modal_auth_failed_cookie" role="dialog" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-danger">
+                        <button aria-hidden="true" class="close"
+                        data-dismiss="modal" type="button">&times;
+                        </button>
+                        <h4 class="modal-title">
+                            Error
+                        </h4>
+                    </div>
+
+                    <div class="modal-body">
+                        Authentication failed. Make sure the browser supports session cookies.
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-default" data-dismiss="modal"
+                        type="button">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div aria-labelledby="modal_submit"
         class="modal fade bs-example-modal-lg"
         data-backdrop="static" id="modal_submit"
         role="dialog" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
+                   <div class="modal-header modal-header-info">
+                        <h4 class="modal-title">
+                            Authenticating
+                        </h4>
+                    </div>
                     <div class="modal-body">
-                        Authenticating...
+                        Authentication is in progress. Please wait.
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="container">
-            <div id="alert_cookie" class="alert alert-danger hidden" role="alert">
-                <strong>Error!</strong> Failed to authenticate. Make sure the browser supports session cookies.
-            </div>
-            <div id="alert_error" class="alert alert-danger hidden" role="alert">
-                <strong>Error!</strong> Failed to authenticate. Please check your secret.
-            </div>
-
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">
@@ -115,16 +169,7 @@
                                 $('#modal_submit').modal('show');
                                 console.log('*** data = ' + data);
                                 console.log('*** cookie = ' + document.cookie);
-                                //$(window).attr('location', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                                //$(location).attr('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                                //$(location).prop('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
                                 setTimeout(function(){window.location.replace(window.location.protocol+'//'+window.location.hostname);}, 3000);
-                                //window.location.replace(window.location.protocol+'//'+window.location.hostname);
-                                //window.location.href = window.location.protocol+'//'+window.location.hostname+'/';
-                                //window.location = window.location.protocol+'//'+window.location.hostname+'/';
-                                //setTimeout(function(){
-
-                                //}, 2000);
                             }
                             else {
                                 // Show the body of the page only when the whole page is ready.
@@ -141,27 +186,12 @@
 
                 doPost();
 
-                // Clear all alerts.
-                $("#alert_cookie").hide();
-                $("#alert_error").hide();
-
                 // Secret field's keyup event handler.
-                $("#secret").keyup(function(e) {
+                $("#secret").keypress(function(e) {
                     if($( "#secret" ).val().length < 1)
                         $('#submit').prop('disabled', true);
                     else
                         $('#submit').prop('disabled', false);
-                });
-
-                /*
-                 * Clear all alerts when authenticate modal is shown.
-                 * This implies a new submit.
-                 */
-                $("#modal_submit").on('show.bs.modal', function (e) {
-                    $("#alert_cookie").addClass('hidden');
-                    $("#alert_cookie").hide();
-                    $("#alert_error").addClass('hidden');
-                    $("#alert_error").hide();
                 });
 
                 // Show/hide characters.
@@ -194,33 +224,19 @@
                             if(o.status === 1) {
                                 console.log('*** data = ' + data)
                                 console.log('*** cookie = ' + document.cookie);
-                                //$(window).attr('location', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                                //$(location).attr('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
-                                //$(location).prop('href', window.location.protocol+'//'+window.location.hostname+'/index.html');
+
                                 if(!document.cookie) {
-                                    $("#alert_cookie").removeClass('hidden');
-                                    $("#alert_cookie").show();
-                                    $("#alert_error").addClass('hidden');
-                                    $("#alert_error").hide();
                                     $("#modal_submit").modal('hide');
+                                    $("#modal_auth_failed_cookie").modal('show');
 
                                     return;
                                 }
 
-                                setTimeout(function(){window.location.replace(window.location.protocol+'//'+window.location.hostname);}, 3000);
-                                //window.location.replace(window.location.protocol+'//'+window.location.hostname);
-                                //window.location.href = window.location.protocol+'//'+window.location.hostname+'/';
-                                //window.location = window.location.protocol+'//'+window.location.hostname+'/';
-                                //setTimeout(function(){
-
-                                //}, 2000);
+                                window.location.replace(window.location.protocol+'//'+window.location.hostname);
                             }
                             else {
-                                $("#alert_cookie").addClass('hidden');
-                                $("#alert_cookie").hide();
-                                $("#alert_error").removeClass('hidden');
-                                $("#alert_error").show();
                                 $("#modal_submit").modal('hide');
+                                $("#modal_auth_failed_secret").modal('show');
                             }
                         },
                         error: function(request, status, err) {
@@ -230,14 +246,9 @@
                             console.log(err);
 
                             $("#modal_submit").modal('hide');
-                            $("#alert_cookie").addClass('hidden');
-                            $("#alert_cookie").hide();
-                            $("#alert_error").removeClass('hidden');
-                            $("#alert_error").show();
+                            $("#modal_auth_failed_secret").modal('show');
                         }
                     });
-
-                    console.log('show event fired!, secret = ' + $("#secret").val());
                 });
             });
         </script>

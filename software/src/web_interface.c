@@ -175,6 +175,15 @@ int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data) {
 	return cgiEspFsHook(connection_data);
 }
 
+int ICACHE_FLASH_ATTR cgi_ping_pong(HttpdConnData *connection_data) {
+	// Possible DoS attack with socket overflow ?
+	httpdStartResponse(connection_data, 200);
+	httpdEndHeaders(connection_data);
+	httpdSend(connection_data, "pong", -1);
+
+	return HTTPD_CGI_DONE;
+}
+
 int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data) {
 	struct get_status status;
 	char response[GENERIC_BUFFER_SIZE];

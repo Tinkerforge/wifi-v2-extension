@@ -37,6 +37,7 @@ extern Configuration configuration_current;
 HttpdBuiltInUrl builtInUrls[] = {
 	{"/", cgi_root, NULL},
 	{"/index.html", cgi_root, NULL},
+	{"/ping_pong.cgi", cgi_ping_pong, NULL},
 	{"/authenticate.html", cgi_authenticate_html, NULL},
 	{"/get_status.cgi", cgi_get_status, NULL},
 	{"/end_session.cgi", cgi_end_session, NULL},

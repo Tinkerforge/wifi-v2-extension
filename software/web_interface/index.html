@@ -51,8 +51,8 @@
                         <li class="active" id="main_toolbar_status">
                             <a href="#">Status</a>
                         </li>
-                        <li id="main_toolbar_configure">
-                            <a href="#">Configure</a>
+                        <li id="main_toolbar_settings">
+                            <a href="#">Settings</a>
                         </li>
                         <li id="main_toolbar_about">
                             <a data-target="#modal_about" data-toggle="modal"
@@ -86,6 +86,82 @@
                         type="button">
                             Close
                         </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div aria-labelledby="modal_error_verification"
+        class="modal fade bs-example-modal-lg"
+        data-backdrop="static" id="modal_error_verification" role="dialog" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-danger">
+                        <button aria-hidden="true" class="close" 
+                        data-dismiss="modal" type="button">&times;
+                        </button>
+                        <h4 class="modal-title">
+                            Error
+                        </h4>
+                    </div>
+
+                    <div class="modal-body">
+                        Verification failed. Please verify the marked fields.
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-default" data-dismiss="modal"
+                        type="button">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+       <div aria-labelledby="modal_warning_save_reset"
+        class="modal fade bs-example-modal-lg"
+        data-backdrop="static" id="modal_warning_save_reset" role="dialog" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header modal-header-warning">
+                        <h4 class="modal-title">
+                            Warning
+                        </h4>
+                    </div>
+
+                    <div class="modal-body">
+                        The extension will reset after saving the settings. Continue?
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-default" data-dismiss="modal"
+                        type="button" id="button_modal_warning_save_reset_OK">
+                            OK
+                        </button>
+
+                        <button class="btn btn-default" data-dismiss="modal"
+                        type="button" id="button_modal_warning_save_reset_Cancel">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div aria-labelledby="modal_info_saving_resetting"
+        class="modal fade bs-example-modal-lg"
+        data-backdrop="static" id="modal_info_saving_resetting"
+        role="dialog" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                   <div class="modal-header modal-header-info">
+                        <h4 class="modal-title">
+                            Information
+                        </h4>
+                    </div>
+                    <div class="modal-body">
+                        The settings are being saved. Please wait until the extension has finished resetting.
                     </div>
                 </div>
             </div>
@@ -276,8 +352,8 @@
         </div>
 
         <!-- Configure settings container. -->
-        <div class="container hidden" id="container_configure">
-            <form id="form_settings" class="form-horizontal">
+        <div class="container hidden" id="container_settings">
+            <form id="form_action" class="form-horizontal" action="./update_settings.cgi">
             <!-- General settings. -->
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -287,36 +363,45 @@
                 </div>
 
                 <div class="panel-body">
-                        <div class="form-group row">
+                        <div class="form-group row markable" id="markable_general_port">
                             <label class="col-sm-2 control-label" for=
                             "general_port">Port:</label>
                             <div class="col-sm-10">
-                                <input class="form-control" id="general_port"
+                                <input class="form-control input_port" id="general_port"
                                 name="general_port" min="1" step="1" max="65535"
                                 placeholder="Port to listen on" type="number">
+                                <p class="help-block" id="hb_general_port_range">
+                                    Port number must be in the range of 1 - 65535
+                                </p>
                             </div>
                         </div>
 
-                        <div class="form-group row">
+                        <div class="form-group row markable" id="markable_general_websocket_port">
                             <label class="col-sm-2 control-label" for=
                             "general_websocket_port">WebSocket Port:</label>
                             <div class="col-sm-10">
-                                <input class="form-control" id=
+                                <input class="form-control input_port" id=
                                 "general_websocket_port" min="1" step="1" max="65535"
                                 name="general_websocket_port" placeholder=
                                 "Websocket port to listen on" type="number">
+                                <p class="help-block" id="hb_websocket_port_range">
+                                    Port number must be in the range of 1 - 65535
+                                </p>
                             </div>
                         </div>
 
-                        <div class="form-group row">
+                        <div class="form-group row markable" id="markable_general_website_port">
                             <label class="col-sm-2 control-label" for=
                             "general_website_port">Website Port:</label>
                             <div class="col-sm-10">
-                                <input class="form-control" id=
+                                <input class="form-control input_port" id=
                                 "general_website_port" min="1" step="1" max="65535"
                                 name="general_website_port" placeholder=
                                 "Port on which this web interface is available"
                                 type="number">
+                                <p class="help-block" id="hb_general_website_port_range">
+                                    Port number must be in the range of 1 - 65535
+                                </p>
                             </div>
                         </div>
 
@@ -351,14 +436,17 @@
                             </div>
                         </div>
 
-                        <div class="form-group hidden row" id=
+                        <div class="form-group hidden row markable" id=
                         "general_use_authentication_elements">
                             <label class="col-sm-2 control-label" for=
                             "general_secret">Secret:</label>
                             <div class="col-sm-5">
                                 <input class="form-control" id="general_secret"
                                 placeholder="Secret for authentication" type=
-                                "password">
+                                "password" maxlength="64">
+                                <p class="help-block" id="hb_general_secret_ascii">
+                                    Only ASCII characters are allowed for secret
+                                </p>
                             </div>
 
                             <div class="checkbox col-sm-5">
@@ -396,13 +484,16 @@
                 </div>
 
                 <div class="panel-body">
-                    <div class="form-group row">
+                    <div class="form-group row markable" id="markable_client_hostname">
                         <label class="col-sm-2 control-label" for=
                         "client_hostname">Hostname:</label>
                         <div class="col-sm-10">
                             <input class="form-control" id=
                             "client_hostname" placeholder=
                             "Hostname of the node" type="text">
+                            <p class="help-block" id="hb_client_hostname_ascii">
+                                Only ASCII characters are allowed for hostname
+                            </p>
                         </div>
                     </div>
 
@@ -423,7 +514,7 @@
                     </div>
 
                     <!-- Client static IP configuration -->
-                    <div id="client_ip_configuration_static_group" class="hidden">
+                    <div id="client_ip_configuration_static_group" class="hidden markable">
                         <div class="form-group row" id="client_static_ip">
                             <label class="col-sm-2 control-label">IP:</label>
 
@@ -497,16 +588,25 @@
                                     "client_static_gateway_3" type="number">
                                 </div>
                         </div>
+                        <div class="form-group row" id="client_static_gateway">
+                            <p class="help-block col-sm-offset-2 col-sm-10" id="hb_client_static_ip">
+                                Check client static IP settings
+                            </p>
+                        </div>
+
                     </div>
 
-                    <div class="form-group row">
+                    <div class="form-group row markable" id="markable_client_ssid">
                         <label class="col-sm-2 control-label" for=
-                        "general_ssid">SSID:</label>
+                        "client_ssid">SSID:</label>
                         <div class="col-sm-10">
                             <input class="form-control" id="client_ssid"
                             placeholder=
                             "SSID of the access point to connect to" type=
                             "text">
+                            <p class="help-block" id="hb_client_ssid_ascii">
+                                Only ASCII characters are allowed for SSID
+                            </p>
                         </div>
                     </div>
 
@@ -526,14 +626,17 @@
                         </div>
                     </div>
 
-                    <div class="form-group row hidden" id="client_encryption_password_group">
+                    <div class="form-group row hidden markable" id="client_encryption_password_group">
                         <label class="control-label col-sm-2" for=
                         "general_password">Password:</label>
                         <div class="col-sm-5">
                             <input class="form-control" id=
                             "client_password" placeholder=
                             "Password for connecting to the SSID" type=
-                            "password">
+                            "password" maxlength="64">
+                            <p class="help-block" id="hb_client_password_ascii">
+                                Only ASCII characters are allowed for password
+                            </p>
                         </div>
 
                         <div class="checkbox col-sm-5">
@@ -675,7 +778,7 @@
                     </div>
 
                     <!-- AP static IP configuration -->
-                    <div class="hidden" id="ap_ip_configuration_static_group">
+                    <div class="hidden markable" id="ap_ip_configuration_static_group">
                         <div class="form-group row" id="ap_static_ip">
                             <label class="col-sm-2 control-label" for="ap_static_ip">IP:</label>
 
@@ -751,10 +854,16 @@
                                 <input class="form-control" id=
                                 "ap_static_gateway_3" type="number">
                             </div>
+
+                        </div>
+                        <div class="form-group row" id="ap_static_gateway">
+                            <p class="help-block col-sm-offset-2 col-sm-10" id="hb_general_secret_ascii">
+                                Check access point static IP settings
+                            </p>
                         </div>
                     </div>
 
-                    <div class="form-group row">
+                    <div class="form-group row markable" id="markable_ap_ssid">
                         <label class="col-sm-2 control-label"
                         for="ap_ssid">
                             SSID:
@@ -765,6 +874,12 @@
                             placeholder=
                             "SSID to broadcast" type=
                             "text">
+                        <p class="help-block" id="hb_ap_ssid_empty">
+                            Access point SSID can not be empty
+                        </p>
+                        <p class="help-block" id="hb_ap_ssid_ascii">
+                            Only ASCII characters are allowed for access point SSID
+                        </p>
                         </div>
                     </div>
 
@@ -787,7 +902,7 @@
                         </div>
                     </div>
 
-                    <div class="form-group row hidden"
+                    <div class="form-group row hidden markable"
                     id="ap_encryption_password_elements">
                         <label class="control-label col-sm-2" for=
                         "ap_password">Password:</label>
@@ -795,7 +910,16 @@
                             <input class="form-control" id=
                             "ap_password" placeholder=
                             "Password for connecting to the access point" type=
-                            "password">
+                            "password" maxlength="64">
+                            <p class="help-block" id="hb_ap_password_empty">
+                                Access point password can not be empty
+                            </p>
+                            <p class="help-block" id="hb_ap_password_length">
+                                Access point password must be at least 8 characters long
+                            </p>
+                            <p class="help-block" id="hb_ap_password_ascii">
+                                Only ASCII characters are allowed for access point SSID
+                            </p>
                         </div>
 
                         <div class="checkbox col-sm-5">
@@ -804,13 +928,16 @@
                         </div>
                     </div>
 
-                    <div class="form-group row">
+                    <div class="form-group row markable" id="markable_ap_channel">
                         <label class="control-label col-sm-2" for=
                         "ap_channel-label">Channel:</label>
 
                         <div class="checkbox col-sm-10">
                             <input class="form-control" id=
-                            "ap_channel" type="number">
+                            "ap_channel" type="number" min="1" step="1" max="13">
+                            <p class="help-block" id="hb_ap_ssid_empty">
+                                Channel number should be in the range of 1 - 13
+                            </p>
                         </div>
                     </div>
 
@@ -875,7 +1002,7 @@
             </div>
         </form> <!-- Close form which was opened at just after opening common settings panel's body -->
 
-            <button id="button_save_wifi_configuration" class="btn btn-block spacer-bottom" type="button">
+            <button id="button_save_reset_settings" class="btn btn-block spacer-bottom" type="button">
                 Save and Reset
             </button>
         </div> <!-- End of container for configuration elements -->
@@ -1258,32 +1385,110 @@
                 });
             }
 
+            function do_verification(e) {
+                var general_port = parseInt($('#general_port').val());
+                var general_websocket_port = parseInt($('#general_websocket_port').val());
+                var general_website_port = parseInt($('#general_website_port').val());
+                var general_use_authentication = $('#general_use_authentication').checked;
+                var general_secret = $('#general_secret').val();
+                var client_hostname = $('#client_hostname').val();
+                var client_static_ip_0 = $('#client_static_ip_0').val();
+                var client_static_ip_1 = $('#client_static_ip_1').val();
+                var client_static_ip_2 = $('#client_static_ip_2').val();
+                var client_static_ip_3 = $('#client_static_ip_3').val();
+                var client_static_netmask_0 = $('#client_static_netmask_0').val();
+                var client_static_netmask_1 = $('#client_static_netmask_1').val();
+                var client_static_netmask_2 = $('#client_static_netmask_2').val();
+                var client_static_netmask_3 = $('#client_static_netmask_3').val();
+                var client_static_gateway_0 = $('#client_static_gateway_0').val();
+                var client_static_gateway_1 = $('#client_static_gateway_1').val();
+                var client_static_gateway_2 = $('#client_static_gateway_2').val();
+                var client_static_gateway_3 = $('#client_static_gateway_3').val();
+                var client_ssid = $('#client_ssid').val();
+                var client_password = $('#client_password').val();
+
+                var ap_static_ip_0 = $('#ap_static_ip_0').val();
+                var ap_static_ip_1 = $('#ap_static_ip_1').val();
+                var ap_static_ip_2 = $('#ap_static_ip_2').val();
+                var ap_static_ip_3 = $('#ap_static_ip_3').val();
+                var ap_static_netmask_0 = $('#ap_static_netmask_0').val();
+                var ap_static_netmask_1 = $('#ap_static_netmask_1').val();
+                var ap_static_netmask_2 = $('#ap_static_netmask_2').val();
+                var ap_static_netmask_3 = $('#ap_static_netmask_3').val();
+                var ap_static_gateway_0 = $('#ap_static_gateway_0').val();
+                var ap_static_gateway_1 = $('#ap_static_gateway_1').val();
+                var ap_static_gateway_2 = $('#ap_static_gateway_2').val();
+                var ap_static_gateway_3 = $('#ap_static_gateway_3').val();
+                var ap_ssid = $('#ap_ssid').val();
+                var ap_password = $('#ap_password').val();
+                var ap_channel = $('#ap_channel').val();
+
+                console.log(general_port);
+                console.log(general_websocket_port);
+                console.log(general_website_port);
+                console.log(general_use_authentication);
+                console.log(general_secret);
+                console.log(client_hostname);
+                console.log(client_static_ip_0);
+                console.log(client_static_ip_1);
+                console.log(client_static_ip_2);
+                console.log(client_static_ip_3);
+                console.log(client_static_netmask_0);
+                console.log(client_static_netmask_1);
+                console.log(client_static_netmask_2);
+                console.log(client_static_netmask_3);
+                console.log(client_static_gateway_0);
+                console.log(client_static_gateway_1);
+                console.log(client_static_gateway_2);
+                console.log(client_static_gateway_3);
+                console.log(client_ssid);
+                console.log(client_password);
+                console.log(ap_static_ip_0);
+                console.log(ap_static_ip_1);
+                console.log(ap_static_ip_2);
+                console.log(ap_static_ip_3);
+                console.log(ap_static_netmask_0);
+                console.log(ap_static_netmask_1);
+                console.log(ap_static_netmask_2);
+                console.log(ap_static_netmask_3);
+                console.log(ap_static_gateway_0);
+                console.log(ap_static_gateway_1);
+                console.log(ap_static_gateway_2);
+                console.log(ap_static_gateway_3);
+                console.log(ap_ssid);
+                console.log(ap_password);
+                console.log(ap_channel);
+
+                console.log('do verification');
+                console.log($("#form_action").serialize());
+            }
+
             $(document).ready(function()
             {
                 $('#button_save_wifi_configuration').click(function(event)
                 {
                     console.log("*** Save settings button clicked ***");
-                    console.log($("#form_settings").serialize());
+                    console.log($("#form_action").serialize());
                 });
                 $('#main_toolbar_status').click(function(event)
                 {
-                    $('#container_configure').addClass('hidden');
-                    $('#container_configure').removeClass('show');
+                    $('#container_settings').addClass('hidden');
+                    $('#container_settings').removeClass('show');
                     $('#container_client_status').addClass('show');
                     $('#container_client_status').removeClass('hidden');
                     $('#main_toolbar_about').removeClass('active');
-                    $('#main_toolbar_configure').removeClass('active');
+                    $('#main_toolbar_settings').removeClass('active');
                     $('#main_toolbar_status').addClass('active');
                     $('#main_toolbar_about').removeClass('active');
                 });
-                $('#main_toolbar_configure').click(function(event)
+                $('#main_toolbar_settings').click(function(event)
                 {
-                    $('#container_configure').addClass('show');
-                    $('#container_configure').removeClass('hidden');
+                    $('#container_settings').addClass('show');
+                    $('#container_settings').removeClass('hidden');
                     $('#container_client_status').addClass('hidden');
                     $('#container_client_status').removeClass('show');
                     $('#main_toolbar_about').removeClass('active');
-                    $('#main_toolbar_configure').addClass('active');
+                    $('#main_toolbar_settings').addClass('active');
                     $('#main_toolbar_status').removeClass('active');
                     $('#main_toolbar_about').removeClass('active');
                 });
@@ -1390,12 +1595,35 @@
                 });
 
                 $('.input_hex').keypress(function(e) {
+                    console.log(e.keyCode);
                     if(!(e.keyCode >= 48 && e.keyCode <= 57) &&
                        !(e.keyCode >= 65 && e.keyCode <= 70) &&
                        !(e.keyCode >= 97 && e.keyCode <= 102)) {
                         e.preventDefault();
                     }
                 });
+
+                $('.input_port').keypress(function(e) {
+                    var current_value = $(this).val() + String.fromCharCode(e.which);
+
+                    if(parseInt(current_value) < 1 || parseInt(current_value) > 65535) {
+                        e.preventDefault();
+                    }
+                });
+
+                $('#button_save_reset_settings').click(function(e) {
+                    console.log('*** save reset clicked');
+                    do_verification();
+                    if(/*do_verification()*/true) {
+                        $("#modal_warning_save_reset").modal('show');
+                    }
+                    else {
+
+                    }
+                });
+
+                $('.markable').addClass('has-warning');
+                $('.help-block').addClass('hidden');
 
                 window.onbeforeunload = function() {
                     $.ajax({

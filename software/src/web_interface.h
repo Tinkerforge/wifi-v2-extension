@@ -55,6 +55,7 @@ int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR do_get_status(struct get_status *status,
 									unsigned char init_only);
 int ICACHE_FLASH_ATTR cgi_root(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_ping_pong(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data);

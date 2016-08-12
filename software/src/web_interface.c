@@ -4,6 +4,7 @@
 #include "web_interface.h"
 #include "configuration.h"
 #include "communication.h"
+#include "tfp_connection.h"
 
 extern GetWifi2StatusReturn gw2sr;
 extern Configuration configuration_current;
@@ -62,7 +63,6 @@ const char *fmt_response_json_settings_data = \
 
 const char *fmt_set_session_cookie = "sid=%lu";
 
-extern Configuration configuration_current;
 unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
 
 int ICACHE_FLASH_ATTR do_get_sid(unsigned long *sid) {
@@ -131,15 +131,18 @@ int ICACHE_FLASH_ATTR do_get_cookie_field(char *cookie,
 }
 
 int ICACHE_FLASH_ATTR do_has_cookie(HttpdConnData *connection_data,
-								  char *cookie,
-								  unsigned long length) {
-	if ((httpdGetHeader(connection_data,
-						"Cookie",
-						cookie,
-						length)) == 1)
+								 	char *cookie,
+								 	unsigned long length) {
+	if((httpdGetHeader(connection_data,
+					   "Cookie",
+					   cookie,
+					   length)) == 1) {
 		return 1;
-	else 
+	}
+		
+	else {
 		return -1;
+	}
 }
 
 int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data) {
@@ -150,9 +153,9 @@ int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data) {
 		return 1;
 	}
 
-	if ((do_has_cookie(connection_data,
-					   cookie,
-					   GENERIC_BUFFER_SIZE)) == 1) {
+	if((do_has_cookie(connection_data,
+					  cookie,
+					  GENERIC_BUFFER_SIZE)) == 1) {
 
 		if((do_get_cookie_field(cookie,
 								"sid=",
@@ -184,14 +187,28 @@ int ICACHE_FLASH_ATTR cgi_ping_pong(HttpdConnData *connection_data) {
 	return HTTPD_CGI_DONE;
 }
 
+int ICACHE_FLASH_ATTR do_check_request(char *buffer_post, uint8 rid) {
+	char request[4];
+
+	if ((httpdFindArg(buffer_post, "request", request, 4)) > 0) {
+		if(atoi(request) == rid) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data) {
 	struct get_status status;
 	char response[GENERIC_BUFFER_SIZE];
 	char response_status_data[GENERIC_BUFFER_SIZE];
 
 	httpdStartResponse(connection_data, 200);
-	
-	if((do_check_session(connection_data)) == 1) {
+
+	if(((do_check_session(connection_data)) == 1) &&
+	   ((do_check_request(connection_data->post->buff,
+						 JSON_REQUEST_GET_STATUS)) == 1)) {
 		do_get_status(&status, 0);
 
 	 	sprintf(response_status_data,
@@ -394,21 +411,18 @@ int ICACHE_FLASH_ATTR do_get_status(struct get_status *status,
 
 int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data) {
 	unsigned long sid;
-	char request[8];
 	char cookie[GENERIC_BUFFER_SIZE];
 	char response[GENERIC_BUFFER_SIZE];
 
 	httpdStartResponse(connection_data, 200);
 	httpdEndHeaders(connection_data);
 
-	if ((do_has_cookie(connection_data,
-					   cookie,
-					   GENERIC_BUFFER_SIZE)) == 1) {
-		if ((httpdFindArg(connection_data->post->buff,
-				 	  	  "request",
-				 	  	  request,
-				 	  	  8)) > 0) {
-			if(atoi(request) == JSON_REQUEST_END_SESSION) {
+	if(((do_check_session(connection_data)) == 1) &&
+	   ((do_check_request(connection_data->post->buff,
+						  JSON_REQUEST_END_SESSION)) == 1)) {
+			if((do_has_cookie(connection_data,
+							  cookie,
+							  GENERIC_BUFFER_SIZE)) == 1) {
 				if((do_get_cookie_field(cookie,
 										"sid=",
 										HEADER_FIELD_TYPE_NUMERIC,
@@ -430,7 +444,6 @@ int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data) {
 					}
 				}
 			}
-		}
 	}
 
 	sprintf(response,
@@ -446,36 +459,44 @@ int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data) {
 
 int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data) {
 	unsigned long sid;
+	char data[GENERIC_BUFFER_SIZE];
 	char response[GENERIC_BUFFER_SIZE];
 	char header_set_cookie[GENERIC_BUFFER_SIZE];
 	char secret[CONFIGURATION_SECRET_MAX_LENGTH];
 
 	httpdStartResponse(connection_data, 200);
 
-	if ((httpdFindArg(connection_data->post->buff,
-				 	  "secret",
-				 	  secret,
-				 	  CONFIGURATION_SECRET_MAX_LENGTH)) > 0) {
-		if((strcmp(configuration_current.general_authentication_secret, secret)) == 0) {
-			if((do_get_sid(&sid)) == 1) {
-				sprintf(header_set_cookie,
-						fmt_set_session_cookie,
-						sid);
+	if(((do_check_request(connection_data->post->buff,
+						 JSON_REQUEST_AUTHENTICATE)) == 1) &&
+		((httpdFindArg(connection_data->post->buff,
+				 		"data",
+				 		data,
+				 		GENERIC_BUFFER_SIZE)) > 0)) {
+			if((httpdFindArg(data,
+				 			 "secret",
+				 			 secret,
+				 			 CONFIGURATION_SECRET_MAX_LENGTH)) > 0) {
+				if((strcmp(configuration_current.general_authentication_secret, secret)) == 0) {
+					if((do_get_sid(&sid)) == 1) {
+						sprintf(header_set_cookie,
+								fmt_set_session_cookie,
+								sid);
 
-				httpdHeader(connection_data, "Set-Cookie", header_set_cookie);
-				httpdEndHeaders(connection_data);
+						httpdHeader(connection_data, "Set-Cookie", header_set_cookie);
+						httpdEndHeaders(connection_data);
 
-				sprintf(response,
-						fmt_response_json,
-						JSON_REQUEST_AUTHENTICATE,
-						JSON_STATUS_OK,
-						"null");
+						sprintf(response,
+								fmt_response_json,
+								JSON_REQUEST_AUTHENTICATE,
+								JSON_STATUS_OK,
+								"null");
 
-				httpdSend(connection_data, response, -1);
+						httpdSend(connection_data, response, -1);
 
-				return HTTPD_CGI_DONE;
+						return HTTPD_CGI_DONE;
+					}
+				}
 			}
-		}
 	}
 
 	httpdEndHeaders(connection_data);
@@ -498,8 +519,9 @@ int ICACHE_FLASH_ATTR cgi_get_settings(HttpdConnData *connection_data) {
 	httpdStartResponse(connection_data, 200);
 	httpdEndHeaders(connection_data);
 
-	if((do_check_session(connection_data)) == 1) {
-		printf("\n\n*** cgi_get_settings(): SENDING SETTINGS ***\n\n");
+	if(((do_check_session(connection_data)) == 1) &&
+	   ((do_check_request(connection_data->post->buff,
+					 	  JSON_REQUEST_GET_SETTINGS)) == 1)) {
 	 	sprintf(response_settings,
 				fmt_response_json_settings_data,
 				configuration_current.general_port,
@@ -570,7 +592,6 @@ int ICACHE_FLASH_ATTR cgi_get_settings(HttpdConnData *connection_data) {
 				response_settings);
 	}
 	else {
-		printf("\n\n*** cgi_get_settings(): NO SESSION ***\n\n");
 		sprintf(response,
 				fmt_response_json,
 				JSON_REQUEST_GET_SETTINGS,
@@ -592,6 +613,38 @@ int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void) {
 }
 
 int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
+	const uint8_t tf_reset_packet[8] = {0, 0, 0, 0, 8, 243, 0, 0};
+
+	char data[GENERIC_BUFFER_SIZE];
+
+	char general_website_port[6];
+
+	//httpdStartResponse(connection_data, 200);
+	//httpdEndHeaders(connection_data);
+
+	if(((do_check_session(connection_data)) == 1) &&
+	   ((do_check_request(connection_data->post->buff,
+					 	  JSON_REQUEST_UPDATE_SETTINGS)) == 1)) {
+		if((httpdFindArg(connection_data->post->buff,
+					 	 "data",
+					 	 data,
+					 	 GENERIC_BUFFER_SIZE)) > 0) {
+
+			// Get all form fields from data.
+			if((httpdFindArg(data, "general_website_port", general_website_port, 6)) > 0) {
+				// Save settings.
+				configuration_current.general_website_port = atoi(general_website_port);
+				configuration_save_to_eeprom();
+
+				// Reset stack.
+				tfp_handle_packet(tf_reset_packet, 8);
+			}
+		}
+	}
+	else {
+	}
+
+	//httpdSend(connection_data, response, -1);
 
 	return HTTPD_CGI_DONE;
 }
@@ -599,12 +652,12 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 int ICACHE_FLASH_ATTR cgi_authenticate_html(HttpdConnData *connection_data) {
 	if((do_check_session(connection_data)) == 1) {
 		connection_data->cgiArg = "/index.html";
-		
+
 		return cgiRedirect(connection_data);
 	}
 
 	connection_data->url = "/authenticate.html";
-	
+
 	return cgiEspFsHook(connection_data);
 }
 
@@ -614,7 +667,16 @@ int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_dat
 	httpdStartResponse(connection_data, 200);
 	httpdEndHeaders(connection_data);
 
-	if((do_check_session(connection_data)) == 1) {
+	char cookie[GENERIC_BUFFER_SIZE];
+
+	if((httpdGetHeader(connection_data,
+					   "Cookie",
+					   cookie,
+					   GENERIC_BUFFER_SIZE)) == 1)
+
+	if(((do_check_session(connection_data)) == 1) &&
+	   ((do_check_request(connection_data->post->buff,
+					 	 JSON_REQUEST_IS_ALREADY_AUTHENTICATED)) == 1)) {
 		sprintf(response,
 				fmt_response_json,
 				JSON_REQUEST_IS_ALREADY_AUTHENTICATED,

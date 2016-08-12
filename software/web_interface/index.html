@@ -91,9 +91,9 @@
             </div>
         </div>
 
-        <div aria-labelledby="modal_error_verification"
+        <div aria-labelledby="modal_verification_failed"
         class="modal fade bs-example-modal-lg"
-        data-backdrop="static" id="modal_error_verification" role="dialog" tabindex="-1">
+        data-backdrop="static" id="modal_verification_failed" role="dialog" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header modal-header-danger">
@@ -136,12 +136,12 @@
 
                     <div class="modal-footer">
                         <button class="btn btn-default" data-dismiss="modal"
-                        type="button" id="button_modal_warning_save_reset_OK">
+                        type="button" id="button_modal_warning_save_reset_ok">
                             OK
                         </button>
 
                         <button class="btn btn-default" data-dismiss="modal"
-                        type="button" id="button_modal_warning_save_reset_Cancel">
+                        type="button" id="button_modal_warning_save_reset_cancel">
                             Cancel
                         </button>
                     </div>
@@ -353,7 +353,7 @@
 
         <!-- Configure settings container. -->
         <div class="container hidden" id="container_settings">
-            <form id="form_action" class="form-horizontal" action="./update_settings.cgi">
+            <form id="form_settings" class="form-horizontal" action="./update_settings.cgi">
             <!-- General settings. -->
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -370,7 +370,7 @@
                                 <input class="form-control input_port" id="general_port"
                                 name="general_port" min="1" step="1" max="65535"
                                 placeholder="Port to listen on" type="number">
-                                <p class="help-block" id="hb_general_port_range">
+                                <p class="help-block hidden" id="hb_general_port_range">
                                     Port number must be in the range of 1 - 65535
                                 </p>
                             </div>
@@ -384,7 +384,7 @@
                                 "general_websocket_port" min="1" step="1" max="65535"
                                 name="general_websocket_port" placeholder=
                                 "Websocket port to listen on" type="number">
-                                <p class="help-block" id="hb_websocket_port_range">
+                                <p class="help-block hidden" id="hb_general_websocket_port_range">
                                     Port number must be in the range of 1 - 65535
                                 </p>
                             </div>
@@ -399,7 +399,7 @@
                                 name="general_website_port" placeholder=
                                 "Port on which this web interface is available"
                                 type="number">
-                                <p class="help-block" id="hb_general_website_port_range">
+                                <p class="help-block hidden" id="hb_general_website_port_range">
                                     Port number must be in the range of 1 - 65535
                                 </p>
                             </div>
@@ -444,7 +444,7 @@
                                 <input class="form-control" id="general_secret"
                                 placeholder="Secret for authentication" type=
                                 "password" maxlength="64">
-                                <p class="help-block" id="hb_general_secret_ascii">
+                                <p class="help-block hidden" id="hb_general_secret_ascii">
                                     Only ASCII characters are allowed for secret
                                 </p>
                             </div>
@@ -491,7 +491,7 @@
                             <input class="form-control" id=
                             "client_hostname" placeholder=
                             "Hostname of the node" type="text">
-                            <p class="help-block" id="hb_client_hostname_ascii">
+                            <p class="help-block hidden" id="hb_client_hostname_ascii">
                                 Only ASCII characters are allowed for hostname
                             </p>
                         </div>
@@ -604,7 +604,7 @@
                             placeholder=
                             "SSID of the access point to connect to" type=
                             "text">
-                            <p class="help-block" id="hb_client_ssid_ascii">
+                            <p class="help-block hidden" id="hb_client_ssid_ascii">
                                 Only ASCII characters are allowed for SSID
                             </p>
                         </div>
@@ -634,7 +634,7 @@
                             "client_password" placeholder=
                             "Password for connecting to the SSID" type=
                             "password" maxlength="64">
-                            <p class="help-block" id="hb_client_password_ascii">
+                            <p class="help-block hidden" id="hb_client_password_ascii">
                                 Only ASCII characters are allowed for password
                             </p>
                         </div>
@@ -857,7 +857,7 @@
 
                         </div>
                         <div class="form-group row" id="ap_static_gateway">
-                            <p class="help-block col-sm-offset-2 col-sm-10" id="hb_general_secret_ascii">
+                            <p class="help-block col-sm-offset-2 col-sm-10" id="hb_ap_static_ip">
                                 Check access point static IP settings
                             </p>
                         </div>
@@ -874,10 +874,10 @@
                             placeholder=
                             "SSID to broadcast" type=
                             "text">
-                        <p class="help-block" id="hb_ap_ssid_empty">
+                        <p class="help-block hidden" id="hb_ap_ssid_empty">
                             Access point SSID can not be empty
                         </p>
-                        <p class="help-block" id="hb_ap_ssid_ascii">
+                        <p class="help-block hidden" id="hb_ap_ssid_ascii">
                             Only ASCII characters are allowed for access point SSID
                         </p>
                         </div>
@@ -911,13 +911,13 @@
                             "ap_password" placeholder=
                             "Password for connecting to the access point" type=
                             "password" maxlength="64">
-                            <p class="help-block" id="hb_ap_password_empty">
+                            <p class="help-block hidden" id="hb_ap_password_empty">
                                 Access point password can not be empty
                             </p>
-                            <p class="help-block" id="hb_ap_password_length">
+                            <p class="help-block hidden" id="hb_ap_password_length">
                                 Access point password must be at least 8 characters long
                             </p>
-                            <p class="help-block" id="hb_ap_password_ascii">
+                            <p class="help-block hidden" id="hb_ap_password_ascii">
                                 Only ASCII characters are allowed for access point SSID
                             </p>
                         </div>
@@ -930,12 +930,12 @@
 
                     <div class="form-group row markable" id="markable_ap_channel">
                         <label class="control-label col-sm-2" for=
-                        "ap_channel-label">Channel:</label>
+                        "ap_channel">Channel:</label>
 
                         <div class="checkbox col-sm-10">
                             <input class="form-control" id=
                             "ap_channel" type="number" min="1" step="1" max="13">
-                            <p class="help-block" id="hb_ap_ssid_empty">
+                            <p class="help-block hidden" id="hb_ap_channel">
                                 Channel number should be in the range of 1 - 13
                             </p>
                         </div>
@@ -1018,6 +1018,19 @@
         </script>
 
         <script type="text/javascript">
+            /*
+             * Message related constants. Must be in sync with the defines in
+             * file web_interface.h in firmware source code.
+             */
+            var JSON_REQUEST_AUTHENTICATE = 1
+            var JSON_REQUEST_GET_STATUS = 2
+            var JSON_REQUEST_UPDATE_SETTINGS = 3
+            var JSON_REQUEST_END_SESSION = 4
+            var JSON_REQUEST_IS_ALREADY_AUTHENTICATED = 5
+            var JSON_REQUEST_GET_SETTINGS = 6
+            var JSON_STATUS_OK = 1
+            var JSON_STATUS_FAILED = 2
+
             function updateStatusGUI(status) {
                 // Client enabled.
                 if(status.data.operating_mode === 1 ||
@@ -1150,16 +1163,20 @@
                 $("#general_port").val(settings.data.general_port);
                 $("#general_website_port").val(settings.data.general_website_port);
                 $("#general_websocket_port").val(settings.data.general_websocket_port);
-                $("#general_phy_mode").val(settings.data.general_phy_mode);
+
+                if(settings.data.general_phy_mode == 0)
+                    $("#general_phy_mode").val('1');
+                else
+                    $("#general_phy_mode").val(settings.data.general_phy_mode);
 
                 if(settings.data.general_authentication_secret === '') {
                     $("#general_secret").val('');
-                    if($("#general_use_authentication").checked)
+                    if($("#general_use_authentication").prop('checked'))
                         $("#general_use_authentication").prop('checked', false).change();
                 }
                 else {
                     $("#general_secret").val(settings.data.general_authentication_secret);
-                    if(!$("#general_use_authentication").checked)
+                    if(!$("#general_use_authentication").prop('checked'))
                         $("#general_use_authentication").prop('checked', true).change();
                 }
 
@@ -1332,15 +1349,15 @@
                 $.ajax({
                     type: 'POST',
                     url: '/get_settings.cgi',
-                    data: {'request':6, 'data':null},
+                    data: {'request':JSON_REQUEST_GET_SETTINGS, 'data':null},
                     dataType: "json",
                     timeout: 16000, // in milliseconds
                     success: function(data) {
                         // process data here
-                        console.log('*** success(), data.status = ' + data.status);
-                        console.log('cookie: ' + document.cookie);
+                        console.log('*** GSET success(), data.status = ' + data.status);
+                        console.log(' GSET cookie: ' + document.cookie);
 
-                        if(data.status === 1){
+                        if(data.status === JSON_STATUS_OK){
                             console.log(data);
                             updateSettingsGUI(data);
                         }
@@ -1348,7 +1365,7 @@
                         }
                     },
                     error: function(request, status, err) {
-                        console.log('*** doAJAXPostGetSettings(), request = ' + request + ', status = ' + status + ', err = ' + err);
+                        console.log('*** GSET doAJAXPostGetSettings(), request = ' + request + ', status = ' + status + ', err = ' + err);
                     }
                 });
             }
@@ -1358,18 +1375,18 @@
                 $.ajax({
                     type: 'POST',
                     url: '/get_status.cgi',
-                    data: null,
+                    data: {'request':JSON_REQUEST_GET_STATUS, 'data':null},
                     dataType: "json",
                     timeout: 16000, // in milliseconds
                     success: function(data) {
                         // process data here
-                        console.log('*** success(), data.status = ' + data.status);
-                        console.log('cookie: ' + document.cookie);
-                        if(data.status === 2){
+                        console.log('*** GSTA success(), data.status = ' + data.status);
+                        console.log(' GSTA cookie: ' + document.cookie);
+                        if(data.status === JSON_STATUS_FAILED){
                             // Hide the body of the page.
                             $("body").addClass('hidden');
                             $("body").removeClass('show');
-                            window.location.replace(window.location.protocol+'//'+window.location.hostname+'/authenticate.html');
+                            window.location.replace(window.location.protocol+'//'+window.location.hostname+':'+window.location.port+'/authenticate.html');
                         }
                         else {
                             updateStatusGUI(JSON.parse(JSON.stringify(data)));
@@ -1385,43 +1402,121 @@
                 });
             }
 
-            function do_verification(e) {
-                var general_port = parseInt($('#general_port').val());
-                var general_websocket_port = parseInt($('#general_websocket_port').val());
-                var general_website_port = parseInt($('#general_website_port').val());
-                var general_use_authentication = $('#general_use_authentication').checked;
-                var general_secret = $('#general_secret').val();
-                var client_hostname = $('#client_hostname').val();
-                var client_static_ip_0 = $('#client_static_ip_0').val();
-                var client_static_ip_1 = $('#client_static_ip_1').val();
-                var client_static_ip_2 = $('#client_static_ip_2').val();
-                var client_static_ip_3 = $('#client_static_ip_3').val();
-                var client_static_netmask_0 = $('#client_static_netmask_0').val();
-                var client_static_netmask_1 = $('#client_static_netmask_1').val();
-                var client_static_netmask_2 = $('#client_static_netmask_2').val();
-                var client_static_netmask_3 = $('#client_static_netmask_3').val();
-                var client_static_gateway_0 = $('#client_static_gateway_0').val();
-                var client_static_gateway_1 = $('#client_static_gateway_1').val();
-                var client_static_gateway_2 = $('#client_static_gateway_2').val();
-                var client_static_gateway_3 = $('#client_static_gateway_3').val();
-                var client_ssid = $('#client_ssid').val();
-                var client_password = $('#client_password').val();
+            function isASCII(string_to_check) {
+                return /^[\x00-\x7F]*$/.test(string_to_check);
+            }
 
-                var ap_static_ip_0 = $('#ap_static_ip_0').val();
-                var ap_static_ip_1 = $('#ap_static_ip_1').val();
-                var ap_static_ip_2 = $('#ap_static_ip_2').val();
-                var ap_static_ip_3 = $('#ap_static_ip_3').val();
-                var ap_static_netmask_0 = $('#ap_static_netmask_0').val();
-                var ap_static_netmask_1 = $('#ap_static_netmask_1').val();
-                var ap_static_netmask_2 = $('#ap_static_netmask_2').val();
-                var ap_static_netmask_3 = $('#ap_static_netmask_3').val();
-                var ap_static_gateway_0 = $('#ap_static_gateway_0').val();
-                var ap_static_gateway_1 = $('#ap_static_gateway_1').val();
-                var ap_static_gateway_2 = $('#ap_static_gateway_2').val();
-                var ap_static_gateway_3 = $('#ap_static_gateway_3').val();
-                var ap_ssid = $('#ap_ssid').val();
-                var ap_password = $('#ap_password').val();
-                var ap_channel = $('#ap_channel').val();
+            function do_verification(e) {
+                var validation_ok = true;
+
+                // Reset.
+                $('.markable').removeClass('has-error');
+                $('.help-block').addClass('hidden');
+
+                var general_port = parseInt($('#general_port').val());
+
+                if(general_port < 1 || general_port > 65535) {
+                    validation_ok = false;
+                    $('#markable_general_port').addClass('has-error');
+                    $('#hb_general_port_range').removeClass('hidden');
+                }
+
+                var general_websocket_port = parseInt($('#general_websocket_port').val());
+
+                if(general_websocket_port < 1 || general_websocket_port > 65535) {
+                    validation_ok = false;
+                    $('#markable_general_websocket_port').addClass('has-error');
+                    $('#hb_general_websocket_port_range').removeClass('hidden');
+                }
+
+                var general_website_port = parseInt($('#general_website_port').val());
+
+                if(general_website_port < 1 || general_website_port > 65535) {
+                    validation_ok = false;
+                    $('#markable_general_website_port').addClass('has-error');
+                    $('#hb_general_website_port_range').removeClass('hidden');
+                }
+
+                var general_use_authentication = $('#general_use_authentication').prop('checked');
+                var general_secret = $('#general_secret').val();
+                
+                if(general_use_authentication) {
+                    if(!isASCII(general_secret)) {
+                        validation_ok = false;
+                        $('#general_use_authentication_elements').addClass('has-error');
+                        $('#hb_general_secret_ascii').removeClass('hidden');
+                    }
+                }
+
+                var general_mode = parseInt($("#general_mode").val());
+
+                if (general_mode == 0 || general_mode == 1) {
+                    var client_hostname = $('#client_hostname').val();
+
+                    if(!isASCII(client_hostname)) {
+                        validation_ok = false;
+                        $('#markable_client_hostname').addClass('has-error');
+                        $('#hb_client_hostname_ascii').removeClass('hidden');
+                    }
+                    var client_static_ip_0 = $('#client_static_ip_0').val();
+                    var client_static_ip_1 = $('#client_static_ip_1').val();
+                    var client_static_ip_2 = $('#client_static_ip_2').val();
+                    var client_static_ip_3 = $('#client_static_ip_3').val();
+                    var client_static_netmask_0 = $('#client_static_netmask_0').val();
+                    var client_static_netmask_1 = $('#client_static_netmask_1').val();
+                    var client_static_netmask_2 = $('#client_static_netmask_2').val();
+                    var client_static_netmask_3 = $('#client_static_netmask_3').val();
+                    var client_static_gateway_0 = $('#client_static_gateway_0').val();
+                    var client_static_gateway_1 = $('#client_static_gateway_1').val();
+                    var client_static_gateway_2 = $('#client_static_gateway_2').val();
+                    var client_static_gateway_3 = $('#client_static_gateway_3').val();
+                    var client_ssid = $('#client_ssid').val();
+                    var client_password = $('#client_password').val();
+                }
+
+                if (general_mode == 1 || general_mode == 2) {
+                    var ap_static_ip_0 = $('#ap_static_ip_0').val();
+                    var ap_static_ip_1 = $('#ap_static_ip_1').val();
+                    var ap_static_ip_2 = $('#ap_static_ip_2').val();
+                    var ap_static_ip_3 = $('#ap_static_ip_3').val();
+                    var ap_static_netmask_0 = $('#ap_static_netmask_0').val();
+                    var ap_static_netmask_1 = $('#ap_static_netmask_1').val();
+                    var ap_static_netmask_2 = $('#ap_static_netmask_2').val();
+                    var ap_static_netmask_3 = $('#ap_static_netmask_3').val();
+                    var ap_static_gateway_0 = $('#ap_static_gateway_0').val();
+                    var ap_static_gateway_1 = $('#ap_static_gateway_1').val();
+                    var ap_static_gateway_2 = $('#ap_static_gateway_2').val();
+                    var ap_static_gateway_3 = $('#ap_static_gateway_3').val();
+                    var ap_ssid = $('#ap_ssid').val();
+
+                    var ap_password = $('#ap_password').val();
+
+                    if(!ap_password) {
+                        validation_ok = false;
+                        $('#ap_encryption_password_elements').addClass('has-error');
+                        $('#hb_ap_password_empty').removeClass('hidden');
+                    }
+
+                    if(ap_password.length < 8) {
+                        validation_ok = false;
+                        $('#ap_encryption_password_elements').addClass('has-error');
+                        $('#hb_ap_password_length').removeClass('hidden');
+                    }
+
+                    if(!isASCII(ap_password)) {
+                        validation_ok = false;
+                        $('#ap_encryption_password_elements').addClass('has-error');
+                        $('#hb_ap_password_ascii').removeClass('hidden');
+                    }
+
+                    var ap_channel = parseInt($('#ap_channel').val());
+
+                    if(ap_channel < 1 || ap_channel > 13) {
+                        validation_ok = false;
+                        $('#markable_ap_channel').addClass('has-error');
+                        $('#hb_ap_channel').removeClass('hidden');
+                    }
+                }
 
                 console.log(general_port);
                 console.log(general_websocket_port);
@@ -1460,15 +1555,21 @@
                 console.log(ap_channel);
 
                 console.log('do verification');
-                console.log($("#form_action").serialize());
+                console.log($("#form_settings").serialize());
+
+                return validation_ok;
+                    
             }
 
             $(document).ready(function()
             {
+                // Initial modal state.
+                $('.modal').modal('hide');
+
                 $('#button_save_wifi_configuration').click(function(event)
                 {
                     console.log("*** Save settings button clicked ***");
-                    console.log($("#form_action").serialize());
+                    console.log($("#form_settings").serialize());
                 });
                 $('#main_toolbar_status').click(function(event)
                 {
@@ -1613,23 +1714,39 @@
 
                 $('#button_save_reset_settings').click(function(e) {
                     console.log('*** save reset clicked');
-                    do_verification();
-                    if(/*do_verification()*/true) {
+                    
+                    if(do_verification()) {
                         $("#modal_warning_save_reset").modal('show');
                     }
                     else {
-
+                        $("#modal_verification_failed").modal('show');
                     }
                 });
 
-                $('.markable').addClass('has-warning');
-                $('.help-block').addClass('hidden');
+                $('#button_modal_warning_save_reset_ok').click(function(e) {
+                    console.log('*** button_modal_warning_save_reset_ok');
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/update_settings.cgi',
+                        data: {'request':JSON_REQUEST_UPDATE_SETTINGS, 'data':$("#form_settings").serialize()},
+                        dataType: 'json',
+                        timeout: 4000, // In milliseconds.
+                        success: function(data) {
+                            // Ignored.
+                        },
+                        error: function(request, status, err) {
+                            // Ignored.
+                        }
+                    });
+                    setTimeout(function(){window.location.replace(window.location.protocol+'//'+window.location.hostname+':'+$('#general_website_port').val());}, 8000)
+                });
 
                 window.onbeforeunload = function() {
                     $.ajax({
                         type: 'POST',
                         url: '/end_session.cgi',
-                        data: {'request':4, 'data':null},
+                        data: {'request':JSON_REQUEST_END_SESSION, 'data':null},
                         dataType: 'json',
                         timeout: 16000, // In milliseconds.
                         success: function(data) {

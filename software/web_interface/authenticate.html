@@ -151,25 +151,38 @@
         </script>
 
         <script type="text/javascript">
+                    /*
+             * Message related constants. Must be in sync with the defines in
+             * file web_interface.h in firmware source code.
+             */
+            var JSON_REQUEST_AUTHENTICATE = 1
+            var JSON_REQUEST_GET_STATUS = 2
+            var JSON_REQUEST_UPDATE_SETTINGS = 3
+            var JSON_REQUEST_END_SESSION = 4
+            var JSON_REQUEST_IS_ALREADY_AUTHENTICATED = 5
+            var JSON_REQUEST_GET_SETTINGS = 6
+            var JSON_STATUS_OK = 1
+            var JSON_STATUS_FAILED = 2
+
             $(document).ready(function(e) {
                 function doPost(e) {
                     $.ajax({
                         type: 'POST',
                         url: '/is_already_authenticated.cgi',
-                        data: null,
+                        data: {'request':JSON_REQUEST_IS_ALREADY_AUTHENTICATED, 'data':null},
                         //dataType: "json",
                         timeout: 8000, // in milliseconds
                         success: function(data) {
                             // process data here
-                            console.log('*** success(), data = ' + data);
+                            console.log('*** IAA data = ' + data);
+                            console.log('*** IAA cookie = ' + document.cookie);
 
                             var o= JSON.parse(data);
-                            if(o.status === 1) {
+
+                            if(o.status === JSON_STATUS_OK) {
                                 $('#modal_submit').off('shown.bs.modal');
                                 $('#modal_submit').modal('show');
-                                console.log('*** data = ' + data);
-                                console.log('*** cookie = ' + document.cookie);
-                                setTimeout(function(){window.location.replace(window.location.protocol+'//'+window.location.hostname);}, 3000);
+                                setTimeout(function(){window.location.replace(window.location.protocol+'//'+window.location.hostname+':'+window.location.port);}, 3000);
                             }
                             else {
                                 // Show the body of the page only when the whole page is ready.
@@ -183,8 +196,6 @@
                         }
                     });
                 }
-
-                doPost();
 
                 // Secret field's keyup event handler.
                 $("#secret").keypress(function(e) {
@@ -213,7 +224,7 @@
                     $.ajax({
                         type: 'POST',
                         url: '/authenticate.cgi',
-                        data: $("#form_authenticate").serialize(),
+                        data: {'request':JSON_REQUEST_AUTHENTICATE, 'data':$("#form_authenticate").serialize()},
                         //dataType: "json",
                         timeout: 16000, // in milliseconds
                         success: function(data) {
@@ -221,7 +232,7 @@
                             console.log('*** success(), data = ' + data);
 
                             var o= JSON.parse(data);
-                            if(o.status === 1) {
+                            if(o.status === JSON_STATUS_OK) {
                                 console.log('*** data = ' + data)
                                 console.log('*** cookie = ' + document.cookie);
 
@@ -232,7 +243,7 @@
                                     return;
                                 }
 
-                                window.location.replace(window.location.protocol+'//'+window.location.hostname);
+                                window.location.replace(window.location.protocol+'//'+window.location.hostname+':'+window.location.port);
                             }
                             else {
                                 $("#modal_submit").modal('hide');
@@ -250,6 +261,8 @@
                         }
                     });
                 });
+
+                doPost();
             });
         </script>
     </body>

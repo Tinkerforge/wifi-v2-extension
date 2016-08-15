@@ -10,6 +10,11 @@ body {
     margin-bottom: 24px;
 }
 
+.disabled-link {
+    pointer-events: none;
+    cursor: default;
+}
+
 .modal-header-success {
     color:#fff;
     padding:9px 15px;

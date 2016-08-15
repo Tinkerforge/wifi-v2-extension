@@ -31,14 +31,14 @@ Toolchain
 ---------
 
 Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk
-into toolchain/ directory::
+into toolchain/ directory. The following instructions apply for ESP8266 SDK 2.0.0::
 
  sudo apt-get install gperf libtool libtool-bin help2man texinfo libncurses5-dev python2.7-dev
  mkdir toolchain
  cd toolchain
  git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
  cd esp-open-sdk
- make STANDALONE=y
+ make STANDALONE=y VENDOR_SDK=2.0.0
 
 Update toolchain::
 
@@ -46,7 +46,7 @@ Update toolchain::
  git pull
  git submodule sync
  git submodule update
- make STANDALONE=y
+ make STANDALONE=y VENDOR_SDK=2.0.0
 
 Additionally we use libesphttpd::
 
@@ -55,10 +55,10 @@ Additionally we use libesphttpd::
 
 To be able to build the extension firmware using libesphttpd a patch must be
 applied to the ESP8266 SDK. This assumes that the toolchain is already
-successfully built. This patch applies for current ESP8266 SDK version 1.5.4::
+successfully built::
 
  cd software
- patch -b -N -d ../toolchain/esp-open-sdk/sdk -p1 < esp8266sdk-c_types.patch
+ patch -b -N -d ../toolchain/esp-open-sdk/sdk/include -p1 < esp8266sdk-c_types.patch
 
 libesphttpd must also be patched::
 

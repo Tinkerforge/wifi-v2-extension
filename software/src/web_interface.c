@@ -660,10 +660,12 @@ int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_dat
 
 	char cookie[GENERIC_BUFFER_SIZE];
 
+	/*
 	if((httpdGetHeader(connection_data,
 					   "Cookie",
 					   cookie,
 					   GENERIC_BUFFER_SIZE)) == 1)
+	*/
 
 	if(((do_check_session(connection_data)) == 1) &&
 	   ((do_check_request(connection_data->post->buff,

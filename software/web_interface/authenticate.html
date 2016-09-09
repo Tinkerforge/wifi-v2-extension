@@ -184,6 +184,7 @@
                         timeout: TIMEOUT_GENERIC,
                         success: function(data) {
                             var data_parsed = JSON.parse(JSON.stringify(data));
+
                             if(data_parsed.status === JSON_STATUS_OK) {
                                 // Show authenticating modal.
                                 $('#modal_submit').off('shown.bs.modal');

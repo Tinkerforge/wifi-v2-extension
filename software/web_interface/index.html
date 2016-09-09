@@ -443,7 +443,10 @@
                             <div class="col-sm-5">
                                 <input class="form-control" id="general_secret"
                                 placeholder="Secret for authentication" type=
-                                "password" maxlength="64">
+                                "password" maxlength="64" name="general_secret">
+                                <p class="help-block hidden" id="hb_general_secret_empty">
+                                    Secret can not be empty
+                                </p>
                                 <p class="help-block hidden" id="hb_general_secret_ascii">
                                     Only ASCII characters are allowed for secret
                                 </p>
@@ -453,6 +456,7 @@
                                 <label><input id="general_secret_show_characters" type=
                                 "checkbox"> Show Characters</label>
                             </div>
+
                         </div>
 
                         <div class="form-group row">
@@ -519,23 +523,23 @@
                             <label class="col-sm-2 control-label">IP:</label>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "client_static_ip_0" type="number">
+                                <input class="form-control" min="0" step="1" max="255" id=
+                                "client_static_ip_0" name="client_static_ip_0" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "client_static_ip_1" type="number">
+                                <input class="form-control" min="0" step="1" max="255" id=
+                                "client_static_ip_1" name="client_static_ip_1" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "client_static_ip_2" type="number">
+                                <input class="form-control" min="0" step="1" max="255" id=
+                                "client_static_ip_2" name="client_static_ip_2" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "client_static_ip_3" type="number">
+                                <input class="form-control" min="0" step="1" max="255" id=
+                                "client_static_ip_3" name="client_static_ip_3" type="number">
                             </div>
                         </div>
 
@@ -544,23 +548,23 @@
                                 <label class="col-sm-2 control-label">Subnet Mask:</label>
 
                                 <div class="col-sm-2">
-                                    <input class="form-control" id=
-                                    "client_static_netmask_0" type="number">
+                                    <input class="form-control" min="0" step="1" max="255" id=
+                                    "client_static_netmask_0" name="client_static_netmask_0" type="number">
                                 </div>
 
                                 <div class="col-sm-2">
-                                    <input class="form-control" id=
-                                    "client_static_netmask_1" type="number">
+                                    <input class="form-control" min="0" step="1" max="255" id=
+                                    "client_static_netmask_1" name="client_static_netmask_1" type="number">
                                 </div>
 
                                 <div class="col-sm-2">
-                                    <input class="form-control" id=
-                                    "client_static_netmask_2" type="number">
+                                    <input class="form-control" min="0" step="1" max="255" id=
+                                    "client_static_netmask_2" name="client_static_netmask_2" type="number">
                                 </div>
 
                                 <div class="col-sm-2">
-                                    <input class="form-control" id=
-                                    "client_static_netmask_3" type="number">
+                                    <input class="form-control" min="0" step="1" max="255" id=
+                                    "client_static_netmask_3" name="client_static_netmask_3" type="number">
                                 </div>
                         </div>
 
@@ -569,31 +573,25 @@
                                 <label class="col-sm-2 control-label">Gateway:</label>
 
                                 <div class="col-sm-2">
-                                    <input class="form-control" id=
-                                    "client_static_gateway_0" type="number">
+                                    <input class="form-control" min="0" step="1" max="255" id=
+                                    "client_static_gateway_0" name="client_static_gateway_0" type="number">
                                 </div>
 
                                 <div class="col-sm-2">
-                                    <input class="form-control" id=
-                                    "client_static_gateway_1" type="number">
+                                    <input class="form-control" min="0" step="1" max="255" id=
+                                    "client_static_gateway_1" name="client_static_gateway_1" type="number">
                                 </div>
 
                                 <div class="col-sm-2">
-                                    <input class="form-control" id=
-                                    "client_static_gateway_2" type="number">
+                                    <input class="form-control" min="0" step="1" max="255" id=
+                                    "client_static_gateway_2" name="client_static_gateway_2" type="number">
                                 </div>
 
                                 <div class="col-sm-2">
-                                    <input class="form-control" id=
-                                    "client_static_gateway_3" type="number">
+                                    <input class="form-control" min="0" step="1" max="255" id=
+                                    "client_static_gateway_3" name="client_static_gateway_3" type="number">
                                 </div>
                         </div>
-                        <div class="form-group row" id="client_static_gateway">
-                            <p class="help-block col-sm-offset-2 col-sm-10" id="hb_client_static_ip">
-                                Check client static IP settings
-                            </p>
-                        </div>
-
                     </div>
 
                     <div class="form-group row markable" id="markable_client_ssid">
@@ -604,6 +602,9 @@
                             placeholder=
                             "SSID of the access point to connect to" type=
                             "text">
+                            <p class="help-block hidden" id="hb_client_ssid_empty">
+                                SSID can not be empty
+                            </p>
                             <p class="help-block hidden" id="hb_client_ssid_ascii">
                                 Only ASCII characters are allowed for SSID
                             </p>
@@ -634,8 +635,17 @@
                             "client_password" placeholder=
                             "Password for connecting to the SSID" type=
                             "password" maxlength="64">
+
+                            <p class="help-block hidden" id="hb_client_password_empty">
+                                Password can not be empty when encryption is enabled
+                            </p>
+
                             <p class="help-block hidden" id="hb_client_password_ascii">
                                 Only ASCII characters are allowed for password
+                            </p>
+
+                            <p class="help-block hidden" id="hb_client_password_length">
+                                Password must be atleast 8 characters long
                             </p>
                         </div>
 
@@ -874,12 +884,12 @@
                             placeholder=
                             "SSID to broadcast" type=
                             "text">
-                        <p class="help-block hidden" id="hb_ap_ssid_empty">
-                            Access point SSID can not be empty
-                        </p>
-                        <p class="help-block hidden" id="hb_ap_ssid_ascii">
-                            Only ASCII characters are allowed for access point SSID
-                        </p>
+                            <p class="help-block hidden" id="hb_ap_ssid_empty">
+                                Access point SSID can not be empty
+                            </p>
+                            <p class="help-block hidden" id="hb_ap_ssid_ascii">
+                                Only ASCII characters are allowed for access point SSID
+                            </p>
                         </div>
                     </div>
 
@@ -914,11 +924,11 @@
                             <p class="help-block hidden" id="hb_ap_password_empty">
                                 Access point password can not be empty
                             </p>
-                            <p class="help-block hidden" id="hb_ap_password_length">
-                                Access point password must be at least 8 characters long
-                            </p>
                             <p class="help-block hidden" id="hb_ap_password_ascii">
                                 Only ASCII characters are allowed for access point SSID
+                            </p>
+                            <p class="help-block hidden" id="hb_ap_password_length">
+                                Access point password must be at least 8 characters long
                             </p>
                         </div>
 
@@ -1002,7 +1012,7 @@
             </div>
         </form> <!-- Close form which was opened at just after opening common settings panel's body -->
 
-            <button id="button_save_reset_settings" class="btn btn-block spacer-bottom" type="button">
+            <button id="button_save_reset_settings" class="btn btn-block btn-primary btn-lg spacer-bottom" type="button">
                 Save and Reset
             </button>
         </div> <!-- End of container for configuration elements -->
@@ -1040,97 +1050,132 @@
                 // Client enabled.
                 if(status.data.operating_mode === 1 ||
                    status.data.operating_mode === 3) {
-                        $('#div_panel_client').addClass('visible');
-                        $('#div_panel_client').removeClass('hidden');
+                        // Client enabled/disabled.
                         $('#td_client_enabled').html('Yes');
-                }
-                else if(status.data.operating_mode === 2) {
-                    $('#div_panel_client').addClass('hidden');
-                    $('#div_panel_client').removeClass('visible');
-                    $('#td_client_enabled').html('No');
-                }
-                else
-                    $('#td_client_enabled').html('-');
 
-                // Client status.
-                $('#td_client_status').html(status.data.client_status);
+                        // Client status.
+                        $('#td_client_status').html(status.data.client_status);
 
-                // Signal strength.
-                if(status.data.signal_strength <= 33) {
-                    $('#div_signal_strength').addClass('progress-bar-danger');
-                    $('#div_signal_strength').removeClass('progress-bar-warning');
-                    $('#div_signal_strength').removeClass('progress-bar-success');
+                        // Signal strength.
+                        if(status.data.signal_strength <= 33) {
+                            $('#div_signal_strength').addClass('progress-bar-danger');
+                            $('#div_signal_strength').removeClass('progress-bar-warning');
+                            $('#div_signal_strength').removeClass('progress-bar-success');
+                        }
+                        else if(status.data.signal_strength <= 66) {
+                            $('#div_signal_strength').addClass('progress-bar-warning');
+                            $('#div_signal_strength').removeClass('progress-bar-danger');
+                            $('#div_signal_strength').removeClass('progress-bar-success');
+                        }
+                        else {
+                            $('#div_signal_strength').addClass('progress-bar-success');
+                            $('#div_signal_strength').removeClass('progress-bar-danger');
+                            $('#div_signal_strength').removeClass('progress-bar-warning');
+                        }
+
+                        $('#div_signal_strength')
+                            .css('width', String(status.data.signal_strength) + '%')
+                            .attr('aria-valuenow', String(status.data.signal_strength));
+                        $('#div_signal_strength')
+                            .html(String(status.data.signal_strength) + '%');
+
+                        // Client IP.
+                        $('#td_client_ip').html(status.data.client_ip);
+
+                        // Client subnet mask.
+                        $('#td_client_netmask').html(status.data.client_netmask);
+
+                        // Client gateway.
+                        $('#td_client_gateway').html(status.data.client_gateway);
+
+                        // Client MAC.
+                        $('#td_client_mac').html(status.data.client_mac);
+
+                        // Client RX.
+                        $('#td_client_rx_count').html(status.data.client_rx_count);
+
+                        // Client TX.
+                        $('#td_client_tx_count').html(status.data.client_tx_count);
                 }
-                else if(status.data.signal_strength <= 66) {
-                    $('#div_signal_strength').addClass('progress-bar-warning');
-                    $('#div_signal_strength').removeClass('progress-bar-danger');
-                    $('#div_signal_strength').removeClass('progress-bar-success');
-                }
+                // Client disabled.
                 else {
-                    $('#div_signal_strength').addClass('progress-bar-success');
-                    $('#div_signal_strength').removeClass('progress-bar-danger');
-                    $('#div_signal_strength').removeClass('progress-bar-warning');
+                    $('#td_client_enabled').html('No');
+
+                    // Client status.
+                    $('#td_client_status').html('-');
+
+                    // Client IP.
+                    $('#td_client_ip').html('-');
+
+                    // Client subnet mask.
+                    $('#td_client_netmask').html('-');
+
+                    // Client gateway.
+                    $('#td_client_gateway').html('-');
+
+                    // Client MAC.
+                    $('#td_client_mac').html('-');
+
+                    // Client RX.
+                    $('#td_client_rx_count').html('-');
+
+                    // Client TX.
+                    $('#td_client_tx_count').html('-');
                 }
-
-                $('#div_signal_strength')
-                    .css('width', String(status.data.signal_strength) + '%')
-                    .attr('aria-valuenow', String(status.data.signal_strength));
-                $('#div_signal_strength')
-                    .html(String(status.data.signal_strength) + '%');
-
-                // Client IP.
-                $('#td_client_ip').html(status.data.client_ip);
-
-                // Client subnet mask.
-                $('#td_client_netmask').html(status.data.client_netmask);
-
-                // Client gateway.
-                $('#td_client_gateway').html(status.data.client_gateway);
-
-                // Client MAC.
-                $('#td_client_mac').html(status.data.client_mac);
-
-                // Client RX.
-                $('#td_client_rx_count').html(status.data.client_rx_count);
-
-                // Client TX.
-                $('#td_client_tx_count').html(status.data.client_tx_count);
 
                 // AP enabled.
                 if(status.data.operating_mode === 2 ||
                    status.data.operating_mode === 3) {
-                        $('#div_panel_ap').addClass('visible');
-                        $('#div_panel_ap').removeClass('hidden');
+                        // AP enabled/disabled.
                         $('#td_ap_enabled').html('Yes');
+                        
+                        // AP connected clients.
+                        $('#td_ap_connected_clients').html(status.data.ap_connected_clients);
+
+                        // AP IP.
+                        $('#td_ap_ip').html(status.data.ap_ip);
+
+                        // AP subnet mask.
+                        $('#td_ap_netmask').html(status.data.ap_netmask);
+
+                        // AP gateway.
+                        $('#td_ap_gateway').html(status.data.ap_gateway);
+
+                        // AP MAC.
+                        $('#td_ap_mac').html(status.data.ap_mac);
+
+                        // AP RX.
+                        $('#td_ap_rx_count').html(status.data.ap_rx_count);
+
+                        // AP TX.
+                        $('#td_ap_tx_count').html(status.data.ap_tx_count);
                 }
-                else if(status.data.operating_mode === 1) {
-                    $('#div_panel_ap').addClass('hidden');
-                    $('#div_panel_ap').removeClass('visible');
+                // AP disabled.
+                else {
+                    // AP enabled/disabled.
                     $('#td_ap_enabled').html('No');
+                    
+                    // AP connected clients.
+                    $('#td_ap_connected_clients').html('-');
+
+                    // AP IP.
+                    $('#td_ap_ip').html('-');
+
+                    // AP subnet mask.
+                    $('#td_ap_netmask').html('-');
+
+                    // AP gateway.
+                    $('#td_ap_gateway').html('-');
+
+                    // AP MAC.
+                    $('#td_ap_mac').html('-');
+
+                    // AP RX.
+                    $('#td_ap_rx_count').html('-');
+
+                    // AP TX.
+                    $('#td_ap_tx_count').html('-');
                 }
-                else
-                    $('#td_ap_enabled').html('-');
-
-                // AP connected clients.
-                $('#td_ap_connected_clients').html(status.data.ap_connected_clients);
-
-                // AP IP.
-                $('#td_ap_ip').html(status.data.ap_ip);
-
-                // AP subnet mask.
-                $('#td_ap_netmask').html(status.data.ap_netmask);
-
-                // AP gateway.
-                $('#td_ap_gateway').html(status.data.ap_gateway);
-
-                // AP MAC.
-                $('#td_ap_mac').html(status.data.ap_mac);
-
-                // AP RX.
-                $('#td_ap_rx_count').html(status.data.ap_rx_count);
-
-                // AP TX.
-                $('#td_ap_tx_count').html(status.data.ap_tx_count);
             }
 
             function updateSettingsGUI(settings) {
@@ -1419,25 +1464,29 @@
                 $('.markable').removeClass('has-error');
                 $('.help-block').addClass('hidden');
 
+                // General settings.
                 var general_port = parseInt($('#general_port').val());
 
-                if(general_port < 1 || general_port > 65535) {
-                    validation_ok = false;
-                    $('#markable_general_port').addClass('has-error');
-                    $('#hb_general_port_range').removeClass('hidden');
+                if((general_port < 1 || general_port > 65535) ||
+                   ($('#general_port').val() == '' || $('#general_port').val() == null)) {
+                        validation_ok = false;
+                        $('#markable_general_port').addClass('has-error');
+                        $('#hb_general_port_range').removeClass('hidden');
                 }
 
                 var general_websocket_port = parseInt($('#general_websocket_port').val());
 
-                if(general_websocket_port < 1 || general_websocket_port > 65535) {
-                    validation_ok = false;
-                    $('#markable_general_websocket_port').addClass('has-error');
-                    $('#hb_general_websocket_port_range').removeClass('hidden');
+                if((general_websocket_port < 1 || general_websocket_port > 65535) ||
+                   ($('#general_websocket_port').val() == '' || $('#general_websocket_port').val() == null)) {
+                        validation_ok = false;
+                        $('#markable_general_websocket_port').addClass('has-error');
+                        $('#hb_general_websocket_port_range').removeClass('hidden');
                 }
 
                 var general_website_port = parseInt($('#general_website_port').val());
 
-                if(general_website_port < 1 || general_website_port > 65535) {
+                if((general_website_port < 1 || general_website_port > 65535) ||
+                   ($('#general_website_port').val() == '' || $('#general_website_port').val() == null)) {
                     validation_ok = false;
                     $('#markable_general_website_port').addClass('has-error');
                     $('#hb_general_website_port_range').removeClass('hidden');
@@ -1447,6 +1496,11 @@
                 var general_secret = $('#general_secret').val();
                 
                 if(general_use_authentication) {
+                    if(general_secret === '' || general_secret === null) {
+                        validation_ok = false;
+                        $('#general_use_authentication_elements').addClass('has-error');
+                        $('#hb_general_secret_empty').removeClass('hidden');
+                    }
                     if(!isASCII(general_secret)) {
                         validation_ok = false;
                         $('#general_use_authentication_elements').addClass('has-error');
@@ -1456,57 +1510,78 @@
 
                 var general_mode = parseInt($("#general_mode").val());
 
-                if (general_mode == 0 || general_mode == 1) {
-                    var client_hostname = $('#client_hostname').val();
+                // Client mode settings.
+                var client_hostname = $('#client_hostname').val();
 
-                    if(!isASCII(client_hostname)) {
-                        validation_ok = false;
-                        $('#markable_client_hostname').addClass('has-error');
-                        $('#hb_client_hostname_ascii').removeClass('hidden');
-                    }
-                    var client_static_ip_0 = $('#client_static_ip_0').val();
-                    var client_static_ip_1 = $('#client_static_ip_1').val();
-                    var client_static_ip_2 = $('#client_static_ip_2').val();
-                    var client_static_ip_3 = $('#client_static_ip_3').val();
-                    var client_static_netmask_0 = $('#client_static_netmask_0').val();
-                    var client_static_netmask_1 = $('#client_static_netmask_1').val();
-                    var client_static_netmask_2 = $('#client_static_netmask_2').val();
-                    var client_static_netmask_3 = $('#client_static_netmask_3').val();
-                    var client_static_gateway_0 = $('#client_static_gateway_0').val();
-                    var client_static_gateway_1 = $('#client_static_gateway_1').val();
-                    var client_static_gateway_2 = $('#client_static_gateway_2').val();
-                    var client_static_gateway_3 = $('#client_static_gateway_3').val();
-                    var client_ssid = $('#client_ssid').val();
-                    var client_password = $('#client_password').val();
+                if(!isASCII(client_hostname)) {
+                    validation_ok = false;
+                    $('#markable_client_hostname').addClass('has-error');
+                    $('#hb_client_hostname_ascii').removeClass('hidden');
                 }
 
-                if (general_mode == 1 || general_mode == 2) {
-                    var ap_static_ip_0 = $('#ap_static_ip_0').val();
-                    var ap_static_ip_1 = $('#ap_static_ip_1').val();
-                    var ap_static_ip_2 = $('#ap_static_ip_2').val();
-                    var ap_static_ip_3 = $('#ap_static_ip_3').val();
-                    var ap_static_netmask_0 = $('#ap_static_netmask_0').val();
-                    var ap_static_netmask_1 = $('#ap_static_netmask_1').val();
-                    var ap_static_netmask_2 = $('#ap_static_netmask_2').val();
-                    var ap_static_netmask_3 = $('#ap_static_netmask_3').val();
-                    var ap_static_gateway_0 = $('#ap_static_gateway_0').val();
-                    var ap_static_gateway_1 = $('#ap_static_gateway_1').val();
-                    var ap_static_gateway_2 = $('#ap_static_gateway_2').val();
-                    var ap_static_gateway_3 = $('#ap_static_gateway_3').val();
-                    var ap_ssid = $('#ap_ssid').val();
+                var client_ssid = $('#client_ssid').val();
 
-                    var ap_password = $('#ap_password').val();
+                if(client_ssid == '' || client_ssid == null) {
+                    validation_ok = false;
+                    $('#markable_client_ssid').addClass('has-error');
+                    $('#hb_client_ssid_empty').removeClass('hidden');
+                }
 
-                    if(!ap_password) {
+                if(!isASCII(client_ssid)) {
+                    validation_ok = false;
+                    $('#markable_client_ssid').addClass('has-error');
+                    $('#hb_client_ssid_ascii').removeClass('hidden');
+                } 
+
+                var client_encryption = $('#client_encryption').val();
+                var client_password = $('#client_password').val();
+
+                console.log(client_encryption);
+                console.log(client_password);
+
+                if(client_encryption === '1') {
+                    if(client_password == '' || client_password == null) {
+                        validation_ok = false;
+                        $('#client_encryption_password_group').addClass('has-error');
+                        $('#hb_client_password_empty').removeClass('hidden');    
+                    }
+
+                    if(!isASCII(client_password)) {
+                        validation_ok = false;
+                        $('#client_encryption_password_group').addClass('has-error');
+                        $('#hb_client_password_ascii').removeClass('hidden');    
+                    }
+
+                    if(client_password.length < 8) {
+                        validation_ok = false;
+                        $('#client_encryption_password_group').addClass('has-error');
+                        $('#hb_client_password_length').removeClass('hidden');
+                    }
+                }
+
+                // AP settings.
+                var ap_ssid = $('#ap_ssid').val();
+
+                if(ap_ssid === '' || ap_ssid === null) {
+                    validation_ok = false;
+                    $('#markable_ap_ssid').addClass('has-error');
+                    $('#hb_ap_ssid_empty').removeClass('hidden');
+                }
+
+                if(!isASCII(ap_ssid)) {
+                    validation_ok = false;
+                    $('#markable_ap_ssid').addClass('has-error');
+                    $('#hb_ap_ssid_ascii').removeClass('hidden');
+                }
+
+                var ap_encryption = $('#ap_encryption').val();
+                var ap_password = $('#ap_password').val();
+
+                if(ap_encryption === '1') {
+                    if(ap_password == '' || ap_password == null) {
                         validation_ok = false;
                         $('#ap_encryption_password_elements').addClass('has-error');
                         $('#hb_ap_password_empty').removeClass('hidden');
-                    }
-
-                    if(ap_password.length < 8) {
-                        validation_ok = false;
-                        $('#ap_encryption_password_elements').addClass('has-error');
-                        $('#hb_ap_password_length').removeClass('hidden');
                     }
 
                     if(!isASCII(ap_password)) {
@@ -1515,56 +1590,26 @@
                         $('#hb_ap_password_ascii').removeClass('hidden');
                     }
 
-                    var ap_channel = parseInt($('#ap_channel').val());
-
-                    if(ap_channel < 1 || ap_channel > 13) {
+                    if(ap_password.length < 8) {
                         validation_ok = false;
-                        $('#markable_ap_channel').addClass('has-error');
-                        $('#hb_ap_channel').removeClass('hidden');
+                        $('#ap_encryption_password_elements').addClass('has-error');
+                        $('#hb_ap_password_length').removeClass('hidden');
                     }
                 }
 
-                console.log(general_port);
-                console.log(general_websocket_port);
-                console.log(general_website_port);
-                console.log(general_use_authentication);
-                console.log(general_secret);
-                console.log(client_hostname);
-                console.log(client_static_ip_0);
-                console.log(client_static_ip_1);
-                console.log(client_static_ip_2);
-                console.log(client_static_ip_3);
-                console.log(client_static_netmask_0);
-                console.log(client_static_netmask_1);
-                console.log(client_static_netmask_2);
-                console.log(client_static_netmask_3);
-                console.log(client_static_gateway_0);
-                console.log(client_static_gateway_1);
-                console.log(client_static_gateway_2);
-                console.log(client_static_gateway_3);
-                console.log(client_ssid);
-                console.log(client_password);
-                console.log(ap_static_ip_0);
-                console.log(ap_static_ip_1);
-                console.log(ap_static_ip_2);
-                console.log(ap_static_ip_3);
-                console.log(ap_static_netmask_0);
-                console.log(ap_static_netmask_1);
-                console.log(ap_static_netmask_2);
-                console.log(ap_static_netmask_3);
-                console.log(ap_static_gateway_0);
-                console.log(ap_static_gateway_1);
-                console.log(ap_static_gateway_2);
-                console.log(ap_static_gateway_3);
-                console.log(ap_ssid);
-                console.log(ap_password);
-                console.log(ap_channel);
+                var ap_channel = parseInt($('#ap_channel').val());
+
+                if((ap_channel < 1 || ap_channel > 13) ||
+                   ($('#ap_channel').val() == '' || $('#ap_channel').val() == null)) {
+                        validation_ok = false;
+                        $('#markable_ap_channel').addClass('has-error');
+                        $('#hb_ap_channel').removeClass('hidden');
+                }
 
                 console.log('do verification');
                 console.log($("#form_settings").serialize());
 
-                return validation_ok;
-                    
+                return validation_ok;     
             }
 
             $(document).ready(function()
@@ -1714,6 +1759,14 @@
                     var current_value = $(this).val() + String.fromCharCode(e.which);
 
                     if(parseInt(current_value) < 1 || parseInt(current_value) > 65535) {
+                        e.preventDefault();
+                    }
+                });
+
+                $('#ap_channel').keypress(function(e) {
+                    var current_value = $(this).val() + String.fromCharCode(e.which);
+
+                    if(parseInt(current_value) < 1 || parseInt(current_value) > 13) {
                         e.preventDefault();
                     }
                 });

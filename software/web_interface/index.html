@@ -410,7 +410,7 @@
                             "general_phy_mode">PHY Mode:</label>
                             <div class="col-sm-10">
                                 <select class="form-control" id=
-                                "general_phy_mode" name="select_general_phy_mode">
+                                "general_phy_mode" name="general_phy_mode">
                                     <!--
                                     Indexed from 1 so that value can be chosen
                                     directly from the data returned by the extension.
@@ -493,7 +493,7 @@
                         "client_hostname">Hostname:</label>
                         <div class="col-sm-10">
                             <input class="form-control" id=
-                            "client_hostname" placeholder=
+                            "client_hostname" name="client_hostname" placeholder=
                             "Hostname of the node" type="text">
                             <p class="help-block hidden" id="hb_client_hostname_ascii">
                                 Only ASCII characters are allowed for hostname
@@ -599,7 +599,7 @@
                         "client_ssid">SSID:</label>
                         <div class="col-sm-10">
                             <input class="form-control" id="client_ssid"
-                            placeholder=
+                            name="client_ssid" placeholder=
                             "SSID of the access point to connect to" type=
                             "text">
                             <p class="help-block hidden" id="hb_client_ssid_empty">
@@ -632,7 +632,7 @@
                         "general_password">Password:</label>
                         <div class="col-sm-5">
                             <input class="form-control" id=
-                            "client_password" placeholder=
+                            "client_password" name="client_password" placeholder=
                             "Password for connecting to the SSID" type=
                             "password" maxlength="64">
 
@@ -659,7 +659,7 @@
                         <div class="checkbox col-sm-offset-2 col-sm-10">
                             <label><input id=
                             "client_connect_to_ap_with_specific_bssid" type=
-                            "checkbox"> Only Connect to AP with specific
+                            "checkbox"> Only connect to AP with specific
                             BSSID</label>
                         </div>
                     </div>
@@ -793,19 +793,19 @@
                             <label class="col-sm-2 control-label" for="ap_static_ip">IP:</label>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id="ap_static_ip_0" type="number">
+                                <input class="form-control" id="ap_static_ip_0" name="ap_static_ip_0" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id="ap_static_ip_1" type="number">
+                                <input class="form-control" id="ap_static_ip_1" name="ap_static_ip_1" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id="ap_static_ip_2" type="number">
+                                <input class="form-control" id="ap_static_ip_2" name="ap_static_ip_2" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id="ap_static_ip_3" type="number">
+                                <input class="form-control" id="ap_static_ip_3" name="ap_static_ip_3" type="number">
                             </div>
                         </div>
 
@@ -816,25 +816,25 @@
 
                             <div class="col-sm-2">
                                 <input class="form-control"
-                                id="ap_static_netmask_0"
+                                id="ap_static_netmask_0" name="ap_static_netmask_0"
                                 type="number">
                             </div>
 
                             <div class="col-sm-2">
                                 <input class="form-control"
-                                id="ap_static_netmask_1"
+                                id="ap_static_netmask_1" name="ap_static_netmask_1"
                                 type="number">
                             </div>
 
                             <div class="col-sm-2">
                                 <input class="form-control"
-                                id="ap_static_netmask_2"
+                                id="ap_static_netmask_2" name="ap_static_netmask_2"
                                 type="number">
                             </div>
 
                             <div class="col-sm-2">
                                 <input class="form-control"
-                                id="ap_static_netmask_3"
+                                id="ap_static_netmask_3" name="ap_static_netmask_3"
                                 type="number">
                             </div>
                         </div>
@@ -847,29 +847,23 @@
 
                             <div class="col-sm-2">
                                 <input class="form-control" id=
-                                "ap_static_gateway_0" type="number">
+                                "ap_static_gateway_0" name="ap_static_gateway_0" type="number">
                             </div>
 
                             <div class="col-sm-2">
                                 <input class="form-control" id=
-                                "ap_static_gateway_1" type="number">
+                                "ap_static_gateway_1" name="ap_static_gateway_1" type="number">
                             </div>
 
                             <div class="col-sm-2">
                                 <input class="form-control" id=
-                                "ap_static_gateway_2" type="number">
+                                "ap_static_gateway_2" name="ap_static_gateway_2" type="number">
                             </div>
 
                             <div class="col-sm-2">
                                 <input class="form-control" id=
-                                "ap_static_gateway_3" type="number">
+                                "ap_static_gateway_3" name="ap_static_gateway_3" type="number">
                             </div>
-
-                        </div>
-                        <div class="form-group row" id="ap_static_gateway">
-                            <p class="help-block col-sm-offset-2 col-sm-10" id="hb_ap_static_ip">
-                                Check access point static IP settings
-                            </p>
                         </div>
                     </div>
 
@@ -881,7 +875,7 @@
 
                         <div class="col-sm-10">
                             <input class="form-control" id="ap_ssid"
-                            placeholder=
+                            name="ap_ssid" placeholder=
                             "SSID to broadcast" type=
                             "text">
                             <p class="help-block hidden" id="hb_ap_ssid_empty">
@@ -918,7 +912,7 @@
                         "ap_password">Password:</label>
                         <div class="col-sm-5">
                             <input class="form-control" id=
-                            "ap_password" placeholder=
+                            "ap_password" name="ap_password" placeholder=
                             "Password for connecting to the access point" type=
                             "password" maxlength="64">
                             <p class="help-block hidden" id="hb_ap_password_empty">
@@ -944,7 +938,7 @@
 
                         <div class="checkbox col-sm-10">
                             <input class="form-control" id=
-                            "ap_channel" type="number" min="1" step="1" max="13">
+                            "ap_channel" name="ap_channel" type="number" min="1" step="1" max="13">
                             <p class="help-block hidden" id="hb_ap_channel">
                                 Channel number should be in the range of 1 - 13
                             </p>
@@ -955,7 +949,7 @@
                         <div class="col-sm-offset-2 col-sm-10">
                             <div class="checkbox">
                                 <label><input id=
-                                "ap_hidden" type=
+                                "ap_hide_ssid" type=
                                 "checkbox"> Hide SSID</label>
                             </div>
                         </div>
@@ -979,32 +973,32 @@
 
                             <div class="col-sm-1">
                                 <input class="form-control input_hex" id=
-                                "ap_mac_address_0" type="text" maxlength="2">
+                                "ap_mac_address_0" name="ap_mac_address_0" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
                                 <input class="form-control input_hex" id=
-                                "ap_mac_address_1" type="text" maxlength="2">
+                                "ap_mac_address_1" name="ap_mac_address_1" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
                                 <input class="form-control input_hex" id=
-                                "ap_mac_address_2" type="text" maxlength="2">
+                                "ap_mac_address_2" name="ap_mac_address_2" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
                                 <input class="form-control input_hex" id=
-                                "ap_mac_address_3" type="text" maxlength="2">
+                                "ap_mac_address_3" name="ap_mac_address_3" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
                                 <input class="form-control input_hex" id=
-                                "ap_mac_address_4" type="text" maxlength="2">
+                                "ap_mac_address_4" name="ap_mac_address_4" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
                                 <input class="form-control input_hex" id=
-                                "ap_mac_address_5" type="text" maxlength="2">
+                                "ap_mac_address_5" name="ap_mac_address_5" type="text" maxlength="2">
                             </div>
                         </div>
                     </div>
@@ -1043,7 +1037,7 @@
 
             // Time constants
             var TIMEOUT_GENERIC = 32000;
-            var TIMEOUT_SAVE_RESET = 8000;
+            var TIMEOUT_SAVE_RESET = 16000;
             var TIMEOUT_UPDATE_STATUS = 8000;
 
             function updateStatusGUI(status) {
@@ -1366,10 +1360,10 @@
                 $('#ap_channel').val(settings.data.ap_channel);
 
                 if(settings.data.ap_hidden) {
-                    $('#ap_hidden').prop('checked', true).change();
+                    $('#ap_hide_ssid').prop('checked', true).change();
                 }
                 else {
-                    $('#ap_hidden').prop('checked', false).change();
+                    $('#ap_hide_ssid').prop('checked', false).change();
                 }
 
                 $('#ap_mac_address_0').val(settings.data.ap_mac_address[0].toString(16));
@@ -1607,7 +1601,6 @@
                 }
 
                 console.log('do verification');
-                console.log($("#form_settings").serialize());
 
                 return validation_ok;     
             }
@@ -1785,10 +1778,49 @@
                 $('#button_modal_warning_save_reset_ok').click(function(e) {
                     console.log('*** button_modal_warning_save_reset_ok');
 
+                    var serialized_data = $("#form_settings").serialize();
+
+                    if($("#general_use_authentication").prop('checked')) {
+                        serialized_data += '&general_use_authentication=1';
+                    }
+                    else {
+                        serialized_data += '&general_use_authentication=0';
+                    }
+
+                    if($("#client_connect_to_ap_with_specific_bssid").prop('checked')) {
+                        serialized_data += '&client_connect_to_ap_with_specific_bssid=1';
+                    }
+                    else {
+                        serialized_data += '&client_connect_to_ap_with_specific_bssid=0';
+                    }
+
+                    if($("#client_mac_address").prop('checked')) {
+                        serialized_data += '&client_mac_address=1';
+                    }
+                    else {
+                        serialized_data += '&client_mac_address=0';
+                    }
+
+                    if($("#ap_hide_ssid").prop('checked')) {
+                        serialized_data += '&ap_hide_ssid=1';
+                    }
+                    else {
+                        serialized_data += '&ap_hide_ssid=0';
+                    }
+
+                    if($("#ap_mac_address").prop('checked')) {
+                        serialized_data += '&ap_mac_address=1';
+                    }
+                    else {
+                        serialized_data += '&ap_mac_address=0';
+                    }
+
+                    console.log(serialized_data);
+
                     $.ajax({
                         type: 'POST',
                         url: '/update_settings.cgi',
-                        data: {'request':JSON_REQUEST_UPDATE_SETTINGS, 'data':$("#form_settings").serialize()},
+                        data: {'request':JSON_REQUEST_UPDATE_SETTINGS, 'data':serialized_data},
                         dataType: 'json',
                         timeout: TIMEOUT_GENERIC,
                         success: function(data) {
@@ -1804,8 +1836,11 @@
                                                             window.location.hostname +
                                                             ':' +
                                                             $('#general_website_port').val());
+                                    window.location.reload();
                                },
                                TIMEOUT_SAVE_RESET);
+
+                    $("#modal_info_saving_resetting").modal('show');
                 });
 
                 window.onbeforeunload = function() {

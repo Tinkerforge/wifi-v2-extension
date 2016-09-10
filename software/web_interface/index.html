@@ -415,11 +415,11 @@
                                     Indexed from 1 so that value can be chosen
                                     directly from the data returned by the extension.
                                     -->
-                                    <option value="1">
+                                    <option value="0">
                                         B
                                     </option>
 
-                                    <option value="2">
+                                    <option value="1">
                                         G
                                     </option>
                                 </select>
@@ -439,21 +439,21 @@
                         <div class="form-group hidden row markable" id=
                         "general_use_authentication_elements">
                             <label class="col-sm-2 control-label" for=
-                            "general_secret">Secret:</label>
+                            "general_authentication_secret">Secret:</label>
                             <div class="col-sm-5">
-                                <input class="form-control" id="general_secret"
+                                <input class="form-control" id="general_authentication_secret"
                                 placeholder="Secret for authentication" type=
-                                "password" maxlength="64" name="general_secret">
-                                <p class="help-block hidden" id="hb_general_secret_empty">
+                                "password" name="general_authentication_secret" maxlength="64">
+                                <p class="help-block hidden" id="hb_general_authentication_secret_empty">
                                     Secret can not be empty
                                 </p>
-                                <p class="help-block hidden" id="hb_general_secret_ascii">
+                                <p class="help-block hidden" id="hb_general_authentication_secret_ascii">
                                     Only ASCII characters are allowed for secret
                                 </p>
                             </div>
 
                             <div class="checkbox col-sm-5">
-                                <label><input id="general_secret_show_characters" type=
+                                <label><input id="general_authentication_secret_show_characters" type=
                                 "checkbox"> Show Characters</label>
                             </div>
 
@@ -494,7 +494,7 @@
                         <div class="col-sm-10">
                             <input class="form-control" id=
                             "client_hostname" name="client_hostname" placeholder=
-                            "Hostname of the node" type="text">
+                            "Hostname of the node" maxlength="32" type="text">
                             <p class="help-block hidden" id="hb_client_hostname_ascii">
                                 Only ASCII characters are allowed for hostname
                             </p>
@@ -600,7 +600,7 @@
                         <div class="col-sm-10">
                             <input class="form-control" id="client_ssid"
                             name="client_ssid" placeholder=
-                            "SSID of the access point to connect to" type=
+                            "SSID of the access point to connect to" maxlength="32" type=
                             "text">
                             <p class="help-block hidden" id="hb_client_ssid_empty">
                                 SSID can not be empty
@@ -876,7 +876,7 @@
                         <div class="col-sm-10">
                             <input class="form-control" id="ap_ssid"
                             name="ap_ssid" placeholder=
-                            "SSID to broadcast" type=
+                            "SSID to broadcast" maxlength="32" type=
                             "text">
                             <p class="help-block hidden" id="hb_ap_ssid_empty">
                                 Access point SSID can not be empty
@@ -1006,7 +1006,7 @@
             </div>
         </form> <!-- Close form which was opened at just after opening common settings panel's body -->
 
-            <button id="button_save_reset_settings" class="btn btn-block btn-primary btn-lg spacer-bottom" type="button">
+            <button id="button_save_reset_settings" class="btn btn-block btn-default btn-lg spacer-bottom" type="button">
                 Save and Reset
             </button>
         </div> <!-- End of container for configuration elements -->
@@ -1039,6 +1039,8 @@
             var TIMEOUT_GENERIC = 32000;
             var TIMEOUT_SAVE_RESET = 16000;
             var TIMEOUT_UPDATE_STATUS = 8000;
+
+            var timeout_get_status = null;
 
             function updateStatusGUI(status) {
                 // Client enabled.
@@ -1208,18 +1210,23 @@
                 $("#general_website_port").val(settings.data.general_website_port);
                 $("#general_websocket_port").val(settings.data.general_websocket_port);
 
-                if(settings.data.general_phy_mode == 0)
+                if(settings.data.general_phy_mode - 1 == 0) {
+                    $("#general_phy_mode").val('0');
+                }
+                else if(settings.data.general_phy_mode - 1 == 1) {
                     $("#general_phy_mode").val('1');
-                else
-                    $("#general_phy_mode").val(settings.data.general_phy_mode);
+                }
+                else {
+                    $("#general_phy_mode").val('0');
+                }
 
                 if(settings.data.general_authentication_secret === '') {
-                    $("#general_secret").val('');
+                    $("#general_authentication_secret").val('');
                     if($("#general_use_authentication").prop('checked'))
                         $("#general_use_authentication").prop('checked', false).change();
                 }
                 else {
-                    $("#general_secret").val(settings.data.general_authentication_secret);
+                    $("#general_authentication_secret").val(settings.data.general_authentication_secret);
                     if(!$("#general_use_authentication").prop('checked'))
                         $("#general_use_authentication").prop('checked', true).change();
                 }
@@ -1407,6 +1414,7 @@
                             getStatus();
                         }
                         else {
+                            console.log('*** GSET data.status = ' + data.status + ' ***');
                         }
                     },
                     error: function(request, status, err) {
@@ -1438,11 +1446,11 @@
                             // Show the body of the page.
                             $("body").addClass('show');
                             $("body").removeClass('hidden');
-                            setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
+                            timeout_get_status = setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
                         }
                     },
                     error: function(request, status, err) {
-                        setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
+                         timeout_get_status = setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
                     }
                 });
             }
@@ -1487,18 +1495,18 @@
                 }
 
                 var general_use_authentication = $('#general_use_authentication').prop('checked');
-                var general_secret = $('#general_secret').val();
+                var general_authentication_secret = $('#general_authentication_secret').val();
                 
                 if(general_use_authentication) {
-                    if(general_secret === '' || general_secret === null) {
+                    if(general_authentication_secret === '' || general_authentication_secret === null) {
                         validation_ok = false;
                         $('#general_use_authentication_elements').addClass('has-error');
-                        $('#hb_general_secret_empty').removeClass('hidden');
+                        $('#hb_general_authentication_secret_empty').removeClass('hidden');
                     }
-                    if(!isASCII(general_secret)) {
+                    if(!isASCII(general_authentication_secret)) {
                         validation_ok = false;
                         $('#general_use_authentication_elements').addClass('has-error');
-                        $('#hb_general_secret_ascii').removeClass('hidden');
+                        $('#hb_general_authentication_secret_ascii').removeClass('hidden');
                     }
                 }
 
@@ -1647,13 +1655,13 @@
                     {
                         $("#general_use_authentication_elements").toggleClass("hidden");
                     }
-                    if ($(this).attr("id") === "general_secret_show_characters")
+                    if ($(this).attr("id") === "general_authentication_secret_show_characters")
                     {
                         if(this.checked) {
-                            $('#general_secret').attr("type", "text");
+                            $('#general_authentication_secret').attr("type", "text");
                         }
                         else {
-                            $('#general_secret').attr("type", "password");
+                            $('#general_authentication_secret').attr("type", "password");
                         }
                     }
                     if ($(this).attr("id") ===
@@ -1830,15 +1838,21 @@
                             // Ignored.
                         }
                     });
+
+                    clearTimeout(timeout_get_status);
+
+                    // Clear session cookie.
+                    //document.cookie = 'sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+
                     setTimeout(function(e) {
-                                    window.location.replace(window.location.protocol +
-                                                            '//' +
-                                                            window.location.hostname +
-                                                            ':' +
-                                                            $('#general_website_port').val());
-                                    window.location.reload();
-                               },
-                               TIMEOUT_SAVE_RESET);
+                            window.location.replace(window.location.protocol +
+                                                    '//' +
+                                                    window.location.hostname +
+                                                    ':' +
+                                                    $('#general_website_port').val() +
+                                                    '/authenticate.html');
+                        },
+                        TIMEOUT_SAVE_RESET);
 
                     $("#modal_info_saving_resetting").modal('show');
                 });

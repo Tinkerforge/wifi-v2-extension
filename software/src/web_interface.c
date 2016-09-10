@@ -9,6 +9,9 @@
 extern GetWifi2StatusReturn gw2sr;
 extern Configuration configuration_current;
 
+char buffer_post_form[POST_BUFFER_SIZE];
+int index_buffer_post_form = 0;
+
 const char *fmt_response_json = \
 	"{\"request\":%d,\"status\":%d,\"data\":%s}";
 
@@ -606,30 +609,150 @@ int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void) {
 int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 	const uint8_t tf_reset_packet[8] = {0, 0, 0, 0, 8, 243, 0, 0};
 
-	char data[GENERIC_BUFFER_SIZE];
+	char data[POST_BUFFER_SIZE];
 
+	// General fields.
+	char general_port[6];
+	char general_websocket_port[6];
 	char general_website_port[6];
+	char general_phy_mode[2];
+	char general_use_authentication[2];
+	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH + 1];
+	char general_mode[2];
 
-	//httpdStartResponse(connection_data, 200);
-	//httpdEndHeaders(connection_data);
+	// Client fields.
+	char client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1];
+	char client_ip_configuration[2];
+	char client_static_ip_0[4];
+	char client_static_ip_1[4];
+	char client_static_ip_2[4];
+	char client_static_ip_3[4];
+	char client_static_netmask_0[4];
+	char client_static_netmask_1[4];
+	char client_static_netmask_2[4];
+	char client_static_netmask_3[4];
+	char client_static_gateway_0[4];
+	char client_static_gateway_1[4];
+	char client_static_gateway_2[4];
+	char client_static_gateway_3[4];
+	char client_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1];
+	char client_encryption[2];
+	char client_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1];
+	char client_connect_to_ap_with_specific_bssid[2];
+	char client_bssid_0[3];
+	char client_bssid_1[3];
+	char client_bssid_2[3];
+	char client_bssid_3[3];
+	char client_bssid_4[3];
+	char client_bssid_5[3];
+	char client_mac_address[2];
+	char client_mac_address_0[3];
+	char client_mac_address_1[3];
+	char client_mac_address_3[3];
+	char client_mac_address_4[3];
+	char client_mac_address_5[3];
+
+	// AP fields.
+	char ap_ip_configuration[2];
+	char ap_static_ip_0[4];
+	char ap_static_ip_1[4];
+	char ap_static_ip_2[4];
+	char ap_static_ip_3[4];
+	char ap_static_netmask_0[4];
+	char ap_static_netmask_1[4];
+	char ap_static_netmask_2[4];
+	char ap_static_netmask_3[4];
+	char ap_static_gateway_0[4];
+	char ap_static_gateway_1[4];
+	char ap_static_gateway_2[4];
+	char ap_static_gateway_3[4];
+	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1];
+	char ap_encryption[2];
+	char ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1];
+	char ap_channel[3];
+	char ap_hide_ssid[2];
+	char ap_mac_address[2];
+	char ap_mac_address_0[3];
+	char ap_mac_address_1[3];
+	char ap_mac_address_2[3];
+	char ap_mac_address_3[3];
+	char ap_mac_address_4[3];
+	char ap_mac_address_5[3];
+
+	// Partial arrival processing.
+	memcpy(&buffer_post_form[index_buffer_post_form],
+		   connection_data->post->buff,
+		   connection_data->post->buffLen);
+
+	index_buffer_post_form += connection_data->post->buffLen;
+
+	// More pending data.
+	if(connection_data->post->len != connection_data->post->received) {
+		return HTTPD_CGI_MORE;
+	}
+
+	// Reset buffer accumulator index.
+	index_buffer_post_form = 0;
 
 	if(((do_check_session(connection_data)) == 1) &&
-	   ((do_check_request(connection_data->post->buff,
+	   ((do_check_request(buffer_post_form,
 					 	  JSON_REQUEST_UPDATE_SETTINGS)) == 1)) {
-		if((httpdFindArg(connection_data->post->buff,
+		if((httpdFindArg(buffer_post_form,
 					 	 "data",
 					 	 data,
-					 	 GENERIC_BUFFER_SIZE)) > 0) {
+					 	 POST_BUFFER_SIZE)) > 0) {
 
 			// Get all form fields from data.
-			if((httpdFindArg(data, "general_website_port", general_website_port, 6)) > 0) {
-				// Save settings.
-				configuration_current.general_website_port = atoi(general_website_port);
-				configuration_save_to_eeprom();
-
-				// Reset stack.
-				tfp_handle_packet(tf_reset_packet, 8);
+			if((httpdFindArg(data, "general_port", general_port, 6)) > 0) {
+				configuration_current.general_port = atoi(general_port);
 			}
+			if((httpdFindArg(data, "general_websocket_port", general_websocket_port, 6)) > 0) {
+				configuration_current.general_websocket_port = atoi(general_websocket_port);
+			}
+			if((httpdFindArg(data, "general_website_port", general_website_port, 6)) > 0) {
+				configuration_current.general_website_port = atoi(general_website_port);
+			}
+			if((httpdFindArg(data, "general_phy_mode", general_phy_mode, 2)) > 0) {
+				configuration_current.general_phy_mode = atoi(general_phy_mode) + 1;
+			}
+
+			if((httpdFindArg(data, "general_use_authentication", general_use_authentication, 2)) > 0) {
+				if(atoi(general_use_authentication) == 0) {
+					strcpy(configuration_current.general_authentication_secret, "\0");
+				}
+				else {
+					if((httpdFindArg(data,
+									 "general_authentication_secret",
+									 general_authentication_secret,
+									 CONFIGURATION_SECRET_MAX_LENGTH + 1)) > 0) {
+						strcpy(configuration_current.general_authentication_secret, general_authentication_secret);
+					}
+				}
+			}
+
+			if((httpdFindArg(data, "general_mode", general_mode, 2)) > 0) {
+				int numeric_general_mode = atoi(general_mode);
+
+				if(numeric_general_mode == 0) {
+					configuration_current.client_enable = 1;
+					configuration_current.ap_enable = 0;
+				}
+
+				else if(numeric_general_mode == 1) {
+					configuration_current.client_enable = 0;
+					configuration_current.ap_enable = 1;
+				}
+
+				else if(numeric_general_mode == 2) {
+					configuration_current.client_enable = 1;
+					configuration_current.ap_enable = 1;
+				}
+			}
+
+			// Update configuration in EEPROM
+			configuration_save_to_eeprom();
+			// Reset stack.
+			tfp_handle_packet(tf_reset_packet, 8);
 		}
 	}
 	else {
@@ -659,13 +782,6 @@ int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_dat
 	httpdEndHeaders(connection_data);
 
 	char cookie[GENERIC_BUFFER_SIZE];
-
-	/*
-	if((httpdGetHeader(connection_data,
-					   "Cookie",
-					   cookie,
-					   GENERIC_BUFFER_SIZE)) == 1)
-	*/
 
 	if(((do_check_session(connection_data)) == 1) &&
 	   ((do_check_request(connection_data->post->buff,

@@ -148,50 +148,7 @@ int ICACHE_FLASH_ATTR do_has_cookie(HttpdConnData *connection_data,
 	}
 }
 
-int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data) {
-	unsigned long sid;
-	char cookie[GENERIC_BUFFER_SIZE];
 
-	if((do_is_auth_enabled()) == -1) {
-		return 1;
-	}
-
-	if((do_has_cookie(connection_data,
-					  cookie,
-					  GENERIC_BUFFER_SIZE)) == 1) {
-
-		if((do_get_cookie_field(cookie,
-								"sid=",
-								HEADER_FIELD_TYPE_NUMERIC,
-								(void *)&sid)) == 1) {
-			for(unsigned long i = 0; i < MAX_ACTIVE_SESSION_COOKIES; i++) {
-				if(sid == active_sessions[i]) {
-					return 1;
-				}
-			}
-		}
-	}
-
-	return -1;
-}
-
-int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data) {
-	connection_data->url = "/not_found.html";
-
-	return cgiEspFsHook(connection_data);
-}
-
-int ICACHE_FLASH_ATTR do_check_request(char *buffer_post, uint8 rid) {
-	char request[4];
-
-	if ((httpdFindArg(buffer_post, "request", request, 4)) > 0) {
-		if((uint8)(strtoul(request, NULL, 10)) == rid) {
-			return 1;
-		}
-	}
-
-	return 0;
-}
 
 int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data) {
 	struct get_status status;
@@ -265,6 +222,12 @@ int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data) {
 	return HTTPD_CGI_DONE;
 }
 
+int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data) {
+	connection_data->url = "/not_found.html";
+
+	return cgiEspFsHook(connection_data);
+}
+
 int ICACHE_FLASH_ATTR cgi_root(HttpdConnData *connection_data) {
 	if((do_check_session(connection_data)) == 1) {
 		connection_data->url = "/index.html";
@@ -275,6 +238,45 @@ int ICACHE_FLASH_ATTR cgi_root(HttpdConnData *connection_data) {
 	connection_data->cgiArg = "/authenticate.html";
 
 	return cgiRedirect(connection_data);
+}
+
+int ICACHE_FLASH_ATTR do_check_request(char *buffer_post, uint8 rid) {
+	char request[4];
+
+	if ((httpdFindArg(buffer_post, "request", request, 4)) > 0) {
+		if((uint8)(strtoul(request, NULL, 10)) == rid) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data) {
+	unsigned long sid;
+	char cookie[GENERIC_BUFFER_SIZE];
+
+	if((do_is_auth_enabled()) == -1) {
+		return 1;
+	}
+
+	if((do_has_cookie(connection_data,
+					  cookie,
+					  GENERIC_BUFFER_SIZE)) == 1) {
+
+		if((do_get_cookie_field(cookie,
+								"sid=",
+								HEADER_FIELD_TYPE_NUMERIC,
+								(void *)&sid)) == 1) {
+			for(unsigned long i = 0; i < MAX_ACTIVE_SESSION_COOKIES; i++) {
+				if(sid == active_sessions[i]) {
+					return 1;
+				}
+			}
+		}
+	}
+
+	return -1;
 }
 
 int ICACHE_FLASH_ATTR do_get_status(struct get_status *status,
@@ -606,22 +608,138 @@ int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void) {
 	return 1;
 }
 
-int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
-	const uint8_t tf_reset_packet[8] = {0, 0, 0, 0, 8, 243, 0, 0};
+int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
+	// AP fields.
+	char ap_ip_configuration[2];
+	char ap_static_ip_0[4];
+	char ap_static_ip_1[4];
+	char ap_static_ip_2[4];
+	char ap_static_ip_3[4];
+	char ap_static_netmask_0[4];
+	char ap_static_netmask_1[4];
+	char ap_static_netmask_2[4];
+	char ap_static_netmask_3[4];
+	char ap_static_gateway_0[4];
+	char ap_static_gateway_1[4];
+	char ap_static_gateway_2[4];
+	char ap_static_gateway_3[4];
+	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH];
+	char ap_encryption[2];
+	char ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
+	char ap_channel[3];
+	char ap_hide_ssid[2];
+	char ap_mac_address[2];
+	char ap_mac_address_0[3];
+	char ap_mac_address_1[3];
+	char ap_mac_address_2[3];
+	char ap_mac_address_3[3];
+	char ap_mac_address_4[3];
+	char ap_mac_address_5[3];
+	
+	if((httpdFindArg(data, "ap_ip_configuration", ap_ip_configuration, 2)) > 0) {
+		// DHCP.
+		if(strtoul(ap_ip_configuration, NULL, 10) == 0){
+			memset(configuration_current.ap_ip, 0, 4);
+			memset(configuration_current.ap_subnet_mask, 0, 4);
+			memset(configuration_current.ap_gateway, 0, 4);
+		}
+		// Static.
+		else if(strtoul(ap_ip_configuration, NULL, 10) == 1){
+			if(((httpdFindArg(data, "ap_static_ip_0", ap_static_ip_0, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_ip_1", ap_static_ip_1, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_ip_2", ap_static_ip_2, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_ip_3", ap_static_ip_3, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_netmask_0", ap_static_netmask_0, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_netmask_1", ap_static_netmask_1, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_netmask_2", ap_static_netmask_2, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_netmask_3", ap_static_netmask_3, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_gateway_0", ap_static_gateway_0, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_gateway_1", ap_static_gateway_1, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_gateway_2", ap_static_gateway_2, 4)) > 0) &&
+			   ((httpdFindArg(data, "ap_static_gateway_3", ap_static_gateway_3, 4)) > 0)) {
+			   		configuration_current.ap_ip[0] = (uint8_t)strtoul(ap_static_ip_0, NULL, 10);
+			   		configuration_current.ap_ip[1] = (uint8_t)strtoul(ap_static_ip_1, NULL, 10);
+			   		configuration_current.ap_ip[2] = (uint8_t)strtoul(ap_static_ip_2, NULL, 10);
+			   		configuration_current.ap_ip[3] = (uint8_t)strtoul(ap_static_ip_3, NULL, 10);
+			   		configuration_current.ap_subnet_mask[0] = (uint8_t)strtoul(ap_static_netmask_0, NULL, 10);
+			   		configuration_current.ap_subnet_mask[1] = (uint8_t)strtoul(ap_static_netmask_1, NULL, 10);
+			   		configuration_current.ap_subnet_mask[2] = (uint8_t)strtoul(ap_static_netmask_2, NULL, 10);
+			   		configuration_current.ap_subnet_mask[3] = (uint8_t)strtoul(ap_static_netmask_3, NULL, 10);
+			   		configuration_current.ap_gateway[0] = (uint8_t)strtoul(ap_static_gateway_0, NULL, 10);
+			   		configuration_current.ap_gateway[1] = (uint8_t)strtoul(ap_static_gateway_1, NULL, 10);
+			   		configuration_current.ap_gateway[2] = (uint8_t)strtoul(ap_static_gateway_2, NULL, 10);
+			   		configuration_current.ap_gateway[3] = (uint8_t)strtoul(ap_static_gateway_3, NULL, 10);
+			}
+		}
 
-	char data[POST_BUFFER_SIZE];
+	}
 
-	// General fields.
-	char general_port[6];
-	char general_websocket_port[6];
-	char general_website_port[6];
-	char general_phy_mode[2];
-	char general_use_authentication[2];
-	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH + 1];
-	char general_mode[2];
+	// AP SSID.
+	if((httpdFindArg(data, "ap_ssid", ap_ssid, CONFIGURATION_SSID_MAX_LENGTH)) > 0) {
+		strcpy(configuration_current.ap_ssid, ap_ssid);
+	}
 
+	// AP Encryption.
+	if((httpdFindArg(data, "ap_encryption", ap_encryption, 2)) > 0) {
+		// Open.
+		if(strtoul(ap_encryption, NULL, 10) == 0){
+			strcpy(configuration_current.ap_password, "\0");
+		}
+		// WPA/WPA2.
+		else if(strtoul(ap_encryption, NULL, 10) == 1){
+			if((httpdFindArg(data,
+							 "ap_password",
+							 ap_password,
+							 CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0) {
+				strcpy(configuration_current.ap_password, ap_password);
+			}
+		}
+	}
+
+	// AP Channel.
+	if((httpdFindArg(data, "ap_channel", ap_channel, 3)) > 0) {
+		configuration_current.ap_channel = (uint8_t)strtoul(ap_channel, NULL, 10);
+	}
+
+	// Hide AP SSID.
+	if((httpdFindArg(data, "ap_hide_ssid", ap_hide_ssid, 2)) > 0) {
+		if(strtoul(ap_hide_ssid, NULL, 10) == 0) {
+			configuration_current.ap_hidden = 0;
+		}
+		else if(strtoul(ap_hide_ssid, NULL, 10) == 1){
+			configuration_current.ap_hidden = 1;
+		}
+	}
+
+	// AP MAC.
+	if((httpdFindArg(data, "ap_mac_address", ap_mac_address, 2)) > 0) {
+		if(strtoul(ap_mac_address, NULL, 10) == 0){
+			memset(configuration_current.ap_mac_address, 0, 6);
+
+		}
+		else if(strtoul(ap_mac_address, NULL, 10) == 1){
+			if(((httpdFindArg(data, "ap_mac_address_0", ap_mac_address_0, 3)) > 0) &&
+			   ((httpdFindArg(data, "ap_mac_address_1", ap_mac_address_1, 3)) > 0) &&
+			   ((httpdFindArg(data, "ap_mac_address_2", ap_mac_address_2, 3)) > 0) &&
+			   ((httpdFindArg(data, "ap_mac_address_3", ap_mac_address_3, 3)) > 0) &&
+			   ((httpdFindArg(data, "ap_mac_address_4", ap_mac_address_4, 3)) > 0) &&
+			   ((httpdFindArg(data, "ap_mac_address_5", ap_mac_address_5, 3)) > 0)) {
+					configuration_current.ap_mac_address[0] = (uint8_t)strtoul(ap_mac_address_0, NULL, 16);
+					configuration_current.ap_mac_address[1] = (uint8_t)strtoul(ap_mac_address_1, NULL, 16);
+					configuration_current.ap_mac_address[2] = (uint8_t)strtoul(ap_mac_address_2, NULL, 16);
+					configuration_current.ap_mac_address[3] = (uint8_t)strtoul(ap_mac_address_3, NULL, 16);
+					configuration_current.ap_mac_address[4] = (uint8_t)strtoul(ap_mac_address_4, NULL, 16);
+					configuration_current.ap_mac_address[5] = (uint8_t)strtoul(ap_mac_address_5, NULL, 16);
+			}
+		}
+	}
+
+	return 1;
+}
+
+int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 	// Client fields.
-	char client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1];
+	char client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH];
 	char client_ip_configuration[2];
 	char client_static_ip_0[4];
 	char client_static_ip_1[4];
@@ -635,9 +753,9 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 	char client_static_gateway_1[4];
 	char client_static_gateway_2[4];
 	char client_static_gateway_3[4];
-	char client_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1];
+	char client_ssid[CONFIGURATION_SSID_MAX_LENGTH];
 	char client_encryption[2];
-	char client_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1];
+	char client_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
 	char client_connect_to_ap_with_specific_bssid[2];
 	char client_bssid_0[3];
 	char client_bssid_1[3];
@@ -653,32 +771,139 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 	char client_mac_address_4[3];
 	char client_mac_address_5[3];
 
-	// AP fields.
-	char ap_ip_configuration[2];
-	char ap_static_ip_0[4];
-	char ap_static_ip_1[4];
-	char ap_static_ip_2[4];
-	char ap_static_ip_3[4];
-	char ap_static_netmask_0[4];
-	char ap_static_netmask_1[4];
-	char ap_static_netmask_2[4];
-	char ap_static_netmask_3[4];
-	char ap_static_gateway_0[4];
-	char ap_static_gateway_1[4];
-	char ap_static_gateway_2[4];
-	char ap_static_gateway_3[4];
-	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1];
-	char ap_encryption[2];
-	char ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1];
-	char ap_channel[3];
-	char ap_hide_ssid[2];
-	char ap_mac_address[2];
-	char ap_mac_address_0[3];
-	char ap_mac_address_1[3];
-	char ap_mac_address_2[3];
-	char ap_mac_address_3[3];
-	char ap_mac_address_4[3];
-	char ap_mac_address_5[3];
+	// Hostname in client mode.
+	if((httpdFindArg(data,
+					 "client_hostname",
+					 client_hostname,
+					 CONFIGURATION_HOSTNAME_MAX_LENGTH)) > 0) {
+		strcpy(configuration_current.client_hostname, client_hostname);
+	}
+
+	// Client mode IP configuration.
+	if((httpdFindArg(data, "client_ip_configuration", client_ip_configuration, 2)) > 0) {
+		// DHCP.
+		if(strtoul(client_ip_configuration, NULL, 10) == 0) {
+			memset(configuration_current.client_ip, 0,  4);
+			memset(configuration_current.client_subnet_mask, 0, 4);
+			memset(configuration_current.client_gateway, 0, 4);
+		}
+		// Static.
+		else if(strtoul(client_ip_configuration, NULL, 10) == 1) {
+			if(((httpdFindArg(data, "client_static_ip_0", client_static_ip_0, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_ip_1", client_static_ip_1, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_ip_2", client_static_ip_2, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_ip_3", client_static_ip_3, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_netmask_0", client_static_netmask_0, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_netmask_1", client_static_netmask_1, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_netmask_2", client_static_netmask_2, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_netmask_3", client_static_netmask_3, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_gateway_0", client_static_gateway_0, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_gateway_1", client_static_gateway_1, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_gateway_2", client_static_gateway_2, 4)) > 0) &&
+			   ((httpdFindArg(data, "client_static_gateway_3", client_static_gateway_3, 4)) > 0)) {
+			   		configuration_current.client_ip[0] = (uint8_t)strtoul(client_static_ip_0, NULL, 10);
+			   		configuration_current.client_ip[1] = (uint8_t)strtoul(client_static_ip_1, NULL, 10);
+			   		configuration_current.client_ip[2] = (uint8_t)strtoul(client_static_ip_2, NULL, 10);
+			   		configuration_current.client_ip[3] = (uint8_t)strtoul(client_static_ip_3, NULL, 10);
+			   		configuration_current.client_subnet_mask[0] = (uint8_t)strtoul(client_static_netmask_0, NULL, 10);
+			   		configuration_current.client_subnet_mask[1] = (uint8_t)strtoul(client_static_netmask_1, NULL, 10);
+			   		configuration_current.client_subnet_mask[2] = (uint8_t)strtoul(client_static_netmask_2, NULL, 10);
+			   		configuration_current.client_subnet_mask[3] = (uint8_t)strtoul(client_static_netmask_3, NULL, 10);
+			   		configuration_current.client_gateway[0] = (uint8_t)strtoul(client_static_gateway_0, NULL, 10);
+			   		configuration_current.client_gateway[1] = (uint8_t)strtoul(client_static_gateway_1, NULL, 10);
+			   		configuration_current.client_gateway[2] = (uint8_t)strtoul(client_static_gateway_2, NULL, 10);
+			   		configuration_current.client_gateway[3] = (uint8_t)strtoul(client_static_gateway_3, NULL, 10);
+			}
+		}
+	}
+
+	// SSID to connect to in client mode.
+	if((httpdFindArg(data,
+					 "client_ssid",
+					 client_ssid,
+					 CONFIGURATION_SSID_MAX_LENGTH)) > 0) {
+		strcpy(configuration_current.client_ssid, client_ssid);
+	}
+
+	// Encryption in client mode.
+	if((httpdFindArg(data, "client_encryption", client_encryption, 2)) > 0) {
+		// Open.
+		if(strtoul(client_encryption, NULL, 10) == 0) {
+			strcpy(configuration_current.client_password, "\0");
+		}
+		// WPA/WPA2.
+		else if(strtoul(client_encryption, NULL, 10) == 0) {
+			if((httpdFindArg(data,
+							 "client_password",
+							 client_password,
+							 CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0) {
+				strcpy(configuration_current.client_password, client_password);
+			}
+		}
+	}
+
+	// Connect to specific BSSID.
+	if((httpdFindArg(data,
+					 "client_connect_to_ap_with_specific_bssid",
+					 client_connect_to_ap_with_specific_bssid, 2)) > 0) {
+		if(strtoul(client_connect_to_ap_with_specific_bssid, NULL, 10) == 0) {
+			memset(configuration_current.client_bssid, 0, 6);
+		}
+		else if(strtoul(client_connect_to_ap_with_specific_bssid, NULL, 10) == 1) {
+			if(((httpdFindArg(data, "client_bssid_0", client_bssid_0, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_bssid_1", client_bssid_1, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_bssid_2", client_bssid_2, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_bssid_3", client_bssid_3, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_bssid_4", client_bssid_4, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_bssid_5", client_bssid_5, 3)) > 0)) {
+					configuration_current.client_bssid[0] = (uint8_t)strtoul(client_bssid_0, NULL, 16);
+					configuration_current.client_bssid[1] = (uint8_t)strtoul(client_bssid_1, NULL, 16);
+					configuration_current.client_bssid[2] = (uint8_t)strtoul(client_bssid_2, NULL, 16);
+					configuration_current.client_bssid[3] = (uint8_t)strtoul(client_bssid_3, NULL, 16);
+					configuration_current.client_bssid[4] = (uint8_t)strtoul(client_bssid_4, NULL, 16);
+					configuration_current.client_bssid[5] = (uint8_t)strtoul(client_bssid_5, NULL, 16);
+			}
+		}
+	}
+
+	// Custom MAC address to be used in client mode.
+	if((httpdFindArg(data, "client_mac_address", client_mac_address, 2)) > 0) {
+		if(strtoul(client_mac_address, NULL, 10) == 0) {
+			memset(configuration_current.client_mac_address, 0, 6);
+		}
+		else if(strtoul(client_mac_address, NULL, 10) == 1) {
+			if(((httpdFindArg(data, "client_mac_address_0", client_mac_address_0, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_mac_address_1", client_mac_address_1, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_mac_address_2", client_mac_address_2, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_mac_address_3", client_mac_address_3, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_mac_address_4", client_mac_address_4, 3)) > 0) &&
+			   ((httpdFindArg(data, "client_mac_address_5", client_mac_address_5, 3)) > 0)) {
+					configuration_current.client_mac_address[0] = (uint8_t)strtoul(client_mac_address_0, NULL, 16);
+					configuration_current.client_mac_address[1] = (uint8_t)strtoul(client_mac_address_1, NULL, 16);
+					configuration_current.client_mac_address[2] = (uint8_t)strtoul(client_mac_address_2, NULL, 16);
+					configuration_current.client_mac_address[3] = (uint8_t)strtoul(client_mac_address_3, NULL, 16);
+					configuration_current.client_mac_address[4] = (uint8_t)strtoul(client_mac_address_4, NULL, 16);
+					configuration_current.client_mac_address[5] = (uint8_t)strtoul(client_mac_address_5, NULL, 16);
+			}
+		}
+	}
+
+	return 1;
+}
+
+int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
+	const uint8_t tf_reset_packet[8] = {0, 0, 0, 0, 8, 243, 0, 0};
+
+	char data[POST_BUFFER_SIZE];
+
+	// General fields.
+	char general_port[6];
+	char general_websocket_port[6];
+	char general_website_port[6];
+	char general_phy_mode[2];
+	char general_use_authentication[2];
+	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH];
+	char general_mode[2];
 
 	// Partial arrival processing.
 	memcpy(&buffer_post_form[index_buffer_post_form],
@@ -703,7 +928,7 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 					 	 data,
 					 	 POST_BUFFER_SIZE)) > 0) {
 
-			// Get all form fields from data.
+			// General settings.
 			if((httpdFindArg(data, "general_port", general_port, 6)) > 0) {
 				configuration_current.general_port = (uint16_t)strtoul(general_port, NULL, 10);
 			}
@@ -725,7 +950,7 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 					if((httpdFindArg(data,
 									 "general_authentication_secret",
 									 general_authentication_secret,
-									 CONFIGURATION_SECRET_MAX_LENGTH + 1)) > 0) {
+									 CONFIGURATION_SECRET_MAX_LENGTH)) > 0) {
 						strcpy(configuration_current.general_authentication_secret,
 							   general_authentication_secret);
 					}
@@ -738,137 +963,27 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 
 				// Only client mode.
 				if(numeric_general_mode == 0) {
-					configuration_current.client_enable = 1;
 					configuration_current.ap_enable = 0;
+					configuration_current.client_enable = 1;
 
-					// Hostname in client mode.
-					if((httpdFindArg(data,
-									 "client_hostname",
-									 client_hostname,
-									 CONFIGURATION_HOSTNAME_MAX_LENGTH + 1)) > 0) {
-						strcpy(configuration_current.client_hostname, client_hostname);
-					}
-
-					// Client mode IP configuration.
-					if((httpdFindArg(data, "client_ip_configuration", client_ip_configuration, 2)) > 0) {
-						// DHCP.
-						if(strtoul(client_ip_configuration, NULL, 10) == 0) {
-							memset(configuration_current.client_ip, 0,  4);
-							memset(configuration_current.client_subnet_mask, 0, 4);
-							memset(configuration_current.client_gateway, 0, 4);
-						}
-						// Static.
-						if(strtoul(client_ip_configuration, NULL, 10) == 1) {
-							if(((httpdFindArg(data, "client_static_ip_0", client_static_ip_0, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_ip_1", client_static_ip_1, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_ip_2", client_static_ip_2, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_ip_3", client_static_ip_3, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_netmask_0", client_static_netmask_0, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_netmask_1", client_static_netmask_1, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_netmask_2", client_static_netmask_2, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_netmask_3", client_static_netmask_3, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_gateway_0", client_static_gateway_0, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_gateway_1", client_static_gateway_1, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_gateway_2", client_static_gateway_2, 4)) > 0) &&
-							   ((httpdFindArg(data, "client_static_gateway_3", client_static_gateway_3, 4)) > 0)) {
-							   		configuration_current.client_ip[0] = (uint8_t)strtoul(client_static_ip_0, NULL, 10);
-							   		configuration_current.client_ip[1] = (uint8_t)strtoul(client_static_ip_1, NULL, 10);
-							   		configuration_current.client_ip[2] = (uint8_t)strtoul(client_static_ip_2, NULL, 10);
-							   		configuration_current.client_ip[3] = (uint8_t)strtoul(client_static_ip_3, NULL, 10);
-							   		configuration_current.client_subnet_mask[0] = (uint8_t)strtoul(client_static_netmask_0, NULL, 10);
-							   		configuration_current.client_subnet_mask[1] = (uint8_t)strtoul(client_static_netmask_1, NULL, 10);
-							   		configuration_current.client_subnet_mask[2] = (uint8_t)strtoul(client_static_netmask_2, NULL, 10);
-							   		configuration_current.client_subnet_mask[3] = (uint8_t)strtoul(client_static_netmask_3, NULL, 10);
-							   		configuration_current.client_gateway[0] = (uint8_t)strtoul(client_static_gateway_0, NULL, 10);
-							   		configuration_current.client_gateway[1] = (uint8_t)strtoul(client_static_gateway_1, NULL, 10);
-							   		configuration_current.client_gateway[2] = (uint8_t)strtoul(client_static_gateway_2, NULL, 10);
-							   		configuration_current.client_gateway[3] = (uint8_t)strtoul(client_static_gateway_3, NULL, 10);
-							}
-						}
-					}
-
-					// SSID to connect to in client mode.
-					if((httpdFindArg(data,
-									 "client_ssid",
-									 client_ssid,
-									 CONFIGURATION_SSID_MAX_LENGTH + 1)) > 0) {
-						strcpy(configuration_current.client_ssid, client_ssid);
-					}
-
-					// Encryption in client mode.
-					if((httpdFindArg(data, "client_encryption", client_encryption, 2)) > 0) {
-						// Open.
-						if(strtoul(client_encryption, NULL, 10) == 0) {
-							strcpy(configuration_current.client_password, "\0");
-						}
-						// WPA/WPA2.
-						else if(strtoul(client_encryption, NULL, 10) == 0) {
-							if((httpdFindArg(data,
-											 "client_password",
-											 client_password,
-											 CONFIGURATION_PASSWORD_MAX_LENGTH + 1)) > 0) {
-								strcpy(configuration_current.client_password, client_password);
-							}
-						}
-					}
-
-					// Connect to specific BSSID.
-					if((httpdFindArg(data,
-									 "client_connect_to_ap_with_specific_bssid",
-									 client_connect_to_ap_with_specific_bssid, 2)) > 0) {
-						if(strtoul(client_connect_to_ap_with_specific_bssid, NULL, 10) == 0) {
-							memset(configuration_current.client_bssid, 0, 6);
-						}
-						else if(strtoul(client_connect_to_ap_with_specific_bssid, NULL, 10) == 1) {
-							if(((httpdFindArg(data, "client_bssid_0", client_bssid_0, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_bssid_1", client_bssid_1, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_bssid_2", client_bssid_2, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_bssid_3", client_bssid_3, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_bssid_4", client_bssid_4, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_bssid_5", client_bssid_5, 3)) > 0)) {
-									configuration_current.client_bssid[0] = (uint8_t)strtoul(client_bssid_0, NULL, 16);
-									configuration_current.client_bssid[1] = (uint8_t)strtoul(client_bssid_1, NULL, 16);
-									configuration_current.client_bssid[2] = (uint8_t)strtoul(client_bssid_2, NULL, 16);
-									configuration_current.client_bssid[3] = (uint8_t)strtoul(client_bssid_3, NULL, 16);
-									configuration_current.client_bssid[4] = (uint8_t)strtoul(client_bssid_4, NULL, 16);
-									configuration_current.client_bssid[5] = (uint8_t)strtoul(client_bssid_5, NULL, 16);
-							}
-						}
-					}
-
-					// Custom MAC address to be used in client mode.
-					if((httpdFindArg(data, "client_mac_address", client_mac_address, 2)) > 0) {
-						if(strtoul(client_mac_address, NULL, 10) == 0) {
-							memset(configuration_current.client_mac_address, 0, 6);
-						}
-						else if(strtoul(client_mac_address, NULL, 10) == 1) {
-							if(((httpdFindArg(data, "client_mac_address_0", client_mac_address_0, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_mac_address_1", client_mac_address_1, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_mac_address_2", client_mac_address_2, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_mac_address_3", client_mac_address_3, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_mac_address_4", client_mac_address_4, 3)) > 0) &&
-							   ((httpdFindArg(data, "client_mac_address_5", client_mac_address_5, 3)) > 0)) {
-									configuration_current.client_mac_address[0] = (uint8_t)strtoul(client_mac_address_0, NULL, 16);
-									configuration_current.client_mac_address[1] = (uint8_t)strtoul(client_mac_address_1, NULL, 16);
-									configuration_current.client_mac_address[2] = (uint8_t)strtoul(client_mac_address_2, NULL, 16);
-									configuration_current.client_mac_address[3] = (uint8_t)strtoul(client_mac_address_3, NULL, 16);
-									configuration_current.client_mac_address[4] = (uint8_t)strtoul(client_mac_address_4, NULL, 16);
-									configuration_current.client_mac_address[5] = (uint8_t)strtoul(client_mac_address_5, NULL, 16);
-							}
-						}
-					}
+					do_update_settings_client(data);
 				}
 
 				// Only AP mode.
 				else if(numeric_general_mode == 1) {
-					configuration_current.client_enable = 0;
 					configuration_current.ap_enable = 1;
+					configuration_current.client_enable = 0;
+
+					do_update_settings_ap(data);
 				}
 
 				// Client and AP mode.
 				else if(numeric_general_mode == 2) {
-					configuration_current.client_enable = 1;
 					configuration_current.ap_enable = 1;
+					configuration_current.client_enable = 1;
+
+					do_update_settings_ap(data);
+					do_update_settings_client(data);
 				}
 			}
 
@@ -878,10 +993,6 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 			tfp_handle_packet(tf_reset_packet, 8);
 		}
 	}
-	else {
-	}
-
-	//httpdSend(connection_data, response, -1);
 
 	return HTTPD_CGI_DONE;
 }

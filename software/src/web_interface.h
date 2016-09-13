@@ -48,17 +48,19 @@ int ICACHE_FLASH_ATTR do_get_cookie_field(char *cookie,
 										  char *field,
 										  unsigned char type_field,
 										  void *value);
+int ICACHE_FLASH_ATTR do_update_settings_ap(char *data);
 int ICACHE_FLASH_ATTR do_has_cookie(HttpdConnData *connection_data,
 								 	char *cookie,
 								  	unsigned long length);
-int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR do_update_settings_client(char *data);
 int ICACHE_FLASH_ATTR do_get_status(struct get_status *status,
 									unsigned char init_only);
+int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_root(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR do_check_request(char *buffer_post, uint8 rid);
 int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_get_settings(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void);

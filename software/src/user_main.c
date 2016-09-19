@@ -14,6 +14,7 @@
 #include "logging.h"
 #include "configuration.h"
 
+extern Configuration configuration_current;
 
 void ICACHE_FLASH_ATTR user_init() {
 #ifdef DEBUG_ENABLED
@@ -39,5 +40,8 @@ void ICACHE_FLASH_ATTR user_init() {
 	uart_con_init();
 	tfp_open_connection();
 	tfpw_open_connection();
-	http_open_connection();
+
+	if(configuration_current.general_website_port > 1) {
+		http_open_connection();
+	}
 }

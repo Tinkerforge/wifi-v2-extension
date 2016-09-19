@@ -1,359 +1,364 @@
 <!DOCTYPE html>
 
 <html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <meta content="IE=edge" http-equiv="X-UA-Compatible">
-        <meta content="width=device-width, initial-scale=1" name="viewport">
 
-        <!--
+<head>
+    <meta charset="utf-8">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <meta content="width=device-width, initial-scale=1" name="viewport">
+
+    <!--
         The above 3 meta tags *must* come first in the head. Any other head
         content must come *after* these tags.
         -->
 
-        <title>
-            Tinkerforge WIFI Extension 2.0
-        </title>
+    <title>
+        Tinkerforge WIFI Extension 2.0
+    </title>
 
-        <!--
+    <!--
         The "embed:" tags are used to inplace replacement with contents from
         other files.
         -->
-        <style type="text/css">
-            /* embed:./css/combined.css */
-        </style>
-    </head>
+    <style type="text/css">
+        /* embed:./css/combined.css */
+    </style>
+</head>
 
-    <body class="hidden">
-        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
-            <div class="container-fluid">
-                <!-- Brand and toggle get grouped for better mobile display. -->
-                <div class="navbar-header">
-                    <button class="navbar-toggle" data-target="#navbar"
-                    data-toggle="collapse" type="button">
+<body class="hidden">
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display. -->
+            <div class="navbar-header">
+                <button class="navbar-toggle" data-target="#navbar"
+                data-toggle="collapse" type="button">
                         <span class="sr-only">Toggle navigation</span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand disabled-link" href="#">
-                        <!-- Base64 encoded image. -->
-                        <img alt="Brand" src="data:image/png;base64,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">
-                        <b>WIFI Extension 2.0</b>
-                    </a>
-                </div>
+                <a class="navbar-brand disabled-link" href="#">
+                    <!-- Base64 encoded image. -->
+                    <img alt="Brand" src="data:image/png;base64,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">
+                    <b>WIFI Extension 2.0</b>
+                </a>
+            </div>
 
-                <!--
+            <!--
                 Collect the nav links, forms, and other content for toggling.
                 -->
-                <div class="collapse navbar-collapse" id="navbar">
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="active" id="main_toolbar_status">
-                            <a href="#">Status</a>
-                        </li>
-                        <li id="main_toolbar_settings">
-                            <a href="#">Settings</a>
-                        </li>
-                        <li id="main_toolbar_about">
-                            <a data-target="#modal_about" data-toggle="modal"
-                            href="#">About</a>
-                        </li>
-                    </ul>
-                </div>
+            <div class="collapse navbar-collapse" id="navbar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="active" id="main_toolbar_status">
+                        <a href="#">Status</a>
+                    </li>
+                    <li id="main_toolbar_settings">
+                        <a href="#">Settings</a>
+                    </li>
+                    <li id="main_toolbar_about">
+                        <a data-target="#modal_about" data-toggle="modal"
+                        href="#">About</a>
+                    </li>
+                </ul>
             </div>
-        </nav>
+        </div>
+    </nav>
 
-        <div aria-labelledby="modal_about"
-        class="modal fade bs-example-modal-lg"
-        data-backdrop="static" id="modal_about" role="dialog" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header modal-header-tf">
-                        <button aria-hidden="true" class="close" 
-                        data-dismiss="modal" type="button">&times;
+    <div aria-labelledby="modal_about" class="modal fade bs-example-modal-lg"
+    data-backdrop="static" id="modal_about" role="dialog" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-header-tf">
+                    <button aria-hidden="true" class="close" data-dismiss="modal"
+                    type="button">&times;
                         </button>
-                        <h4 class="modal-title">
+                    <h4 class="modal-title">
                             About
                         </h4>
-                    </div>
+                </div>
 
-                    <div class="modal-body">
-                        Online documentation of the WIFI Master Extension 2.0 is available <a target="_blank" href="http://www.tinkerforge.com/en/doc/Hardware/Master_Extensions/WIFI_V2_Extension.html#wifi-v2-extension">here</a>.
-                    </div>
+                <div class="modal-body">
+                    Online documentation of the WIFI Master Extension 2.0 is available
+                    <a target="_blank"
+                    href="http://www.tinkerforge.com/en/doc/Hardware/Master_Extensions/WIFI_V2_Extension.html#wifi-v2-extension">
+                      here
+                    </a>.
+                </div>
 
-                    <div class="modal-footer">
-                        <button class="btn btn-default" data-dismiss="modal"
-                        type="button">
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal" type="button">
                             Close
                         </button>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div aria-labelledby="modal_verification_failed"
-        class="modal fade bs-example-modal-lg"
-        data-backdrop="static" id="modal_verification_failed" role="dialog" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header modal-header-danger">
-                        <button aria-hidden="true" class="close" 
-                        data-dismiss="modal" type="button">&times;
+    <div aria-labelledby="modal_verification_failed"
+    class="modal fade bs-example-modal-lg" data-backdrop="static"
+    id="modal_verification_failed" role="dialog" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-header-danger">
+                    <button aria-hidden="true" class="close" data-dismiss="modal"
+                    type="button">&times;
                         </button>
-                        <h4 class="modal-title">
+                    <h4 class="modal-title">
                             Error
                         </h4>
-                    </div>
+                </div>
 
-                    <div class="modal-body">
-                        Verification failed. Please verify the marked fields.
-                    </div>
+                <div class="modal-body">
+                    Verification failed. Please verify the marked fields.
+                </div>
 
-                    <div class="modal-footer">
-                        <button class="btn btn-default" data-dismiss="modal"
-                        type="button">
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal" type="button">
                             Close
                         </button>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-       <div aria-labelledby="modal_warning_save_reset"
-        class="modal fade bs-example-modal-lg"
-        data-backdrop="static" id="modal_warning_save_reset" role="dialog" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header modal-header-warning">
-                        <h4 class="modal-title">
+    <div aria-labelledby="modal_warning_save_reset"
+    class="modal fade bs-example-modal-lg" data-backdrop="static"
+    id="modal_warning_save_reset" role="dialog" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-header-warning">
+                    <h4 class="modal-title">
                             Warning
                         </h4>
-                    </div>
+                </div>
 
-                    <div class="modal-body">
-                        The extension will reset after saving the settings. Continue?
-                    </div>
+                <div class="modal-body">
+                    The extension will reset after saving the settings. Continue?
+                </div>
 
-                    <div class="modal-footer">
-                        <button class="btn btn-success" data-dismiss="modal"
-                        type="button" id="button_modal_warning_save_reset_ok">
+                <div class="modal-footer">
+                    <button class="btn btn-success" data-dismiss="modal"
+                    type="button" id="button_modal_warning_save_reset_ok">
                             OK
                         </button>
 
-                        <button class="btn btn-default" data-dismiss="modal"
-                        type="button" id="button_modal_warning_save_reset_cancel">
+                    <button class="btn btn-default" data-dismiss="modal"
+                    type="button" id="button_modal_warning_save_reset_cancel">
                             Cancel
                         </button>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div aria-labelledby="modal_info_saving_resetting"
-        class="modal fade bs-example-modal-lg"
-        data-backdrop="static" id="modal_info_saving_resetting"
-        role="dialog" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                   <div class="modal-header modal-header-info">
-                        <h4 class="modal-title">
+    <div aria-labelledby="modal_info_saving_resetting" class="modal fade bs-example-modal-lg"
+    data-backdrop="static" id="modal_info_saving_resetting" role="dialog" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-header-info">
+                    <h4 class="modal-title">
                             Information
                         </h4>
-                    </div>
-                    <div class="modal-body">
+                </div>
+                <div class="modal-body">
+                    <div id="modal_info_saving_resetting_msg">
                         The settings are being saved. Please wait until the extension has finished resetting.
                     </div>
+                    <div id="modal_info_saving_resetting_msg_wi_disabled">
+                        The settings are saved. Note that the web interface is
+                        <font color="red"><b>disabled</b></font> now.
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Status container. -->
-        <div class="container show" id="container_client_status">
-            <!-- Client status panel. -->
-            <div class="panel panel-default" id="div_panel_client">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
+    <!-- Status container. -->
+    <div class="container show" id="container_client_status">
+        <!-- Client status panel. -->
+        <div class="panel panel-default" id="div_panel_client">
+            <div class="panel-heading">
+                <h3 class="panel-title">
                         <b>Client Status</b>
                     </h3>
-                </div>
-
-                <table class="table table-striped">
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Enabled:
-                        </td>
-                        <td class="col-xs-6" id="td_client_enabled">
-                            -
-                        </td>
-                    </tr>
-
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Status:
-                        </td>
-                        <td class="col-xs-6" id="td_client_status">
-                            -
-                        </td>
-                    </tr>
-
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Signal Strength:
-                        </td>
-                        <td class="col-xs-6">
-                            <div class="progress-bar progress-bar-danger"
-                            id="div_signal_strength"
-                            aria-valuenow="0" role="progressbar"
-                            style="min-width: 2em; width: 0%;"
-                            aria-valuemax="100" aria-valuemin="0">
-                                0%
-                            </div>
-                        </td>
-                    </tr>
-
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            IP:
-                        </td>
-                        <td class="col-xs-6" id="td_client_ip">
-                            -
-                        </td>
-                    </tr>
-
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Subnet Mask:
-                        </td>
-                        <td class="col-xs-6" id="td_client_netmask">
-                            -
-                        </td>
-                    </tr>
-
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Gateway:
-                        </td>
-                        <td class="col-xs-6" id="td_client_gateway">
-                            -
-                        </td>
-                    </tr>
-
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            MAC Address:
-                        </td>
-                        <td class="col-xs-6" id="td_client_mac">
-                            -
-                        </td>
-                    </tr>
-
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            RX Count:
-                        </td>
-                        <td class="col-xs-6" id="td_client_rx_count">
-                            -
-                        </td>
-                    </tr>
-
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            TX Count:
-                        </td>
-                        <td class="col-xs-6" id="td_client_tx_count">
-                            -
-                        </td>
-                    </tr>
-                </table>
             </div>
 
-            <!-- AP status panel. -->
-            <div class="panel panel-default" id="div_panel_ap">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        <b>Access Point Status:</b>
-                    </h3>
-                </div>
+            <table class="table table-striped">
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Enabled:
+                    </td>
+                    <td class="col-xs-6" id="td_client_enabled">
+                        -
+                    </td>
+                </tr>
 
-                <table class="table table-striped">
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Enabled:
-                        </td>
-                        <td class="col-xs-6" id="td_ap_enabled">
-                            -
-                        </td>
-                    </tr>
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Status:
+                    </td>
+                    <td class="col-xs-6" id="td_client_status">
+                        -
+                    </td>
+                </tr>
 
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Connected Clients:
-                        </td>
-                        <td class="col-xs-6" id="td_ap_connected_clients">
-                            -
-                        </td>
-                    </tr>
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Signal Strength:
+                    </td>
+                    <td class="col-xs-6">
+                        <div class="progress-bar progress-bar-danger"
+                        id="div_signal_strength" aria-valuenow="0" role="progressbar"
+                        style="min-width: 2em; width: 0%;" aria-valuemax="100" aria-valuemin="0">
+                            0%
+                        </div>
+                    </td>
+                </tr>
 
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            IP:
-                        </td>
-                        <td class="col-xs-6" id="td_ap_ip">
-                            -
-                        </td>
-                    </tr>
+                <tr class="row">
+                    <td class="col-xs-6">
+                        IP:
+                    </td>
+                    <td class="col-xs-6" id="td_client_ip">
+                        -
+                    </td>
+                </tr>
 
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Subnet Mask:
-                        </td>
-                        <td class="col-xs-6" id="td_ap_netmask">
-                            -
-                        </td>
-                    </tr>
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Subnet Mask:
+                    </td>
+                    <td class="col-xs-6" id="td_client_netmask">
+                        -
+                    </td>
+                </tr>
 
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            Gateway:
-                        </td>
-                        <td class="col-xs-6" id="td_ap_gateway">
-                            -
-                        </td>
-                    </tr>
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Gateway:
+                    </td>
+                    <td class="col-xs-6" id="td_client_gateway">
+                        -
+                    </td>
+                </tr>
 
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            MAC Address:
-                        </td>
-                        <td class="col-xs-6" id="td_ap_mac">
-                            -
-                        </td>
-                    </tr>
+                <tr class="row">
+                    <td class="col-xs-6">
+                        MAC Address:
+                    </td>
+                    <td class="col-xs-6" id="td_client_mac">
+                        -
+                    </td>
+                </tr>
 
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            RX Count:
-                        </td>
-                        <td class="col-xs-6" id="td_ap_rx_count">
-                            -
-                        </td>
-                    </tr>
+                <tr class="row">
+                    <td class="col-xs-6">
+                        RX Count:
+                    </td>
+                    <td class="col-xs-6" id="td_client_rx_count">
+                        -
+                    </td>
+                </tr>
 
-                    <tr class="row">
-                        <td class="col-xs-6">
-                            TX Count:
-                        </td>
-                        <td class="col-xs-6" id="td_ap_tx_count">
-                            -
-                        </td>
-                    </tr>
-                </table>
-            </div>
+                <tr class="row">
+                    <td class="col-xs-6">
+                        TX Count:
+                    </td>
+                    <td class="col-xs-6" id="td_client_tx_count">
+                        -
+                    </td>
+                </tr>
+            </table>
         </div>
 
-        <!-- Configure settings container. -->
-        <div class="container hidden" id="container_settings">
-            <form id="form_settings" class="form-horizontal" action="./update_settings.cgi">
+        <!-- AP status panel. -->
+        <div class="panel panel-default" id="div_panel_ap">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                        <b>Access Point Status:</b>
+                    </h3>
+            </div>
+
+            <table class="table table-striped">
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Enabled:
+                    </td>
+                    <td class="col-xs-6" id="td_ap_enabled">
+                        -
+                    </td>
+                </tr>
+
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Connected Clients:
+                    </td>
+                    <td class="col-xs-6" id="td_ap_connected_clients">
+                        -
+                    </td>
+                </tr>
+
+                <tr class="row">
+                    <td class="col-xs-6">
+                        IP:
+                    </td>
+                    <td class="col-xs-6" id="td_ap_ip">
+                        -
+                    </td>
+                </tr>
+
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Subnet Mask:
+                    </td>
+                    <td class="col-xs-6" id="td_ap_netmask">
+                        -
+                    </td>
+                </tr>
+
+                <tr class="row">
+                    <td class="col-xs-6">
+                        Gateway:
+                    </td>
+                    <td class="col-xs-6" id="td_ap_gateway">
+                        -
+                    </td>
+                </tr>
+
+                <tr class="row">
+                    <td class="col-xs-6">
+                        MAC Address:
+                    </td>
+                    <td class="col-xs-6" id="td_ap_mac">
+                        -
+                    </td>
+                </tr>
+
+                <tr class="row">
+                    <td class="col-xs-6">
+                        RX Count:
+                    </td>
+                    <td class="col-xs-6" id="td_ap_rx_count">
+                        -
+                    </td>
+                </tr>
+
+                <tr class="row">
+                    <td class="col-xs-6">
+                        TX Count:
+                    </td>
+                    <td class="col-xs-6" id="td_ap_tx_count">
+                        -
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- Configure settings container. -->
+    <div class="container hidden" id="container_settings">
+        <form id="form_settings" class="form-horizontal"
+        action="./update_settings.cgi">
             <!-- General settings. -->
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -363,54 +368,61 @@
                 </div>
 
                 <div class="panel-body">
-                        <div class="form-group row markable" id="markable_general_port">
-                            <label class="col-sm-2 control-label" for=
-                            "general_port">Port:</label>
-                            <div class="col-sm-10">
-                                <input class="form-control input_port" id="general_port"
-                                name="general_port" min="1" step="1" max="65535"
-                                placeholder="Port to listen on" type="number">
-                                <p class="help-block hidden" id="hb_general_port_range">
-                                    Port number must be in the range of 1 - 65535
-                                </p>
+                    <div class="form-group row markable" id="markable_general_port">
+                        <label class="col-sm-2 control-label" for="general_port">Port:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control input_port" id="general_port"
+                            name="general_port" min="1" step="1" max="65535"
+                            placeholder="Port to listen on" type="number">
+                            <p class="help-block hidden" id="hb_general_port_range">
+                                Port number must be in the range of 1 - 65535
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-group row markable"
+                    id="markable_general_websocket_port">
+                        <label class="col-sm-2 control-label"
+                        for="general_websocket_port">WebSocket Port:</label>
+                        <div class="col-sm-10">
+                            <input class="form-control input_port"
+                            id="general_websocket_port" min="1" step="1" max="65535"
+                            name="general_websocket_port" placeholder="Websocket port to listen on"
+                            type="number">
+                            <p class="help-block hidden" id="hb_general_websocket_port_range">
+                                Port number must be in the range of 1 - 65535
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="form-group row markable"
+                    id="markable_general_website_port">
+                        <label class="col-sm-2 control-label"
+                        for="general_website_port">Website Port:</label>
+                        <div class="col-sm-5">
+                            <input class="form-control input_port" id="general_website_port"
+                            min="1" step="1" max="65535" name="general_website_port"
+                            placeholder="Port on which this web interface is available"
+                            type="number">
+                            <p class="help-block hidden" id="hb_general_website_port_range">
+                                Port number must be in the range of 2 - 65535
+                            </p>
+                        </div>
+                        <div class="col-sm-5">
+                            <div class="checkbox">
+                                <label><input id=
+                                  "general_disable_web_interface" type=
+                                  "checkbox"> Disable Web Interface</label>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group row markable" id="markable_general_websocket_port">
-                            <label class="col-sm-2 control-label" for=
-                            "general_websocket_port">WebSocket Port:</label>
-                            <div class="col-sm-10">
-                                <input class="form-control input_port" id=
-                                "general_websocket_port" min="1" step="1" max="65535"
-                                name="general_websocket_port" placeholder=
-                                "Websocket port to listen on" type="number">
-                                <p class="help-block hidden" id="hb_general_websocket_port_range">
-                                    Port number must be in the range of 1 - 65535
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="form-group row markable" id="markable_general_website_port">
-                            <label class="col-sm-2 control-label" for=
-                            "general_website_port">Website Port:</label>
-                            <div class="col-sm-10">
-                                <input class="form-control input_port" id=
-                                "general_website_port" min="1" step="1" max="65535"
-                                name="general_website_port" placeholder=
-                                "Port on which this web interface is available"
-                                type="number">
-                                <p class="help-block hidden" id="hb_general_website_port_range">
-                                    Port number must be in the range of 1 - 65535
-                                </p>
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <label class="col-sm-2 control-label" for=
-                            "general_phy_mode">PHY Mode:</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" id=
-                                "general_phy_mode" name="general_phy_mode">
+                    <div class="form-group row">
+                        <label class="col-sm-2 control-label"
+                        for="general_phy_mode">PHY Mode:</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="general_phy_mode"
+                            name="general_phy_mode">
                                     <!--
                                     Indexed from 1 so that value can be chosen
                                     directly from the data returned by the extension.
@@ -423,47 +435,53 @@
                                         G
                                     </option>
                                 </select>
-                            </div>
                         </div>
+                    </div>
 
-                        <div class="form-group row">
-                            <div class="col-sm-offset-2 col-sm-10">
-                                <div class="checkbox">
-                                    <label><input id=
+                    <div class="form-group row">
+                        <div class="col-sm-offset-2 col-sm-10">
+                            <div class="checkbox">
+                                <label><input id=
                                     "general_use_authentication" type=
                                     "checkbox"> Use Authentication</label>
-                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group hidden row markable" id=
-                        "general_use_authentication_elements">
-                            <label class="col-sm-2 control-label" for=
-                            "general_authentication_secret">Secret:</label>
-                            <div class="col-sm-5">
-                                <input class="form-control" id="general_authentication_secret"
-                                placeholder="Secret for authentication" type=
-                                "password" name="general_authentication_secret" maxlength="63">
-                                <p class="help-block hidden" id="hb_general_authentication_secret_empty">
-                                    Secret can not be empty
-                                </p>
-                                <p class="help-block hidden" id="hb_general_authentication_secret_ascii">
-                                    Only ASCII characters are allowed for secret
-                                </p>
-                            </div>
-
-                            <div class="checkbox col-sm-5">
-                                <label><input id="general_authentication_secret_show_characters" type=
-                                "checkbox"> Show Characters</label>
-                            </div>
-
+                    <div class="form-group hidden row markable"
+                    id="general_use_authentication_elements">
+                        <label class="col-sm-2 control-label"
+                        for="general_authentication_secret">Secret:</label>
+                        <div class="col-sm-5">
+                            <input class="form-control"
+                            id="general_authentication_secret"
+                            placeholder="Secret for authentication" type="password"
+                            name="general_authentication_secret" maxlength="63">
+                            <p class="help-block hidden"
+                            id="hb_general_authentication_secret_empty">
+                                Secret can not be empty
+                            </p>
+                            <p class="help-block hidden"
+                            id="hb_general_authentication_secret_ascii">
+                                Only ASCII characters are allowed for secret
+                            </p>
                         </div>
 
-                        <div class="form-group row">
-                            <label class="col-sm-2 control-label" for=
-                            "general_mode">Mode:</label>
-                            <div class="col-sm-10">
-                                <select class="form-control" id="general_mode" name="general_mode">
+                        <div class="checkbox col-sm-5">
+                            <label>
+                                  <input id="general_authentication_secret_show_characters"
+                                  type="checkbox"> Show Characters
+                                </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <label class="col-sm-2 control-label" for="general_mode">
+                          Mode:
+                        </label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="general_mode"
+                            name="general_mode">
                                     <option value="0">
                                         Client
                                     </option>
@@ -474,13 +492,13 @@
                                         Client and Access Point
                                     </option>
                                 </select>
-                            </div>
                         </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Client settings. -->
-            <div class="panel panel-default">
+            <div class="panel panel-default" id="panel_client_settings">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <b>Client Mode Settings</b>
@@ -489,12 +507,12 @@
 
                 <div class="panel-body">
                     <div class="form-group row markable" id="markable_client_hostname">
-                        <label class="col-sm-2 control-label" for=
-                        "client_hostname">Hostname:</label>
+                        <label class="col-sm-2 control-label"
+                        for="client_hostname">Hostname:</label>
                         <div class="col-sm-10">
-                            <input class="form-control" id=
-                            "client_hostname" name="client_hostname" placeholder=
-                            "Hostname of the node" maxlength="31" type="text">
+                            <input class="form-control" id="client_hostname"
+                            name="client_hostname" placeholder="Hostname of the node"
+                            maxlength="31" type="text">
                             <p class="help-block hidden" id="hb_client_hostname_ascii">
                                 Only ASCII characters are allowed for hostname
                             </p>
@@ -502,11 +520,11 @@
                     </div>
 
                     <div class="form-group row">
-                        <label class="col-sm-2 control-label" for=
-                        "client_ip_configuration">IP Configuration:</label>
+                        <label class="col-sm-2 control-label"
+                        for="client_ip_configuration">IP Configuration:</label>
                         <div class="col-sm-10">
-                            <select class="form-control" id=
-                            "client_ip_configuration" name="client_ip_configuration">
+                            <select class="form-control" id="client_ip_configuration"
+                            name="client_ip_configuration">
                                 <option value="0">
                                     DHCP
                                 </option>
@@ -523,85 +541,95 @@
                             <label class="col-sm-2 control-label">IP:</label>
 
                             <div class="col-sm-2">
-                                <input class="form-control" min="0" step="1" max="255" id=
-                                "client_static_ip_0" name="client_static_ip_0" type="number">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_ip_0"
+                                name="client_static_ip_0" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" min="0" step="1" max="255" id=
-                                "client_static_ip_1" name="client_static_ip_1" type="number">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_ip_1"
+                                name="client_static_ip_1" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" min="0" step="1" max="255" id=
-                                "client_static_ip_2" name="client_static_ip_2" type="number">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_ip_2"
+                                name="client_static_ip_2" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" min="0" step="1" max="255" id=
-                                "client_static_ip_3" name="client_static_ip_3" type="number">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_ip_3"
+                                name="client_static_ip_3" type="number">
                             </div>
                         </div>
 
-                        <div class="form-group row" id=
-                            "client_static_netmask">
-                                <label class="col-sm-2 control-label">Subnet Mask:</label>
+                        <div class="form-group row" id="client_static_netmask">
+                            <label class="col-sm-2 control-label">
+                                  Subnet Mask:
+                                </label>
 
-                                <div class="col-sm-2">
-                                    <input class="form-control" min="0" step="1" max="255" id=
-                                    "client_static_netmask_0" name="client_static_netmask_0" type="number">
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_netmask_0"
+                                name="client_static_netmask_0" type="number">
+                            </div>
 
-                                <div class="col-sm-2">
-                                    <input class="form-control" min="0" step="1" max="255" id=
-                                    "client_static_netmask_1" name="client_static_netmask_1" type="number">
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_netmask_1"
+                                name="client_static_netmask_1" type="number">
+                            </div>
 
-                                <div class="col-sm-2">
-                                    <input class="form-control" min="0" step="1" max="255" id=
-                                    "client_static_netmask_2" name="client_static_netmask_2" type="number">
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_netmask_2"
+                                name="client_static_netmask_2" type="number">
+                            </div>
 
-                                <div class="col-sm-2">
-                                    <input class="form-control" min="0" step="1" max="255" id=
-                                    "client_static_netmask_3" name="client_static_netmask_3" type="number">
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_netmask_3"
+                                name="client_static_netmask_3" type="number">
+                            </div>
                         </div>
 
-                        <div class="form-group row" id=
-                            "client_static_gateway">
-                                <label class="col-sm-2 control-label">Gateway:</label>
+                        <div class="form-group row" id="client_static_gateway">
+                            <label class="col-sm-2 control-label">Gateway:</label>
 
-                                <div class="col-sm-2">
-                                    <input class="form-control" min="0" step="1" max="255" id=
-                                    "client_static_gateway_0" name="client_static_gateway_0" type="number">
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_gateway_0" name="client_static_gateway_0" type="number">
+                            </div>
 
-                                <div class="col-sm-2">
-                                    <input class="form-control" min="0" step="1" max="255" id=
-                                    "client_static_gateway_1" name="client_static_gateway_1" type="number">
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_gateway_1"
+                                name="client_static_gateway_1" type="number">
+                            </div>
 
-                                <div class="col-sm-2">
-                                    <input class="form-control" min="0" step="1" max="255" id=
-                                    "client_static_gateway_2" name="client_static_gateway_2" type="number">
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_gateway_2"
+                                name="client_static_gateway_2" type="number">
+                            </div>
 
-                                <div class="col-sm-2">
-                                    <input class="form-control" min="0" step="1" max="255" id=
-                                    "client_static_gateway_3" name="client_static_gateway_3" type="number">
-                                </div>
+                            <div class="col-sm-2">
+                                <input class="form-control" min="0" step="1"
+                                max="255" id="client_static_gateway_3"
+                                name="client_static_gateway_3" type="number">
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-group row markable" id="markable_client_ssid">
-                        <label class="col-sm-2 control-label" for=
-                        "client_ssid">SSID:</label>
+                        <label class="col-sm-2 control-label" for="client_ssid">SSID:</label>
                         <div class="col-sm-10">
                             <input class="form-control" id="client_ssid"
-                            name="client_ssid" placeholder=
-                            "SSID of the access point to connect to" maxlength="31" type=
-                            "text">
+                            name="client_ssid"
+                            placeholder="SSID of the access point to connect to"
+                            maxlength="31" type="text">
                             <p class="help-block hidden" id="hb_client_ssid_empty">
                                 SSID can not be empty
                             </p>
@@ -612,11 +640,11 @@
                     </div>
 
                     <div class="form-group row">
-                        <label class="col-sm-2 control-label" for=
-                        "general_encryption">Encryption:</label>
+                        <label class="col-sm-2 control-label"
+                        for="general_encryption">Encryption:</label>
                         <div class="col-sm-10">
-                            <select class="form-control" id=
-                            "client_encryption" name="client_encryption">
+                            <select class="form-control" id="client_encryption"
+                            name="client_encryption">
                                 <option value="0">
                                     Open (No Encryption)
                                 </option>
@@ -627,14 +655,15 @@
                         </div>
                     </div>
 
-                    <div class="form-group row hidden markable" id="client_encryption_password_group">
-                        <label class="control-label col-sm-2" for=
-                        "general_password">Password:</label>
+                    <div class="form-group row hidden markable"
+                    id="client_encryption_password_group">
+                        <label class="control-label col-sm-2"
+                        for="general_password">Password:</label>
                         <div class="col-sm-5">
-                            <input class="form-control" id=
-                            "client_password" name="client_password" placeholder=
-                            "Password for connecting to the SSID" type=
-                            "password" maxlength="63">
+                            <input class="form-control" id="client_password"
+                            name="client_password"
+                            placeholder="Password for connecting to the SSID"
+                            type="password" maxlength="63">
 
                             <p class="help-block hidden" id="hb_client_password_empty">
                                 Password can not be empty when encryption is enabled
@@ -650,58 +679,59 @@
                         </div>
 
                         <div class="checkbox col-sm-5">
-                            <label><input id="client_password_show_characters" type=
-                            "checkbox"> Show Characters</label>
+                            <label><input id="client_password_show_characters"
+                              type="checkbox"> Show Characters</label>
                         </div>
                     </div>
 
                     <div class="form-group row">
                         <div class="checkbox col-sm-offset-2 col-sm-10">
                             <label><input id=
-                            "client_connect_to_ap_with_specific_bssid" type=
-                            "checkbox"> Only connect to AP with specific
+                            "client_connect_to_ap_with_specific_bssid"
+                            type="checkbox">
+                            Only connect to AP with specific
                             BSSID</label>
                         </div>
                     </div>
 
                     <div class="hidden" id="client_connect_to_ap_with_specific_bssid_elements">
                         <div class="form-group row">
-                            <label class="col-sm-2 control-label" for=
-                            "client_bssid">BSSID:</label>
+                            <label class="col-sm-2 control-label"
+                            for="client_bssid">BSSID:</label>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_bssid_0" name="client_bssid_0"
-                                 type="text" maxlength="2">
-                            </div>
-
-                            <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_bssid_1" name="client_bssid_1"
+                                <input class="form-control input_hex"
+                                id="client_bssid_0" name="client_bssid_0"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_bssid_2" name="client_bssid_2"
+                                <input class="form-control input_hex"
+                                id="client_bssid_1" name="client_bssid_1"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_bssid_3" name="client_bssid_3"
+                                <input class="form-control input_hex"
+                                id="client_bssid_2" name="client_bssid_2"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_bssid_4" name="client_bssid_4"
+                                <input class="form-control input_hex"
+                                id="client_bssid_3" name="client_bssid_3"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control col-sm-1 input_hex" id=
-                                "client_bssid_5" name="client_bssid_5"
+                                <input class="form-control input_hex"
+                                id="client_bssid_4" name="client_bssid_4"
+                                type="text" maxlength="2">
+                            </div>
+
+                            <div class="col-sm-1">
+                                <input class="form-control col-sm-1 input_hex"
+                                id="client_bssid_5" name="client_bssid_5"
                                 type="text" maxlength="2">
                             </div>
                         </div>
@@ -719,42 +749,42 @@
 
                     <div class="form-group hidden" id="client_mac_address_elements">
                         <div class="form-group row">
-                            <label class="col-sm-2 control-label" for=
-                            "client_mac_address">MAC Address:</label>
+                            <label class="col-sm-2 control-label"
+                            for="client_mac_address">MAC Address:</label>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_mac_address_0" name="client_mac_address_0"
+                                <input class="form-control input_hex"
+                                id="client_mac_address_0" name="client_mac_address_0"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_mac_address_1" name="client_mac_address_1"
+                                <input class="form-control input_hex"
+                                id="client_mac_address_1" name="client_mac_address_1"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_mac_address_2" name="client_mac_address_2"
+                                <input class="form-control input_hex"
+                                id="client_mac_address_2" name="client_mac_address_2"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_mac_address_3" name="client_mac_address_3"
+                                <input class="form-control input_hex"
+                                id="client_mac_address_3" name="client_mac_address_3"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_mac_address_4" name="client_mac_address_4"
+                                <input class="form-control input_hex"
+                                id="client_mac_address_4" name="client_mac_address_4"
                                 type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "client_mac_address_5" name="client_mac_address_5"
+                                <input class="form-control input_hex"
+                                id="client_mac_address_5" name="client_mac_address_5"
                                 type="text" maxlength="2">
                             </div>
                         </div>
@@ -763,7 +793,7 @@
             </div>
 
             <!-- Access Point settings. -->
-            <div class="panel panel-default">
+            <div class="panel panel-default" id="panel_ap_settings">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         <b>Access Point Settings</b>
@@ -772,14 +802,16 @@
 
                 <div class="panel-body">
                     <div class="form-group row">
-                        <label class="col-sm-2 control-label" for="ap_ip_configuration">
+                        <label class="col-sm-2 control-label"
+                        for="ap_ip_configuration">
                         IP Configuration:</label>
                         <div class="col-sm-10">
-                            <select class="form-control" id="ap_ip_configuration" name="ap_ip_configuration">
+                            <select class="form-control" id="ap_ip_configuration"
+                            name="ap_ip_configuration">
                                 <option value="0">
                                     DHCP
                                 </option>
-                                
+
                                 <option value="1">
                                     Static
                                 </option>
@@ -790,22 +822,27 @@
                     <!-- AP static IP configuration -->
                     <div class="hidden markable" id="ap_ip_configuration_static_group">
                         <div class="form-group row" id="ap_static_ip">
-                            <label class="col-sm-2 control-label" for="ap_static_ip">IP:</label>
+                            <label class="col-sm-2 control-label"
+                            for="ap_static_ip">IP:</label>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id="ap_static_ip_0" name="ap_static_ip_0" type="number">
+                                <input class="form-control" id="ap_static_ip_0"
+                                name="ap_static_ip_0" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id="ap_static_ip_1" name="ap_static_ip_1" type="number">
+                                <input class="form-control" id="ap_static_ip_1"
+                                name="ap_static_ip_1" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id="ap_static_ip_2" name="ap_static_ip_2" type="number">
+                                <input class="form-control" id="ap_static_ip_2"
+                                name="ap_static_ip_2" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id="ap_static_ip_3" name="ap_static_ip_3" type="number">
+                                <input class="form-control" id="ap_static_ip_3"
+                                name="ap_static_ip_3" type="number">
                             </div>
                         </div>
 
@@ -815,69 +852,61 @@
                             </label>
 
                             <div class="col-sm-2">
-                                <input class="form-control"
-                                id="ap_static_netmask_0" name="ap_static_netmask_0"
-                                type="number">
+                                <input class="form-control" id="ap_static_netmask_0"
+                                name="ap_static_netmask_0" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control"
-                                id="ap_static_netmask_1" name="ap_static_netmask_1"
-                                type="number">
+                                <input class="form-control" id="ap_static_netmask_1"
+                                name="ap_static_netmask_1" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control"
-                                id="ap_static_netmask_2" name="ap_static_netmask_2"
-                                type="number">
+                                <input class="form-control" id="ap_static_netmask_2"
+                                name="ap_static_netmask_2" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control"
-                                id="ap_static_netmask_3" name="ap_static_netmask_3"
-                                type="number">
+                                <input class="form-control" id="ap_static_netmask_3"
+                                name="ap_static_netmask_3" type="number">
                             </div>
                         </div>
 
                         <div class="form-group row" id="ap_static_gateway">
-                            <label class="col-sm-2 control-label"
-                            for="ap_static_gateway">
+                            <label class="col-sm-2 control-label" for="ap_static_gateway">
                                 Gateway:
                             </label>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_static_gateway_0" name="ap_static_gateway_0" type="number">
+                                <input class="form-control" id="ap_static_gateway_0"
+                                name="ap_static_gateway_0" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_static_gateway_1" name="ap_static_gateway_1" type="number">
+                                <input class="form-control" id="ap_static_gateway_1"
+                                name="ap_static_gateway_1" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_static_gateway_2" name="ap_static_gateway_2" type="number">
+                                <input class="form-control" id="ap_static_gateway_2"
+                                name="ap_static_gateway_2" type="number">
                             </div>
 
                             <div class="col-sm-2">
-                                <input class="form-control" id=
-                                "ap_static_gateway_3" name="ap_static_gateway_3" type="number">
+                                <input class="form-control" id="ap_static_gateway_3"
+                                name="ap_static_gateway_3" type="number">
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group row markable" id="markable_ap_ssid">
-                        <label class="col-sm-2 control-label"
-                        for="ap_ssid">
+                        <label class="col-sm-2 control-label" for="ap_ssid">
                             SSID:
                         </label>
 
                         <div class="col-sm-10">
-                            <input class="form-control" id="ap_ssid"
-                            name="ap_ssid" placeholder=
-                            "SSID to broadcast" maxlength="31" type=
-                            "text">
+                            <input class="form-control" id="ap_ssid" name="ap_ssid"
+                            placeholder="SSID to broadcast" maxlength="31" type="text">
                             <p class="help-block hidden" id="hb_ap_ssid_empty">
                                 Access point SSID can not be empty
                             </p>
@@ -888,13 +917,12 @@
                     </div>
 
                     <div class="form-group row">
-                        <label class="col-sm-2 control-label"
-                        for="ap_encryption">
+                        <label class="col-sm-2 control-label" for="ap_encryption">
                             Encryption:
                         </label>
                         <div class="col-sm-10">
-                            <select class="form-control" id=
-                            "ap_encryption" name="ap_encryption">
+                            <select class="form-control" id="ap_encryption"
+                            name="ap_encryption">
                                 <option value="0">
                                     Open (No Encryption)
                                 </option>
@@ -908,13 +936,13 @@
 
                     <div class="form-group row hidden markable"
                     id="ap_encryption_password_elements">
-                        <label class="control-label col-sm-2" for=
-                        "ap_password">Password:</label>
+                        <label class="control-label col-sm-2"
+                        for="ap_password">Password:</label>
                         <div class="col-sm-5">
-                            <input class="form-control" id=
-                            "ap_password" name="ap_password" placeholder=
-                            "Password for connecting to the access point" type=
-                            "password" maxlength="63">
+                            <input class="form-control" id="ap_password"
+                            name="ap_password"
+                            placeholder="Password for connecting to the access point"
+                            type="password" maxlength="63">
                             <p class="help-block hidden" id="hb_ap_password_empty">
                                 Access point password can not be empty
                             </p>
@@ -933,12 +961,12 @@
                     </div>
 
                     <div class="form-group row markable" id="markable_ap_channel">
-                        <label class="control-label col-sm-2" for=
-                        "ap_channel">Channel:</label>
+                        <label class="control-label col-sm-2"
+                        for="ap_channel">Channel:</label>
 
                         <div class="checkbox col-sm-10">
-                            <input class="form-control" id=
-                            "ap_channel" name="ap_channel" type="number" min="1" step="1" max="13">
+                            <input class="form-control" id="ap_channel"
+                            name="ap_channel" type="number" min="1" step="1" max="13">
                             <p class="help-block hidden" id="hb_ap_channel">
                                 Channel number should be in the range of 1 - 13
                             </p>
@@ -972,908 +1000,864 @@
                             </label>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "ap_mac_address_0" name="ap_mac_address_0" type="text" maxlength="2">
+                                <input class="form-control input_hex" id="ap_mac_address_0"
+                                name="ap_mac_address_0" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "ap_mac_address_1" name="ap_mac_address_1" type="text" maxlength="2">
+                                <input class="form-control input_hex" id="ap_mac_address_1"
+                                name="ap_mac_address_1" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "ap_mac_address_2" name="ap_mac_address_2" type="text" maxlength="2">
+                                <input class="form-control input_hex" id="ap_mac_address_2"
+                                name="ap_mac_address_2" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "ap_mac_address_3" name="ap_mac_address_3" type="text" maxlength="2">
+                                <input class="form-control input_hex" id="ap_mac_address_3"
+                                name="ap_mac_address_3" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "ap_mac_address_4" name="ap_mac_address_4" type="text" maxlength="2">
+                                <input class="form-control input_hex" id="ap_mac_address_4"
+                                name="ap_mac_address_4" type="text" maxlength="2">
                             </div>
 
                             <div class="col-sm-1">
-                                <input class="form-control input_hex" id=
-                                "ap_mac_address_5" name="ap_mac_address_5" type="text" maxlength="2">
+                                <input class="form-control input_hex" id="ap_mac_address_5"
+                                name="ap_mac_address_5" type="text" maxlength="2">
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </form> <!-- Close form which was opened at just after opening common settings panel's body -->
+        </form>
+        <!-- Close form which was opened at just after opening common settings panel's body -->
 
-            <button id="button_save_reset_settings" class="btn btn-block btn-success btn-lg spacer-bottom" type="button">
+        <button id="button_save_reset_settings"
+        class="btn btn-block btn-success btn-lg spacer-bottom" type="button">
                 Save and Reset
             </button>
-        </div> <!-- End of container for configuration elements -->
+    </div>
+    <!-- End of container for configuration elements -->
 
-        <!--
+    <!--
         Placed at the end of the document so the pages load faster.
 
         The "embed:" tags are used to inplace replacement with contents from
         other files.
         -->
-        <script type="text/javascript">
-            // embed:./js/combined.js
-        </script>
+    <script type="text/javascript">
+        // embed:./js/combined.js
+    </script>
 
-        <script type="text/javascript">
-            /*
-             * Message related constants. Must be in sync with the defines in
-             * file web_interface.h in firmware source code.
-             */
-            var JSON_REQUEST_AUTHENTICATE = 1
-            var JSON_REQUEST_GET_STATUS = 2
-            var JSON_REQUEST_UPDATE_SETTINGS = 3
-            var JSON_REQUEST_END_SESSION = 4
-            var JSON_REQUEST_IS_ALREADY_AUTHENTICATED = 5
-            var JSON_REQUEST_GET_SETTINGS = 6
-            var JSON_STATUS_OK = 1
-            var JSON_STATUS_FAILED = 2
+    <script type="text/javascript">
+        /*
+         * Message related constants. Must be in sync with the defines in
+         * file web_interface.h in firmware source code.
+         */
+        var JSON_REQUEST_AUTHENTICATE = 1
+        var JSON_REQUEST_GET_STATUS = 2
+        var JSON_REQUEST_UPDATE_SETTINGS = 3
+        var JSON_REQUEST_END_SESSION = 4
+        var JSON_REQUEST_IS_ALREADY_AUTHENTICATED = 5
+        var JSON_REQUEST_GET_SETTINGS = 6
+        var JSON_STATUS_OK = 1
+        var JSON_STATUS_FAILED = 2
 
-            // Time constants
-            var TIMEOUT_GENERIC = 32000;
-            var TIMEOUT_SAVE_RESET = 16000;
-            var TIMEOUT_UPDATE_STATUS = 8000;
+        // Time constants
+        var TIMEOUT_GENERIC = 32000;
+        var TIMEOUT_SAVE_RESET = 16000;
+        var TIMEOUT_UPDATE_STATUS = 8000;
 
-            var timeout_get_status = null;
+        var timeout_get_status = null;
 
-            function updateStatusGUI(status) {
-                // Client enabled.
-                if(status.data.operating_mode === 1 ||
-                   status.data.operating_mode === 3) {
-                        // Client enabled/disabled.
-                        $('#td_client_enabled').html('Yes');
+        function updateStatusGUI(status) {
+            // Client enabled.
+            if (status.data.operating_mode === 1 ||
+                status.data.operating_mode === 3) {
+                // Client enabled/disabled.
+                $('#td_client_enabled').html('Yes');
 
-                        // Client status.
-                        $('#td_client_status').html(status.data.client_status);
+                // Client status.
+                $('#td_client_status').html(status.data.client_status);
 
-                        // Signal strength.
-                        if(status.data.signal_strength <= 33) {
-                            $('#div_signal_strength').addClass('progress-bar-danger');
-                            $('#div_signal_strength').removeClass('progress-bar-warning');
-                            $('#div_signal_strength').removeClass('progress-bar-success');
-                        }
-                        else if(status.data.signal_strength <= 66) {
-                            $('#div_signal_strength').addClass('progress-bar-warning');
-                            $('#div_signal_strength').removeClass('progress-bar-danger');
-                            $('#div_signal_strength').removeClass('progress-bar-success');
-                        }
-                        else {
-                            $('#div_signal_strength').addClass('progress-bar-success');
-                            $('#div_signal_strength').removeClass('progress-bar-danger');
-                            $('#div_signal_strength').removeClass('progress-bar-warning');
-                        }
-
-                        $('#div_signal_strength')
-                            .css('width', String(status.data.signal_strength) + '%')
-                            .attr('aria-valuenow', String(status.data.signal_strength));
-                        $('#div_signal_strength')
-                            .html(String(status.data.signal_strength) + '%');
-
-                        // Client IP.
-                        $('#td_client_ip').html(status.data.client_ip);
-
-                        // Client subnet mask.
-                        $('#td_client_netmask').html(status.data.client_netmask);
-
-                        // Client gateway.
-                        $('#td_client_gateway').html(status.data.client_gateway);
-
-                        // Client MAC.
-                        $('#td_client_mac').html(status.data.client_mac);
-
-                        // Client RX.
-                        $('#td_client_rx_count').html(status.data.client_rx_count);
-
-                        // Client TX.
-                        $('#td_client_tx_count').html(status.data.client_tx_count);
-                }
-                // Client disabled.
-                else {
-                    $('#td_client_enabled').html('No');
-
-                    // Client status.
-                    $('#td_client_status').html('-');
-
-                    // Client IP.
-                    $('#td_client_ip').html('-');
-
-                    // Client subnet mask.
-                    $('#td_client_netmask').html('-');
-
-                    // Client gateway.
-                    $('#td_client_gateway').html('-');
-
-                    // Client MAC.
-                    $('#td_client_mac').html('-');
-
-                    // Client RX.
-                    $('#td_client_rx_count').html('-');
-
-                    // Client TX.
-                    $('#td_client_tx_count').html('-');
+                // Signal strength.
+                if (status.data.signal_strength <= 33) {
+                    $('#div_signal_strength').addClass('progress-bar-danger');
+                    $('#div_signal_strength').removeClass('progress-bar-warning');
+                    $('#div_signal_strength').removeClass('progress-bar-success');
+                } else if (status.data.signal_strength <= 66) {
+                    $('#div_signal_strength').addClass('progress-bar-warning');
+                    $('#div_signal_strength').removeClass('progress-bar-danger');
+                    $('#div_signal_strength').removeClass('progress-bar-success');
+                } else {
+                    $('#div_signal_strength').addClass('progress-bar-success');
+                    $('#div_signal_strength').removeClass('progress-bar-danger');
+                    $('#div_signal_strength').removeClass('progress-bar-warning');
                 }
 
-                // AP enabled.
-                if(status.data.operating_mode === 2 ||
-                   status.data.operating_mode === 3) {
-                        // AP enabled/disabled.
-                        $('#td_ap_enabled').html('Yes');
-                        
-                        // AP connected clients.
-                        $('#td_ap_connected_clients').html(status.data.ap_connected_clients);
+                $('#div_signal_strength')
+                    .css('width', String(status.data.signal_strength) + '%')
+                    .attr('aria-valuenow', String(status.data.signal_strength));
+                $('#div_signal_strength')
+                    .html(String(status.data.signal_strength) + '%');
 
-                        // AP IP.
-                        $('#td_ap_ip').html(status.data.ap_ip);
+                // Client IP.
+                $('#td_client_ip').html(status.data.client_ip);
 
-                        // AP subnet mask.
-                        $('#td_ap_netmask').html(status.data.ap_netmask);
+                // Client subnet mask.
+                $('#td_client_netmask').html(status.data.client_netmask);
 
-                        // AP gateway.
-                        $('#td_ap_gateway').html(status.data.ap_gateway);
+                // Client gateway.
+                $('#td_client_gateway').html(status.data.client_gateway);
 
-                        // AP MAC.
-                        $('#td_ap_mac').html(status.data.ap_mac);
+                // Client MAC.
+                $('#td_client_mac').html(status.data.client_mac);
 
-                        // AP RX.
-                        $('#td_ap_rx_count').html(status.data.ap_rx_count);
+                // Client RX.
+                $('#td_client_rx_count').html(status.data.client_rx_count);
 
-                        // AP TX.
-                        $('#td_ap_tx_count').html(status.data.ap_tx_count);
-                }
-                // AP disabled.
-                else {
-                    // AP enabled/disabled.
-                    $('#td_ap_enabled').html('No');
-                    
-                    // AP connected clients.
-                    $('#td_ap_connected_clients').html('-');
+                // Client TX.
+                $('#td_client_tx_count').html(status.data.client_tx_count);
+            }
+            // Client disabled.
+            else {
+                $('#td_client_enabled').html('No');
 
-                    // AP IP.
-                    $('#td_ap_ip').html('-');
+                // Client status.
+                $('#td_client_status').html('-');
 
-                    // AP subnet mask.
-                    $('#td_ap_netmask').html('-');
+                // Client IP.
+                $('#td_client_ip').html('-');
 
-                    // AP gateway.
-                    $('#td_ap_gateway').html('-');
+                // Client subnet mask.
+                $('#td_client_netmask').html('-');
 
-                    // AP MAC.
-                    $('#td_ap_mac').html('-');
+                // Client gateway.
+                $('#td_client_gateway').html('-');
 
-                    // AP RX.
-                    $('#td_ap_rx_count').html('-');
+                // Client MAC.
+                $('#td_client_mac').html('-');
 
-                    // AP TX.
-                    $('#td_ap_tx_count').html('-');
-                }
+                // Client RX.
+                $('#td_client_rx_count').html('-');
+
+                // Client TX.
+                $('#td_client_tx_count').html('-');
             }
 
-            function updateSettingsGUI(settings) {
-                /*
-                settings.data.ap_channel (num)
-                settings.data.ap_enable (num)
-                settings.data.ap_encryption (num)
-                settings.data.ap_gateway (arr[4])
-                settings.data.ap_hidden (num)
-                settings.data.ap_hostname (arr[4])
-                settings.data.ap_ip (arr[4])
-                settings.data.ap_mac_address (arr[6])
-                settings.data.ap_password (string)
-                settings.data.ap_ssid (string)
-                settings.data.ap_subnet_mask (arr[4])
-                settings.data.client_bssid (arr[6])
-                settings.data.client_enable (num)
-                settings.data.client_gateway (arr[4])
-                settings.data.client_hostname (string)
-                settings.data.client_ip (arr[4])
-                settings.data.client_mac_address (arr[6])
-                settings.data.client_password (string)
-                settings.data.client_ssid (string)
-                settings.data.client_subnet_mask (arr[4])
-                settings.data.general_authentication_secret (string)
-                settings.data.general_phy_mode (num)
-                settings.data.general_port (num)
-                settings.data.general_sleep_mode (num)
-                settings.data.general_website (num)
-                settings.data.general_website_port (num)
-                settings.data.general_websocket_port (num)
-                */
+            // AP enabled.
+            if (status.data.operating_mode === 2 ||
+                status.data.operating_mode === 3) {
+                // AP enabled/disabled.
+                $('#td_ap_enabled').html('Yes');
 
-                // General settings.
-                $("#general_port").val(settings.data.general_port);
-                $("#general_website_port").val(settings.data.general_website_port);
-                $("#general_websocket_port").val(settings.data.general_websocket_port);
+                // AP connected clients.
+                $('#td_ap_connected_clients').html(status.data.ap_connected_clients);
 
-                if(settings.data.general_phy_mode - 1 == 0) {
-                    $("#general_phy_mode").val('0');
-                }
-                else if(settings.data.general_phy_mode - 1 == 1) {
-                    $("#general_phy_mode").val('1');
-                }
-                else {
-                    $("#general_phy_mode").val('0');
-                }
+                // AP IP.
+                $('#td_ap_ip').html(status.data.ap_ip);
 
-                if(settings.data.general_authentication_secret === '') {
-                    $("#general_authentication_secret").val('');
-                    if($("#general_use_authentication").prop('checked'))
-                        $("#general_use_authentication").prop('checked', false).change();
-                }
-                else {
-                    $("#general_authentication_secret").val(settings.data.general_authentication_secret);
-                    if(!$("#general_use_authentication").prop('checked'))
-                        $("#general_use_authentication").prop('checked', true).change();
-                }
+                // AP subnet mask.
+                $('#td_ap_netmask').html(status.data.ap_netmask);
 
-                if (!settings.data.ap_enable && settings.data.client_enable) {
-                    $("#general_mode").val(0);
-                }
-                else if (settings.data.ap_enable && !settings.data.client_enable) {
-                    $("#general_mode").val(1);
-                }
-                else if(settings.data.ap_enable && settings.data.client_enable) {
-                    $("#general_mode").val(2);
-                }
+                // AP gateway.
+                $('#td_ap_gateway').html(status.data.ap_gateway);
 
-                // Client mode settings.
-                $('#client_hostname').val(settings.data.client_hostname);
+                // AP MAC.
+                $('#td_ap_mac').html(status.data.ap_mac);
 
-                $('#client_static_ip_0').val(settings.data.client_ip[0]);
-                $('#client_static_ip_1').val(settings.data.client_ip[1]);
-                $('#client_static_ip_2').val(settings.data.client_ip[2]);
-                $('#client_static_ip_3').val(settings.data.client_ip[3]);
-                $('#client_static_netmask_0').val(settings.data.client_subnet_mask[0]);
-                $('#client_static_netmask_1').val(settings.data.client_subnet_mask[1]);
-                $('#client_static_netmask_2').val(settings.data.client_subnet_mask[2]);
-                $('#client_static_netmask_3').val(settings.data.client_subnet_mask[3]);
-                $('#client_static_gateway_0').val(settings.data.client_gateway[0]);
-                $('#client_static_gateway_1').val(settings.data.client_gateway[1]);
-                $('#client_static_gateway_2').val(settings.data.client_gateway[2]);
-                $('#client_static_gateway_3').val(settings.data.client_gateway[3]);
+                // AP RX.
+                $('#td_ap_rx_count').html(status.data.ap_rx_count);
 
-                if(settings.data.client_ip[0] === 0 &&
-                   settings.data.client_ip[1] === 0 &&
-                   settings.data.client_ip[2] === 0 &&
-                   settings.data.client_ip[3] === 0) {
-                    if($('#client_ip_configuration').val() != 0)
-                        $('#client_ip_configuration').val(0).change();
-                }
-                else {
-                    if($('#client_ip_configuration').val() != 1)
-                        $('#client_ip_configuration').val(1).change();
-                }
+                // AP TX.
+                $('#td_ap_tx_count').html(status.data.ap_tx_count);
+            }
+            // AP disabled.
+            else {
+                // AP enabled/disabled.
+                $('#td_ap_enabled').html('No');
 
-                $('#client_ssid').val(settings.data.client_ssid);
+                // AP connected clients.
+                $('#td_ap_connected_clients').html('-');
 
-                $('#client_password').val(settings.data.client_password);
+                // AP IP.
+                $('#td_ap_ip').html('-');
 
-                if(settings.data.client_password === '') {
-                    if($('#client_encryption').val() !== '0')
-                        $('#client_encryption').val(0).change();
-                }
-                else {
-                    if($('#client_encryption').val() !== '1')
-                        $('#client_encryption').val(1).change();
-                }
+                // AP subnet mask.
+                $('#td_ap_netmask').html('-');
 
-                $('#client_bssid_0').val(settings.data.client_bssid[0].toString(16));
-                $('#client_bssid_1').val(settings.data.client_bssid[1].toString(16));
-                $('#client_bssid_2').val(settings.data.client_bssid[2].toString(16));
-                $('#client_bssid_3').val(settings.data.client_bssid[3].toString(16));
-                $('#client_bssid_4').val(settings.data.client_bssid[4].toString(16));
-                $('#client_bssid_5').val(settings.data.client_bssid[5].toString(16));
+                // AP gateway.
+                $('#td_ap_gateway').html('-');
 
-                if(settings.data.client_bssid[0] === 0 &&
-                   settings.data.client_bssid[1] === 0 &&
-                   settings.data.client_bssid[2] === 0 &&
-                   settings.data.client_bssid[3] === 0 &&
-                   settings.data.client_bssid[4] === 0 &&
-                   settings.data.client_bssid[5] === 0) {
-                        if($('#client_connect_to_ap_with_specific_bssid').checked)
-                            $('#client_connect_to_ap_with_specific_bssid').prop('checked', false).change();
-                }
-                else {
-                    if(!$('#client_connect_to_ap_with_specific_bssid').checked)
+                // AP MAC.
+                $('#td_ap_mac').html('-');
+
+                // AP RX.
+                $('#td_ap_rx_count').html('-');
+
+                // AP TX.
+                $('#td_ap_tx_count').html('-');
+            }
+        }
+
+        function updateSettingsGUI(settings) {
+            // General settings.
+            $("#general_port").val(settings.data.general_port);
+            $("#general_website_port").val(settings.data.general_website_port);
+
+            if (settings.data.general_website_port < 2) {
+                // Disable website port input.
+                $("#general_disable_web_interface").prop('checked', true).change();
+            }
+
+            $("#general_websocket_port").val(settings.data.general_websocket_port);
+
+            if (settings.data.general_phy_mode - 1 == 0) {
+                $("#general_phy_mode").val('0');
+            } else if (settings.data.general_phy_mode - 1 == 1) {
+                $("#general_phy_mode").val('1');
+            } else {
+                $("#general_phy_mode").val('0');
+            }
+
+            if (settings.data.general_authentication_secret === '') {
+                $("#general_authentication_secret").val('');
+                if ($("#general_use_authentication").prop('checked'))
+                    $("#general_use_authentication").prop('checked', false).change();
+            } else {
+                $("#general_authentication_secret").val(settings.data.general_authentication_secret);
+                if (!$("#general_use_authentication").prop('checked'))
+                    $("#general_use_authentication").prop('checked', true).change();
+            }
+
+            if (!settings.data.ap_enable && settings.data.client_enable) {
+                $("#general_mode").val(0).change();
+            } else if (settings.data.ap_enable && !settings.data.client_enable) {
+                $("#general_mode").val(1).change();
+            } else {
+                $("#general_mode").val(2).change();
+            }
+
+            // Client mode settings.
+            $('#client_hostname').val(settings.data.client_hostname);
+
+            $('#client_static_ip_0').val(settings.data.client_ip[0]);
+            $('#client_static_ip_1').val(settings.data.client_ip[1]);
+            $('#client_static_ip_2').val(settings.data.client_ip[2]);
+            $('#client_static_ip_3').val(settings.data.client_ip[3]);
+            $('#client_static_netmask_0').val(settings.data.client_subnet_mask[0]);
+            $('#client_static_netmask_1').val(settings.data.client_subnet_mask[1]);
+            $('#client_static_netmask_2').val(settings.data.client_subnet_mask[2]);
+            $('#client_static_netmask_3').val(settings.data.client_subnet_mask[3]);
+            $('#client_static_gateway_0').val(settings.data.client_gateway[0]);
+            $('#client_static_gateway_1').val(settings.data.client_gateway[1]);
+            $('#client_static_gateway_2').val(settings.data.client_gateway[2]);
+            $('#client_static_gateway_3').val(settings.data.client_gateway[3]);
+
+            if (settings.data.client_ip[0] === 0 &&
+                settings.data.client_ip[1] === 0 &&
+                settings.data.client_ip[2] === 0 &&
+                settings.data.client_ip[3] === 0) {
+                if ($('#client_ip_configuration').val() != 0)
+                    $('#client_ip_configuration').val(0).change();
+            } else {
+                if ($('#client_ip_configuration').val() != 1)
+                    $('#client_ip_configuration').val(1).change();
+            }
+
+            $('#client_ssid').val(settings.data.client_ssid);
+
+            $('#client_password').val(settings.data.client_password);
+
+            if (settings.data.client_password === '') {
+                if ($('#client_encryption').val() !== '0')
+                    $('#client_encryption').val(0).change();
+            } else {
+                if ($('#client_encryption').val() !== '1')
+                    $('#client_encryption').val(1).change();
+            }
+
+            $('#client_bssid_0').val(settings.data.client_bssid[0].toString(16));
+            $('#client_bssid_1').val(settings.data.client_bssid[1].toString(16));
+            $('#client_bssid_2').val(settings.data.client_bssid[2].toString(16));
+            $('#client_bssid_3').val(settings.data.client_bssid[3].toString(16));
+            $('#client_bssid_4').val(settings.data.client_bssid[4].toString(16));
+            $('#client_bssid_5').val(settings.data.client_bssid[5].toString(16));
+
+            if (settings.data.client_bssid[0] === 0 &&
+                settings.data.client_bssid[1] === 0 &&
+                settings.data.client_bssid[2] === 0 &&
+                settings.data.client_bssid[3] === 0 &&
+                settings.data.client_bssid[4] === 0 &&
+                settings.data.client_bssid[5] === 0) {
+                if ($('#client_connect_to_ap_with_specific_bssid').checked)
+                    $('#client_connect_to_ap_with_specific_bssid').prop('checked', false).change();
+            } else {
+                if (!$('#client_connect_to_ap_with_specific_bssid').checked)
                     $('#client_connect_to_ap_with_specific_bssid').prop('checked', true).change();
-                }
-
-                $('#client_mac_address_0').val(settings.data.client_mac_address[0].toString(16));
-                $('#client_mac_address_1').val(settings.data.client_mac_address[1].toString(16));
-                $('#client_mac_address_2').val(settings.data.client_mac_address[2].toString(16));
-                $('#client_mac_address_3').val(settings.data.client_mac_address[3].toString(16));
-                $('#client_mac_address_4').val(settings.data.client_mac_address[4].toString(16));
-                $('#client_mac_address_5').val(settings.data.client_mac_address[5].toString(16));
-
-                if(settings.data.client_mac_address[0] === 0 &&
-                   settings.data.client_mac_address[1] === 0 &&
-                   settings.data.client_mac_address[2] === 0 &&
-                   settings.data.client_mac_address[3] === 0 &&
-                   settings.data.client_mac_address[4] === 0 &&
-                   settings.data.client_mac_address[5] === 0) {
-                        if($('#client_mac_address').checked)
-                            $('#client_mac_address').prop('checked', false).change();
-                }
-                else {
-                    if(!$('#client_mac_address').checked)
-                        $('#client_mac_address').prop('checked', true).change();
-                }
-
-
-                // AP settings.
-                
-
-                $('#ap_static_ip_0').val(settings.data.ap_ip[0]);
-                $('#ap_static_ip_1').val(settings.data.ap_ip[1]);
-                $('#ap_static_ip_2').val(settings.data.ap_ip[2]);
-                $('#ap_static_ip_3').val(settings.data.ap_ip[3]);
-                $('#ap_static_netmask_0').val(settings.data.ap_subnet_mask[0]);
-                $('#ap_static_netmask_1').val(settings.data.ap_subnet_mask[1]);
-                $('#ap_static_netmask_2').val(settings.data.ap_subnet_mask[2]);
-                $('#ap_static_netmask_3').val(settings.data.ap_subnet_mask[3]);
-                $('#ap_static_gateway_0').val(settings.data.ap_gateway[0]);
-                $('#ap_static_gateway_1').val(settings.data.ap_gateway[1]);
-                $('#ap_static_gateway_2').val(settings.data.ap_gateway[2]);
-                $('#ap_static_gateway_3').val(settings.data.ap_gateway[3]);
-
-                if(settings.data.ap_ip[0] === 0 &&
-                   settings.data.ap_ip[1] === 0 &&
-                   settings.data.ap_ip[2] === 0 &&
-                   settings.data.ap_ip[3] === 0) {
-                    if($('#ap_ip_configuration').val() != 0)
-                        $('#ap_ip_configuration').val(0).change();
-                }
-                else {
-                    if($('#ap_ip_configuration').val() != 1)
-                        $('#ap_ip_configuration').val(1).change();
-                }
-
-                $('#ap_ssid').val(settings.data.ap_ssid);
-
-                $('#ap_password').val(settings.data.ap_password)
-
-                if(settings.data.ap_password === '') {
-                    $('#ap_encryption').val(0).change();
-                }
-                else {
-                    $('#ap_encryption').val(1).change();
-                }
-
-                $('#ap_channel').val(settings.data.ap_channel);
-
-                if(settings.data.ap_hidden) {
-                    $('#ap_hide_ssid').prop('checked', true).change();
-                }
-                else {
-                    $('#ap_hide_ssid').prop('checked', false).change();
-                }
-
-                $('#ap_mac_address_0').val(settings.data.ap_mac_address[0].toString(16));
-                $('#ap_mac_address_1').val(settings.data.ap_mac_address[1].toString(16));
-                $('#ap_mac_address_2').val(settings.data.ap_mac_address[2].toString(16));
-                $('#ap_mac_address_3').val(settings.data.ap_mac_address[3].toString(16));
-                $('#ap_mac_address_4').val(settings.data.ap_mac_address[4].toString(16));
-                $('#ap_mac_address_5').val(settings.data.ap_mac_address[5].toString(16));
-
-                if(settings.data.ap_mac_address[0] === 0 &&
-                   settings.data.ap_mac_address[1] === 0 &&
-                   settings.data.ap_mac_address[2] === 0 &&
-                   settings.data.ap_mac_address[3] === 0 &&
-                   settings.data.ap_mac_address[4] === 0 &&
-                   settings.data.ap_mac_address[5] === 0) {
-                        if($('#ap_mac_address').checked)
-                            $('#ap_mac_address').prop('checked', false).change();
-                }
-                else {
-                    if(!$('#ap_mac_address').checked)
-                        $('#ap_mac_address').prop('checked', true).change();
-                }
             }
 
-            function getSettings(e)
-            {
-                $.ajax({
-                    type: 'POST',
-                    url: '/get_settings.cgi',
-                    data: {'request':JSON_REQUEST_GET_SETTINGS, 'data':null},
-                    dataType: 'json',
-                    timeout: TIMEOUT_GENERIC,
-                    success: function(data) {
-                        // process data here
-                        console.log('*** GSET success(), data.status = ' + data.status);
-                        console.log(' GSET cookie: ' + document.cookie);
+            $('#client_mac_address_0').val(settings.data.client_mac_address[0].toString(16));
+            $('#client_mac_address_1').val(settings.data.client_mac_address[1].toString(16));
+            $('#client_mac_address_2').val(settings.data.client_mac_address[2].toString(16));
+            $('#client_mac_address_3').val(settings.data.client_mac_address[3].toString(16));
+            $('#client_mac_address_4').val(settings.data.client_mac_address[4].toString(16));
+            $('#client_mac_address_5').val(settings.data.client_mac_address[5].toString(16));
 
-                        if(data.status === JSON_STATUS_OK){
-                            console.log(data);
-                            updateSettingsGUI(data);
-                            getStatus();
-                        }
-                        else {
-                            console.log('*** GSET data.status = ' + data.status + ' ***');
-                        }
-                    },
-                    error: function(request, status, err) {
-                        console.log('*** GSET getSettings(), request = ' + request + ', status = ' + status + ', err = ' + err);
+            if (settings.data.client_mac_address[0] === 0 &&
+                settings.data.client_mac_address[1] === 0 &&
+                settings.data.client_mac_address[2] === 0 &&
+                settings.data.client_mac_address[3] === 0 &&
+                settings.data.client_mac_address[4] === 0 &&
+                settings.data.client_mac_address[5] === 0) {
+                if ($('#client_mac_address').checked)
+                    $('#client_mac_address').prop('checked', false).change();
+            } else {
+                if (!$('#client_mac_address').checked)
+                    $('#client_mac_address').prop('checked', true).change();
+            }
+
+
+            // AP settings.
+
+
+            $('#ap_static_ip_0').val(settings.data.ap_ip[0]);
+            $('#ap_static_ip_1').val(settings.data.ap_ip[1]);
+            $('#ap_static_ip_2').val(settings.data.ap_ip[2]);
+            $('#ap_static_ip_3').val(settings.data.ap_ip[3]);
+            $('#ap_static_netmask_0').val(settings.data.ap_subnet_mask[0]);
+            $('#ap_static_netmask_1').val(settings.data.ap_subnet_mask[1]);
+            $('#ap_static_netmask_2').val(settings.data.ap_subnet_mask[2]);
+            $('#ap_static_netmask_3').val(settings.data.ap_subnet_mask[3]);
+            $('#ap_static_gateway_0').val(settings.data.ap_gateway[0]);
+            $('#ap_static_gateway_1').val(settings.data.ap_gateway[1]);
+            $('#ap_static_gateway_2').val(settings.data.ap_gateway[2]);
+            $('#ap_static_gateway_3').val(settings.data.ap_gateway[3]);
+
+            if (settings.data.ap_ip[0] === 0 &&
+                settings.data.ap_ip[1] === 0 &&
+                settings.data.ap_ip[2] === 0 &&
+                settings.data.ap_ip[3] === 0) {
+                if ($('#ap_ip_configuration').val() != 0)
+                    $('#ap_ip_configuration').val(0).change();
+            } else {
+                if ($('#ap_ip_configuration').val() != 1)
+                    $('#ap_ip_configuration').val(1).change();
+            }
+
+            $('#ap_ssid').val(settings.data.ap_ssid);
+
+            $('#ap_password').val(settings.data.ap_password)
+
+            if (settings.data.ap_password === '') {
+                $('#ap_encryption').val(0).change();
+            } else {
+                $('#ap_encryption').val(1).change();
+            }
+
+            $('#ap_channel').val(settings.data.ap_channel);
+
+            if (settings.data.ap_hidden) {
+                $('#ap_hide_ssid').prop('checked', true).change();
+            } else {
+                $('#ap_hide_ssid').prop('checked', false).change();
+            }
+
+            $('#ap_mac_address_0').val(settings.data.ap_mac_address[0].toString(16));
+            $('#ap_mac_address_1').val(settings.data.ap_mac_address[1].toString(16));
+            $('#ap_mac_address_2').val(settings.data.ap_mac_address[2].toString(16));
+            $('#ap_mac_address_3').val(settings.data.ap_mac_address[3].toString(16));
+            $('#ap_mac_address_4').val(settings.data.ap_mac_address[4].toString(16));
+            $('#ap_mac_address_5').val(settings.data.ap_mac_address[5].toString(16));
+
+            if (settings.data.ap_mac_address[0] === 0 &&
+                settings.data.ap_mac_address[1] === 0 &&
+                settings.data.ap_mac_address[2] === 0 &&
+                settings.data.ap_mac_address[3] === 0 &&
+                settings.data.ap_mac_address[4] === 0 &&
+                settings.data.ap_mac_address[5] === 0) {
+                if ($('#ap_mac_address').checked)
+                    $('#ap_mac_address').prop('checked', false).change();
+            } else {
+                if (!$('#ap_mac_address').checked)
+                    $('#ap_mac_address').prop('checked', true).change();
+            }
+        }
+
+        function getSettings(e) {
+            $.ajax({
+                type: 'POST',
+                url: '/get_settings.cgi',
+                data: {
+                    'request': JSON_REQUEST_GET_SETTINGS,
+                    'data': null
+                },
+                dataType: 'json',
+                timeout: TIMEOUT_GENERIC,
+                success: function(data) {
+                    // process data here
+                    if (data.status === JSON_STATUS_OK) {
+                        updateSettingsGUI(data);
+                        getStatus();
                     }
-                });
-            }
+                },
+                error: function(request, status, err) {}
+            });
+        }
 
-            function getStatus(e)
-            {
-                $.ajax({
-                    type: 'POST',
-                    url: '/get_status.cgi',
-                    data: {'request':JSON_REQUEST_GET_STATUS, 'data':null},
-                    dataType: 'json',
-                    timeout: TIMEOUT_GENERIC,
-                    success: function(data) {
-                        // process data here
-                        console.log('*** GSTA success(), data.status = ' + data.status);
-                        console.log(' GSTA cookie: ' + document.cookie);
-                        if(data.status === JSON_STATUS_FAILED){
-                            // Hide the body of the page.
-                            $("body").addClass('hidden');
-                            $("body").removeClass('show');
-                            window.location.replace(window.location.protocol+'//'+window.location.hostname+':'+window.location.port+'/authenticate.html');
-                        }
-                        else {
-                            updateStatusGUI(JSON.parse(JSON.stringify(data)));
-                            // Show the body of the page.
-                            $("body").addClass('show');
-                            $("body").removeClass('hidden');
-                            timeout_get_status = setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
-                        }
-                    },
-                    error: function(request, status, err) {
-                         timeout_get_status = setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
+        function getStatus(e) {
+            $.ajax({
+                type: 'POST',
+                url: '/get_status.cgi',
+                data: {
+                    'request': JSON_REQUEST_GET_STATUS,
+                    'data': null
+                },
+                dataType: 'json',
+                timeout: TIMEOUT_GENERIC,
+                success: function(data) {
+                    // process data here
+                    if (data.status === JSON_STATUS_FAILED) {
+                        // Hide the body of the page.
+                        $("body").addClass('hidden');
+                        $("body").removeClass('show');
+                        window.location.replace(window.location.protocol +
+                          '//' + window.location.hostname +
+                          ':' + window.location.port + '/authenticate.html');
+                    } else {
+                        updateStatusGUI(JSON.parse(JSON.stringify(data)));
+                        // Show the body of the page.
+                        $("body").addClass('show');
+                        $("body").removeClass('hidden');
+                        timeout_get_status = setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
                     }
-                });
+                },
+                error: function(request, status, err) {
+                    timeout_get_status = setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
+                }
+            });
+        }
+
+        function isASCII(string_to_check) {
+            return /^[\x00-\x7F]*$/.test(string_to_check);
+        }
+
+        function do_verification(e) {
+            var validation_ok = true;
+
+            // Reset.
+            $('.markable').removeClass('has-error');
+            $('.help-block').addClass('hidden');
+
+            // General settings.
+            var general_port = parseInt($('#general_port').val());
+
+            if ((general_port < 1 || general_port > 65535) ||
+                ($('#general_port').val() == '' || $('#general_port').val() == null)) {
+                validation_ok = false;
+                $('#markable_general_port').addClass('has-error');
+                $('#hb_general_port_range').removeClass('hidden');
             }
 
-            function isASCII(string_to_check) {
-                return /^[\x00-\x7F]*$/.test(string_to_check);
+            var general_websocket_port = parseInt($('#general_websocket_port').val());
+
+            if ((general_websocket_port < 1 || general_websocket_port > 65535) ||
+                ($('#general_websocket_port').val() == '' ||
+                $('#general_websocket_port').val() == null)) {
+                validation_ok = false;
+                $('#markable_general_websocket_port').addClass('has-error');
+                $('#hb_general_websocket_port_range').removeClass('hidden');
             }
 
-            function do_verification(e) {
-                var validation_ok = true;
-
-                // Reset.
-                $('.markable').removeClass('has-error');
-                $('.help-block').addClass('hidden');
-
-                // General settings.
-                var general_port = parseInt($('#general_port').val());
-
-                if((general_port < 1 || general_port > 65535) ||
-                   ($('#general_port').val() == '' || $('#general_port').val() == null)) {
-                        validation_ok = false;
-                        $('#markable_general_port').addClass('has-error');
-                        $('#hb_general_port_range').removeClass('hidden');
-                }
-
-                var general_websocket_port = parseInt($('#general_websocket_port').val());
-
-                if((general_websocket_port < 1 || general_websocket_port > 65535) ||
-                   ($('#general_websocket_port').val() == '' || $('#general_websocket_port').val() == null)) {
-                        validation_ok = false;
-                        $('#markable_general_websocket_port').addClass('has-error');
-                        $('#hb_general_websocket_port_range').removeClass('hidden');
-                }
-
+            if (!$('#general_disable_web_interface').is(':checked')) {
                 var general_website_port = parseInt($('#general_website_port').val());
 
-                if((general_website_port < 1 || general_website_port > 65535) ||
-                   ($('#general_website_port').val() == '' || $('#general_website_port').val() == null)) {
+                if ((general_website_port < 2 || general_website_port > 65535) ||
+                    ($('#general_website_port').val() == '' ||
+                    $('#general_website_port').val() == null)) {
                     validation_ok = false;
                     $('#markable_general_website_port').addClass('has-error');
                     $('#hb_general_website_port_range').removeClass('hidden');
                 }
-
-                var general_use_authentication = $('#general_use_authentication').prop('checked');
-                var general_authentication_secret = $('#general_authentication_secret').val();
-                
-                if(general_use_authentication) {
-                    if(general_authentication_secret === '' || general_authentication_secret === null) {
-                        validation_ok = false;
-                        $('#general_use_authentication_elements').addClass('has-error');
-                        $('#hb_general_authentication_secret_empty').removeClass('hidden');
-                    }
-                    if(!isASCII(general_authentication_secret)) {
-                        validation_ok = false;
-                        $('#general_use_authentication_elements').addClass('has-error');
-                        $('#hb_general_authentication_secret_ascii').removeClass('hidden');
-                    }
-                }
-
-                var general_mode = parseInt($("#general_mode").val());
-
-                // Client mode settings.
-                var client_hostname = $('#client_hostname').val();
-
-                if(!isASCII(client_hostname)) {
-                    validation_ok = false;
-                    $('#markable_client_hostname').addClass('has-error');
-                    $('#hb_client_hostname_ascii').removeClass('hidden');
-                }
-
-                var client_ssid = $('#client_ssid').val();
-
-                if(client_ssid == '' || client_ssid == null) {
-                    validation_ok = false;
-                    $('#markable_client_ssid').addClass('has-error');
-                    $('#hb_client_ssid_empty').removeClass('hidden');
-                }
-
-                if(!isASCII(client_ssid)) {
-                    validation_ok = false;
-                    $('#markable_client_ssid').addClass('has-error');
-                    $('#hb_client_ssid_ascii').removeClass('hidden');
-                } 
-
-                var client_encryption = $('#client_encryption').val();
-                var client_password = $('#client_password').val();
-
-                console.log(client_encryption);
-                console.log(client_password);
-
-                if(client_encryption === '1') {
-                    if(client_password == '' || client_password == null) {
-                        validation_ok = false;
-                        $('#client_encryption_password_group').addClass('has-error');
-                        $('#hb_client_password_empty').removeClass('hidden');    
-                    }
-
-                    if(!isASCII(client_password)) {
-                        validation_ok = false;
-                        $('#client_encryption_password_group').addClass('has-error');
-                        $('#hb_client_password_ascii').removeClass('hidden');    
-                    }
-
-                    if(client_password.length < 8) {
-                        validation_ok = false;
-                        $('#client_encryption_password_group').addClass('has-error');
-                        $('#hb_client_password_length').removeClass('hidden');
-                    }
-                }
-
-                // AP settings.
-                var ap_ssid = $('#ap_ssid').val();
-
-                if(ap_ssid === '' || ap_ssid === null) {
-                    validation_ok = false;
-                    $('#markable_ap_ssid').addClass('has-error');
-                    $('#hb_ap_ssid_empty').removeClass('hidden');
-                }
-
-                if(!isASCII(ap_ssid)) {
-                    validation_ok = false;
-                    $('#markable_ap_ssid').addClass('has-error');
-                    $('#hb_ap_ssid_ascii').removeClass('hidden');
-                }
-
-                var ap_encryption = $('#ap_encryption').val();
-                var ap_password = $('#ap_password').val();
-
-                if(ap_encryption === '1') {
-                    if(ap_password == '' || ap_password == null) {
-                        validation_ok = false;
-                        $('#ap_encryption_password_elements').addClass('has-error');
-                        $('#hb_ap_password_empty').removeClass('hidden');
-                    }
-
-                    if(!isASCII(ap_password)) {
-                        validation_ok = false;
-                        $('#ap_encryption_password_elements').addClass('has-error');
-                        $('#hb_ap_password_ascii').removeClass('hidden');
-                    }
-
-                    if(ap_password.length < 8) {
-                        validation_ok = false;
-                        $('#ap_encryption_password_elements').addClass('has-error');
-                        $('#hb_ap_password_length').removeClass('hidden');
-                    }
-                }
-
-                var ap_channel = parseInt($('#ap_channel').val());
-
-                if((ap_channel < 1 || ap_channel > 13) ||
-                   ($('#ap_channel').val() == '' || $('#ap_channel').val() == null)) {
-                        validation_ok = false;
-                        $('#markable_ap_channel').addClass('has-error');
-                        $('#hb_ap_channel').removeClass('hidden');
-                }
-
-                console.log('do verification');
-
-                return validation_ok;     
+            } else {
+                $('#general_website_port').val(1);
             }
 
-            $(document).ready(function()
-            {
-                // Initial modal state.
-                $('.modal').modal('hide');
+            var general_use_authentication = $('#general_use_authentication').prop('checked');
+            var general_authentication_secret = $('#general_authentication_secret').val();
 
-                $('#button_save_wifi_configuration').click(function(event)
-                {
-                    console.log("*** Save settings button clicked ***");
-                    console.log($("#form_settings").serialize());
+            if (general_use_authentication) {
+                if (general_authentication_secret === '' ||
+                general_authentication_secret === null) {
+                    validation_ok = false;
+                    $('#general_use_authentication_elements').addClass('has-error');
+                    $('#hb_general_authentication_secret_empty').removeClass('hidden');
+                }
+                if (!isASCII(general_authentication_secret)) {
+                    validation_ok = false;
+                    $('#general_use_authentication_elements').addClass('has-error');
+                    $('#hb_general_authentication_secret_ascii').removeClass('hidden');
+                }
+            }
+
+            // Client mode settings.
+            var client_hostname = $('#client_hostname').val();
+
+            if (!isASCII(client_hostname)) {
+                validation_ok = false;
+                $('#markable_client_hostname').addClass('has-error');
+                $('#hb_client_hostname_ascii').removeClass('hidden');
+            }
+
+            var client_ssid = $('#client_ssid').val();
+
+            if (client_ssid == '' || client_ssid == null) {
+                validation_ok = false;
+                $('#markable_client_ssid').addClass('has-error');
+                $('#hb_client_ssid_empty').removeClass('hidden');
+            }
+
+            if (!isASCII(client_ssid)) {
+                validation_ok = false;
+                $('#markable_client_ssid').addClass('has-error');
+                $('#hb_client_ssid_ascii').removeClass('hidden');
+            }
+
+            var client_encryption = $('#client_encryption').val();
+            var client_password = $('#client_password').val();
+
+            if (client_encryption === '1') {
+                if (client_password == '' || client_password == null) {
+                    validation_ok = false;
+                    $('#client_encryption_password_group').addClass('has-error');
+                    $('#hb_client_password_empty').removeClass('hidden');
+                }
+
+                if (!isASCII(client_password)) {
+                    validation_ok = false;
+                    $('#client_encryption_password_group').addClass('has-error');
+                    $('#hb_client_password_ascii').removeClass('hidden');
+                }
+
+                if (client_password.length < 8) {
+                    validation_ok = false;
+                    $('#client_encryption_password_group').addClass('has-error');
+                    $('#hb_client_password_length').removeClass('hidden');
+                }
+            }
+
+            // AP settings.
+            var ap_ssid = $('#ap_ssid').val();
+
+            if (ap_ssid === '' || ap_ssid === null) {
+                validation_ok = false;
+                $('#markable_ap_ssid').addClass('has-error');
+                $('#hb_ap_ssid_empty').removeClass('hidden');
+            }
+
+            if (!isASCII(ap_ssid)) {
+                validation_ok = false;
+                $('#markable_ap_ssid').addClass('has-error');
+                $('#hb_ap_ssid_ascii').removeClass('hidden');
+            }
+
+            var ap_encryption = $('#ap_encryption').val();
+            var ap_password = $('#ap_password').val();
+
+            if (ap_encryption === '1') {
+                if (ap_password == '' || ap_password == null) {
+                    validation_ok = false;
+                    $('#ap_encryption_password_elements').addClass('has-error');
+                    $('#hb_ap_password_empty').removeClass('hidden');
+                }
+
+                if (!isASCII(ap_password)) {
+                    validation_ok = false;
+                    $('#ap_encryption_password_elements').addClass('has-error');
+                    $('#hb_ap_password_ascii').removeClass('hidden');
+                }
+
+                if (ap_password.length < 8) {
+                    validation_ok = false;
+                    $('#ap_encryption_password_elements').addClass('has-error');
+                    $('#hb_ap_password_length').removeClass('hidden');
+                }
+            }
+
+            var ap_channel = parseInt($('#ap_channel').val());
+
+            if ((ap_channel < 1 || ap_channel > 13) ||
+                ($('#ap_channel').val() == '' || $('#ap_channel').val() == null)) {
+                validation_ok = false;
+                $('#markable_ap_channel').addClass('has-error');
+                $('#hb_ap_channel').removeClass('hidden');
+            }
+
+            return validation_ok;
+        }
+
+        $(document).ready(function() {
+            // Initial modal state.
+            $('.modal').modal('hide');
+
+            $('#main_toolbar_status').click(function(event) {
+                $('#container_settings').addClass('hidden');
+                $('#container_settings').removeClass('show');
+                $('#container_client_status').addClass('show');
+                $('#container_client_status').removeClass('hidden');
+                $('#main_toolbar_about').removeClass('active');
+                $('#main_toolbar_settings').removeClass('active');
+                $('#main_toolbar_status').addClass('active');
+                $('#main_toolbar_about').removeClass('active');
+            });
+            $('#main_toolbar_settings').click(function(event) {
+                $('#container_settings').addClass('show');
+                $('#container_settings').removeClass('hidden');
+                $('#container_client_status').addClass('hidden');
+                $('#container_client_status').removeClass('show');
+                $('#main_toolbar_about').removeClass('active');
+                $('#main_toolbar_settings').addClass('active');
+                $('#main_toolbar_status').removeClass('active');
+                $('#main_toolbar_about').removeClass('active');
+            });
+            $('#main_toolbar_about').click(function(event) {
+                $('#main_toolbar_about').removeClass('active');
+            });
+            $('input[type="checkbox"]').change(function(e) {
+                if ($(this).attr('id') === 'general_disable_web_interface') {
+                    if ($(this).is(':checked')) {
+                        $('#general_website_port').prop('disabled', true);
+                        $('#markable_general_website_port').removeClass('has-error');
+                        $('#hb_general_website_port_range').addClass('hidden');
+                    } else {
+                        $('#general_website_port').prop('disabled', false);
+                    }
+                }
+                if ($(this).attr("id") === "general_use_authentication") {
+                    $("#general_use_authentication_elements").toggleClass("hidden");
+                }
+                if ($(this).attr("id") === "general_authentication_secret_show_characters") {
+                    if (this.checked) {
+                        $('#general_authentication_secret').attr("type", "text");
+                    } else {
+                        $('#general_authentication_secret').attr("type", "password");
+                    }
+                }
+                if ($(this).attr("id") ===
+                    "client_connect_to_ap_with_specific_bssid") {
+                    $("#client_connect_to_ap_with_specific_bssid_elements").toggleClass(
+                        "hidden");
+                }
+                if ($(this).attr("id") ===
+                    "client_mac_address") {
+                    $("#client_mac_address_elements").toggleClass(
+                        "hidden");
+                }
+                if ($(this).attr("id") ===
+                    "ap_mac_address") {
+                    $("#ap_mac_address_elements").toggleClass(
+                        "hidden");
+                }
+                if ($(this).attr("id") === "client_password_show_characters") {
+                    if (this.checked) {
+                        $('#client_password').attr("type", "text");
+                    } else {
+                        $('#client_password').attr("type", "password");
+                    }
+                }
+                if ($(this).attr("id") === "ap_password_show_characters") {
+                    if (this.checked) {
+                        $('#ap_password').attr("type", "text");
+                    } else {
+                        $('#ap_password').attr("type", "password");
+                    }
+                }
+
+            });
+
+            $('#general_mode').change(function(e) {
+                if ($('#general_mode').val() === '0') {
+                    $('#panel_client_settings').show();
+                    $('#panel_ap_settings').hide();
+                } else if ($('#general_mode').val() === '1') {
+                    $('#panel_client_settings').hide();
+                    $('#panel_ap_settings').show();
+                } else {
+                    $('#panel_client_settings').show();
+                    $('#panel_ap_settings').show();
+                }
+            });
+
+            $('#client_ip_configuration').change(function(e) {
+                // DHCP.
+                if ($('#client_ip_configuration').val() === '0') {
+                    $('#client_ip_configuration_static_group').addClass('hidden');
+                }
+                //Static.
+                else if ($('#client_ip_configuration').val() === '1') {
+                    $('#client_ip_configuration_static_group').removeClass('hidden');
+                }
+            });
+
+            $('#client_encryption').change(function(e) {
+                if ($('#client_encryption').val() === '0') {
+                    $('#client_encryption_password_group').addClass('hidden');
+                } else if ($('#client_encryption').val() === '1') {
+                    $('#client_encryption_password_group').removeClass('hidden');
+                }
+            });
+
+            $('#ap_ip_configuration').change(function(e) {
+                // DHCP.
+                if ($('#ap_ip_configuration').val() === '0') {
+                    $('#ap_ip_configuration_static_group').addClass('hidden');
+                }
+                //Static.
+                else if ($('#ap_ip_configuration').val() === '1') {
+                    $('#ap_ip_configuration_static_group').removeClass('hidden');
+                }
+            });
+
+            $('#ap_encryption').change(function(e) {
+                if ($('#ap_encryption').val() === '0') {
+                    $('#ap_encryption_password_elements').addClass('hidden');
+                } else if ($('#ap_encryption').val() === '1') {
+                    $('#ap_encryption_password_elements').removeClass('hidden');
+                }
+            });
+
+            $('.input_hex').keypress(function(e) {
+                if (!(e.keyCode >= 48 && e.keyCode <= 57) &&
+                    !(e.keyCode >= 65 && e.keyCode <= 70) &&
+                    !(e.keyCode >= 97 && e.keyCode <= 102)) {
+                    e.preventDefault();
+                }
+            });
+
+            $('.input_port').keypress(function(e) {
+                var current_value = $(this).val() + String.fromCharCode(e.which);
+
+                if (parseInt(current_value) < 1 || parseInt(current_value) > 65535) {
+                    e.preventDefault();
+                }
+            });
+
+            $('#ap_channel').keypress(function(e) {
+                var current_value = $(this).val() + String.fromCharCode(e.which);
+
+                if (parseInt(current_value) < 1 || parseInt(current_value) > 13) {
+                    e.preventDefault();
+                }
+            });
+
+            $('#button_save_reset_settings').click(function(e) {
+                if (do_verification()) {
+                    $("#modal_warning_save_reset").modal('show');
+                } else {
+                    $("#modal_verification_failed").modal('show');
+                }
+            });
+
+            $('#button_modal_warning_save_reset_ok').click(function(e) {
+                var serialized_data = $("#form_settings").serialize();
+
+                if ($("#general_disable_web_interface").prop('checked')) {
+                    serialized_data += '&general_website_port=1';
+                }
+
+                if ($("#general_use_authentication").prop('checked')) {
+                    serialized_data += '&general_use_authentication=1';
+                } else {
+                    serialized_data += '&general_use_authentication=0';
+                }
+
+                if ($("#client_connect_to_ap_with_specific_bssid").prop('checked')) {
+                    serialized_data += '&client_connect_to_ap_with_specific_bssid=1';
+                } else {
+                    serialized_data += '&client_connect_to_ap_with_specific_bssid=0';
+                }
+
+                if ($("#client_mac_address").prop('checked')) {
+                    serialized_data += '&client_mac_address=1';
+                } else {
+                    serialized_data += '&client_mac_address=0';
+                }
+
+                if ($("#ap_hide_ssid").prop('checked')) {
+                    serialized_data += '&ap_hide_ssid=1';
+                } else {
+                    serialized_data += '&ap_hide_ssid=0';
+                }
+
+                if ($("#ap_mac_address").prop('checked')) {
+                    serialized_data += '&ap_mac_address=1';
+                } else {
+                    serialized_data += '&ap_mac_address=0';
+                }
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/update_settings.cgi',
+                    data: {
+                        'request': JSON_REQUEST_UPDATE_SETTINGS,
+                        'data': serialized_data
+                    },
+                    dataType: 'json',
+                    timeout: TIMEOUT_GENERIC,
+                    success: function(data) {
+                        // Ignored.
+                    },
+                    error: function(request, status, err) {
+                        // Ignored.
+                    }
                 });
-                $('#main_toolbar_status').click(function(event)
-                {
-                    $('#container_settings').addClass('hidden');
-                    $('#container_settings').removeClass('show');
-                    $('#container_client_status').addClass('show');
-                    $('#container_client_status').removeClass('hidden');
-                    $('#main_toolbar_about').removeClass('active');
-                    $('#main_toolbar_settings').removeClass('active');
-                    $('#main_toolbar_status').addClass('active');
-                    $('#main_toolbar_about').removeClass('active');
-                });
-                $('#main_toolbar_settings').click(function(event)
-                {
-                    $('#container_settings').addClass('show');
-                    $('#container_settings').removeClass('hidden');
-                    $('#container_client_status').addClass('hidden');
-                    $('#container_client_status').removeClass('show');
-                    $('#main_toolbar_about').removeClass('active');
-                    $('#main_toolbar_settings').addClass('active');
-                    $('#main_toolbar_status').removeClass('active');
-                    $('#main_toolbar_about').removeClass('active');
-                });
-                $('#main_toolbar_about').click(function(event)
-                {
-                    $('#main_toolbar_about').removeClass('active');
-                });
-                $('input[type="checkbox"]').change(function(e)
-                {
-                    if ($(this).attr("id") === "general_use_authentication")
-                    {
-                        $("#general_use_authentication_elements").toggleClass("hidden");
-                    }
-                    if ($(this).attr("id") === "general_authentication_secret_show_characters")
-                    {
-                        if(this.checked) {
-                            $('#general_authentication_secret').attr("type", "text");
-                        }
-                        else {
-                            $('#general_authentication_secret').attr("type", "password");
-                        }
-                    }
-                    if ($(this).attr("id") ===
-                        "client_connect_to_ap_with_specific_bssid")
-                    {
-                        $("#client_connect_to_ap_with_specific_bssid_elements").toggleClass(
-                            "hidden");
-                    }
-                    if ($(this).attr("id") ===
-                        "client_mac_address")
-                    {
-                        $("#client_mac_address_elements").toggleClass(
-                            "hidden");
-                    }
-                    if ($(this).attr("id") ===
-                        "ap_mac_address")
-                    {
-                        $("#ap_mac_address_elements").toggleClass(
-                            "hidden");
-                    }
-                    if ($(this).attr("id") === "client_password_show_characters")
-                    {
-                        if(this.checked) {
-                            $('#client_password').attr("type", "text");
-                        }
-                        else {
-                            $('#client_password').attr("type", "password");
-                        }
-                    }
-                    if ($(this).attr("id") === "ap_password_show_characters")
-                    {
-                        if(this.checked) {
-                            $('#ap_password').attr("type", "text");
-                        }
-                        else {
-                            $('#ap_password').attr("type", "password");
-                        }
-                    }
-                    
-                });
 
-                $('#client_ip_configuration').change(function(e)
-                {
-                    // DHCP.
-                    if($('#client_ip_configuration').val() === '0') {
-                        $('#client_ip_configuration_static_group').addClass('hidden');
-                    }
-                    //Static.
-                    else if($('#client_ip_configuration').val() === '1') {
-                        $('#client_ip_configuration_static_group').removeClass('hidden');
-                    }
-                });
+                clearTimeout(timeout_get_status);
 
-                $('#client_encryption').change(function(e)
-                {
-                    if($('#client_encryption').val() === '0') {
-                        $('#client_encryption_password_group').addClass('hidden');
-                    }
-                    else if($('#client_encryption').val() === '1') {
-                        $('#client_encryption_password_group').removeClass('hidden');
-                    }
-                });
+                $("#modal_info_saving_resetting").modal('show');
 
-                $('#ap_ip_configuration').change(function(e)
-                {
-                    // DHCP.
-                    if($('#ap_ip_configuration').val() === '0') {
-                        $('#ap_ip_configuration_static_group').addClass('hidden');
-                    }
-                    //Static.
-                    else if($('#ap_ip_configuration').val() === '1') {
-                        $('#ap_ip_configuration_static_group').removeClass('hidden');
-                    }
-                });
-
-                $('#ap_encryption').change(function(e)
-                {
-                    if($('#ap_encryption').val() === '0') {
-                        $('#ap_encryption_password_elements').addClass('hidden');
-                    }
-                    else if($('#ap_encryption').val() === '1') {
-                        $('#ap_encryption_password_elements').removeClass('hidden');
-                    }
-                });
-
-                $('.input_hex').keypress(function(e) {
-                    console.log(e.keyCode);
-                    if(!(e.keyCode >= 48 && e.keyCode <= 57) &&
-                       !(e.keyCode >= 65 && e.keyCode <= 70) &&
-                       !(e.keyCode >= 97 && e.keyCode <= 102)) {
-                        e.preventDefault();
-                    }
-                });
-
-                $('.input_port').keypress(function(e) {
-                    var current_value = $(this).val() + String.fromCharCode(e.which);
-
-                    if(parseInt(current_value) < 1 || parseInt(current_value) > 65535) {
-                        e.preventDefault();
-                    }
-                });
-
-                $('#ap_channel').keypress(function(e) {
-                    var current_value = $(this).val() + String.fromCharCode(e.which);
-
-                    if(parseInt(current_value) < 1 || parseInt(current_value) > 13) {
-                        e.preventDefault();
-                    }
-                });
-
-                $('#button_save_reset_settings').click(function(e) {
-                    console.log('*** save reset clicked');
-                    
-                    if(do_verification()) {
-                        $("#modal_warning_save_reset").modal('show');
-                    }
-                    else {
-                        $("#modal_verification_failed").modal('show');
-                    }
-                });
-
-                $('#button_modal_warning_save_reset_ok').click(function(e) {
-                    console.log('*** button_modal_warning_save_reset_ok');
-
-                    var serialized_data = $("#form_settings").serialize();
-
-                    if($("#general_use_authentication").prop('checked')) {
-                        serialized_data += '&general_use_authentication=1';
-                    }
-                    else {
-                        serialized_data += '&general_use_authentication=0';
-                    }
-
-                    if($("#client_connect_to_ap_with_specific_bssid").prop('checked')) {
-                        serialized_data += '&client_connect_to_ap_with_specific_bssid=1';
-                    }
-                    else {
-                        serialized_data += '&client_connect_to_ap_with_specific_bssid=0';
-                    }
-
-                    if($("#client_mac_address").prop('checked')) {
-                        serialized_data += '&client_mac_address=1';
-                    }
-                    else {
-                        serialized_data += '&client_mac_address=0';
-                    }
-
-                    if($("#ap_hide_ssid").prop('checked')) {
-                        serialized_data += '&ap_hide_ssid=1';
-                    }
-                    else {
-                        serialized_data += '&ap_hide_ssid=0';
-                    }
-
-                    if($("#ap_mac_address").prop('checked')) {
-                        serialized_data += '&ap_mac_address=1';
-                    }
-                    else {
-                        serialized_data += '&ap_mac_address=0';
-                    }
-
-                    console.log(serialized_data);
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '/update_settings.cgi',
-                        data: {'request':JSON_REQUEST_UPDATE_SETTINGS, 'data':serialized_data},
-                        dataType: 'json',
-                        timeout: TIMEOUT_GENERIC,
-                        success: function(data) {
-                            // Ignored.
-                        },
-                        error: function(request, status, err) {
-                            // Ignored.
-                        }
-                    });
-
-                    clearTimeout(timeout_get_status);
-
-                    // Clear session cookie.
-                    //document.cookie = 'sid=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                if ($('#general_disable_web_interface').prop('checked')) {
+                    $('#modal_info_saving_resetting_msg').hide();
+                    $('#modal_info_saving_resetting_msg_wi_disabled').show();
+                } else {
+                    $('#modal_info_saving_resetting_msg').show();
+                    $('#modal_info_saving_resetting_msg_wi_disabled').hide();
 
                     setTimeout(function(e) {
                             window.location.replace(window.location.protocol +
-                                                    '//' +
-                                                    window.location.hostname +
-                                                    ':' +
-                                                    $('#general_website_port').val() +
-                                                    '/authenticate.html');
+                                '//' +
+                                window.location.hostname +
+                                ':' +
+                                $('#general_website_port').val() +
+                                '/authenticate.html');
                         },
                         TIMEOUT_SAVE_RESET);
-
-                    $("#modal_info_saving_resetting").modal('show');
-                });
-
-                window.onbeforeunload = function() {
-                    $.ajax({
-                        type: 'POST',
-                        url: '/end_session.cgi',
-                        data: {'request':JSON_REQUEST_END_SESSION, 'data':null},
-                        dataType: 'json',
-                        timeout: TIMEOUT_GENERIC,
-                        success: function(data) {
-                            // Ignored.
-                        },
-                        error: function(request, status, err) {
-                            // Ignored.
-                        }
-                    });
                 }
-                getSettings();
             });
-        </script>
-    </body>
+
+            window.onbeforeunload = function() {
+                $.ajax({
+                    type: 'POST',
+                    url: '/end_session.cgi',
+                    data: {
+                        'request': JSON_REQUEST_END_SESSION,
+                        'data': null
+                    },
+                    dataType: 'json',
+                    timeout: TIMEOUT_GENERIC,
+                    success: function(data) {
+                        // Ignored.
+                    },
+                    error: function(request, status, err) {
+                        // Ignored.
+                    }
+                });
+            }
+            getSettings();
+        });
+    </script>
+  </body>
 </html>

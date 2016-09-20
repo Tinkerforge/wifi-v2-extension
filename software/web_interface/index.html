@@ -748,7 +748,7 @@
                     </div>
 
                     <div class="form-group hidden" id="client_mac_address_elements">
-                        <div class="form-group row">
+                        <div class="form-group row markable" id="markable_client_mac_address_elements">
                             <label class="col-sm-2 control-label"
                             for="client_mac_address">MAC Address:</label>
 
@@ -786,6 +786,12 @@
                                 <input class="form-control input_hex"
                                 id="client_mac_address_5" name="client_mac_address_5"
                                 type="text" maxlength="2">
+                            </div>
+
+                            <div class="row col-sm-offset-2 col-sm-8">
+                              <p class="help-block hidden" id="hb_client_mac_address_0">
+                                  Lowest order bit of the first octave can not be 1
+                              </p>
                             </div>
                         </div>
                     </div>
@@ -994,7 +1000,7 @@
                     </div>
 
                     <div class="hidden" id="ap_mac_address_elements">
-                        <div class="form-group row">
+                        <div class="form-group row markable" id="markable_ap_mac_address_elements">
                             <label class="col-sm-2 control-label">
                                 MAC Address:
                             </label>
@@ -1027,6 +1033,12 @@
                             <div class="col-sm-1">
                                 <input class="form-control input_hex" id="ap_mac_address_5"
                                 name="ap_mac_address_5" type="text" maxlength="2">
+                            </div>
+
+                            <div class="row col-sm-offset-2 col-sm-8">
+                              <p class="help-block hidden" id="hb_ap_mac_address_0">
+                                  Lowest order bit of the first octave can not be 1
+                              </p>
                             </div>
                         </div>
                     </div>
@@ -1549,6 +1561,15 @@
                 }
             }
 
+            var client_mac_address_0 = $('#client_mac_address_0').val();
+            var b_array = parseInt(client_mac_address_0, 16).toString(2).split('')
+
+            if (b_array[b_array.length - 1] === '1') {
+              validation_ok = false;
+              $('#markable_client_mac_address_elements').addClass('has-error');
+              $('#hb_client_mac_address_0').removeClass('hidden');
+            }
+
             // AP settings.
             var ap_ssid = $('#ap_ssid').val();
 
@@ -1594,6 +1615,15 @@
                 validation_ok = false;
                 $('#markable_ap_channel').addClass('has-error');
                 $('#hb_ap_channel').removeClass('hidden');
+            }
+
+            var ap_mac_address_0 = $('#ap_mac_address_0').val();
+            var b_array = parseInt(ap_mac_address_0, 16).toString(2).split('')
+
+            if (b_array[b_array.length - 1] === '1') {
+              validation_ok = false;
+              $('#markable_ap_mac_address_elements').addClass('has-error');
+              $('#hb_ap_mac_address_0').removeClass('hidden');
             }
 
             return validation_ok;

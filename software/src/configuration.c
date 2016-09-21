@@ -145,6 +145,9 @@ void ICACHE_FLASH_ATTR configuration_apply_client(void) {
 	if(configuration_check_array_null(configuration_current.client_bssid, 6)) {
 		conf.bssid_set = 0;
 	}
+	else{
+		conf.bssid_set = 1;
+	}
 	wifi_station_set_config_current(&conf);
 
 	if(configuration_check_array_null(configuration_current.client_ip, 4)) {

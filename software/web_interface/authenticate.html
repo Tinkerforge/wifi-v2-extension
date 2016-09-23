@@ -53,7 +53,7 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-default" data-dismiss="modal"
+                    <button class="btn btn-default modal_failed_btn_close" data-dismiss="modal"
                     type="button">
                             Close
                         </button>
@@ -82,7 +82,7 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-default" data-dismiss="modal"
+                    <button class="btn btn-default modal_failed_btn_close" data-dismiss="modal"
                     type="button">
                             Close
                         </button>
@@ -143,8 +143,7 @@
             </div>
         </div>
         <button id="submit" type="button"
-        class="btn btn-block btn-success btn-lg spacer-bottom"
-        data-target="#modal_submit" data-toggle="modal" disabled>
+        class="btn btn-block btn-success btn-lg spacer-bottom">
                 Authenticate
             </button>
         </form>
@@ -250,33 +249,34 @@
                 });
             });
 
-            // Body's keypress event handler.
-            $('body').keypress(function(e) {
-                var is_return = false;
+            $('.modal_failed_btn_close').click(function(e){
+                $('#submit').removeClass('disabled');
+            });
 
-                if (e.which == 13) {
-                    is_return = true;
+            $('#submit').click(function(e){
+                if($('#secret').val().length < 1){
+                    return;
                 }
 
-                if (is_return) {
-                    var value = $('#secret').val();
-                } else {
-                    var value = $('#secret').val() +
-                        String.fromCharCode(e.which);
-                }
+                $(this).addClass('disabled');
+                $('#modal_submit').modal('show');
+            });
 
-                if (value.length < 1) {
-                    $('#submit').prop('disabled', true);
-                } else {
-                    $('#submit').prop('disabled', false);
-
-                    if (is_return) {
-                        $('#submit').click();
-                    }
-                }
-
-                if (is_return) {
+            // Secret field's keypress event handler.
+            $('#secret').keypress(function(e){
+                if(e.which == 13) {
+                    /*
+                     * Disable default action of return keypress. Can be only
+                     * done in keypress event.
+                     */
                     e.preventDefault();
+                }
+            });
+
+            // Secret field's keyup event handler.
+            $('#secret').keyup(function(e) {
+                if(e.which == 13 && $('#secret').val().length > 0) {
+                    $('#submit').trigger('click');
                 }
             });
 

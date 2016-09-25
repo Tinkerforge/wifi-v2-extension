@@ -18,6 +18,8 @@
 #define POST_BUFFER_SIZE 2048
 #define MAX_ACTIVE_SESSION_COOKIES 32
 
+#define RR_AUTHENTICATION_SLOT_SIZE 32
+
 // Global variables.
 extern unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
 
@@ -45,16 +47,16 @@ struct get_status {
 int ICACHE_FLASH_ATTR do_is_auth_enabled(void);
 int ICACHE_FLASH_ATTR do_get_sid(unsigned long *sid);
 int ICACHE_FLASH_ATTR do_get_cookie_field(char *cookie,
-										  char *field,
-										  unsigned char type_field,
-										  void *value);
+	char *field,
+	unsigned char type_field,
+	void *value);
 int ICACHE_FLASH_ATTR do_update_settings_ap(char *data);
 int ICACHE_FLASH_ATTR do_has_cookie(HttpdConnData *connection_data,
-								 	char *cookie,
-								  	unsigned long length);
+	char *cookie,
+	unsigned long length);
 int ICACHE_FLASH_ATTR do_update_settings_client(char *data);
 int ICACHE_FLASH_ATTR do_get_status(struct get_status *status,
-									unsigned char init_only);
+	unsigned char init_only);
 int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_root(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR do_check_request(char *buffer_post, uint8 rid);
@@ -67,3 +69,10 @@ int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void);
 int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_authenticate_html(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_data);
+
+int ICACHE_FLASH_ATTR do_check_secret(unsigned long slot,
+	unsigned long random_number_client, uint8_t *sha1_hmac_client);
+int ICACHE_FLASH_ATTR cgi_get_authentication_slot(HttpdConnData *connection_dat);
+int ICACHE_FLASH_ATTR cgi_authenticate_index_html(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_authenticate_get_status(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR cgi_authenticate_update_settings(HttpdConnData *connection_data);

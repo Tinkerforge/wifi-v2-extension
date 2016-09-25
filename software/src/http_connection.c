@@ -44,6 +44,12 @@ HttpdBuiltInUrl builtInUrls[] = {
 	{"/get_settings.cgi", cgi_get_settings, NULL},
 	{"/update_settings.cgi", cgi_update_settings, NULL},
 	{"/is_already_authenticated.cgi", cgi_is_already_authneticated, NULL},
+
+	{"/get_authentication_slot.cgi", cgi_get_authentication_slot, NULL},
+	{"/authenticate_index_html.cgi", cgi_authenticate_index_html, NULL},
+	{"/authenticate_get_status.cgi", cgi_authenticate_get_status, NULL},
+	{"/authenticate_update_settings.cgi", cgi_authenticate_update_settings, NULL},
+
 	{"*", cgi_404, NULL},
 	{NULL, NULL, NULL}
 };

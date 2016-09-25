@@ -1,4 +1,5 @@
 #include <string.h>
+#include "espmissingincludes.h"
 #include <esp8266.h>
 #include "httpdespfs.h"
 #include "web_interface.h"
@@ -142,7 +143,7 @@ int ICACHE_FLASH_ATTR do_has_cookie(HttpdConnData *connection_data,
 					   length)) == 1) {
 		return 1;
 	}
-		
+
 	else {
 		return -1;
 	}
@@ -231,7 +232,7 @@ int ICACHE_FLASH_ATTR cgi_404(HttpdConnData *connection_data) {
 int ICACHE_FLASH_ATTR cgi_root(HttpdConnData *connection_data) {
 	if((do_check_session(connection_data)) == 1) {
 		connection_data->url = "/index.html";
-		
+
 		return cgiEspFsHook(connection_data);
 	}
 
@@ -635,7 +636,7 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 	char ap_mac_address_3[3];
 	char ap_mac_address_4[3];
 	char ap_mac_address_5[3];
-	
+
 	if((httpdFindArg(data, "ap_ip_configuration", ap_ip_configuration, 2)) > 0) {
 		// DHCP.
 		if(strtoul(ap_ip_configuration, NULL, 10) == 0){
@@ -1036,5 +1037,44 @@ int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_dat
 
 	httpdSend(connection_data, response, -1);
 
+	return HTTPD_CGI_DONE;
+}
+
+int ICACHE_FLASH_ATTR do_check_secret(unsigned long slot,
+	unsigned long random_number_client, uint8_t *sha1_hmac_client){
+		/*
+		uint32_t _data = 12984583;
+		uint8_t key[64] = "test";
+		uint8_t data[4];
+		uint8_t mac[20];
+
+		data[0] = (_data >> 24) & 0xFF;
+		data[1] = (_data >> 16) & 0xFF;
+		data[2] = (_data >> 8) & 0xFF;
+		data[3] = _data & 0xFF;
+
+		int mr = hmac_sha1(key, 4, data, 4, mac);
+
+		printf("\n*** MR=%d***\n", mr);
+
+		for(uint8_t i = 0; i < 20; i++) {
+			printf("\n%d\n", mac[i]);
+		}
+		*/
+	}
+
+int ICACHE_FLASH_ATTR cgi_get_authentication_slot(HttpdConnData *connection_dat){
+	return HTTPD_CGI_DONE;
+}
+
+int ICACHE_FLASH_ATTR cgi_authenticate_index_html(HttpdConnData *connection_data){
+	return HTTPD_CGI_DONE;
+}
+
+int ICACHE_FLASH_ATTR cgi_authenticate_get_status(HttpdConnData *connection_data){
+	return HTTPD_CGI_DONE;
+}
+
+int ICACHE_FLASH_ATTR cgi_authenticate_update_settings(HttpdConnData *connection_data){
 	return HTTPD_CGI_DONE;
 }

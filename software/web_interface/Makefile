@@ -19,4 +19,4 @@ all: ./js ./css
 	sed -e "/\/\*\ embed:.\/css\/combined.css\ \*\//{r ./css/combined.css" -e "d}" ./build/not_found.html.temp  > ./build/not_found.html && \
 	rm ./js/combined.js; \
 	rm ./css/combined.css; \
-	rm ./build/index.html.temp
+	rm ./build/*.temp

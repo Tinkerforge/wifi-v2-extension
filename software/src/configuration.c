@@ -1,5 +1,6 @@
 /* WIFI Extension 2.0
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
  *
  * configuration.c: WIFI Extension configuration handling
  *
@@ -42,7 +43,12 @@ const Configuration configuration_default = {
 	.general_website_port = 80,
 	.general_phy_mode = 1,
 	.general_sleep_mode = 0, // Currently unused
-	.general_website = 0,    // Currently unused
+	/*
+	 * The field "general_website" is currently unused.
+	 * The web interface is currently enabled/disabled
+	 * based on the port specified for it.
+	 */
+	.general_website = 0,
 	.general_authentication_secret = "",
 
 	// Client configuration

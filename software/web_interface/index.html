@@ -1,5 +1,27 @@
-<!DOCTYPE html>
+<!--
+/* WIFI Extension 2.0
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
+ *
+ * index.html: Web Interface for WIFI Extension
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+-->
 
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,7 +32,7 @@
     <!--
         The above 3 meta tags *must* come first in the head. Any other head
         content must come *after* these tags.
-        -->
+    -->
 
     <title>
         Tinkerforge WIFI Extension 2.0
@@ -19,7 +41,7 @@
     <!--
         The "embed:" tags are used to inplace replacement with contents from
         other files.
-        -->
+    -->
     <style type="text/css">
         /* embed:./css/combined.css */
     </style>
@@ -55,6 +77,10 @@
                     <li id="main_toolbar_settings">
                         <a href="#">Settings</a>
                     </li>
+                    <li id="main_toolbar_end_session">
+                        <a data-target="#modal_end_session" data-toggle="modal"
+                        href="#">End Session</a>
+                    </li>
                     <li id="main_toolbar_about">
                         <a data-target="#modal_about" data-toggle="modal"
                         href="#">About</a>
@@ -63,6 +89,35 @@
             </div>
         </div>
     </nav>
+
+    <div aria-labelledby="modal_end_session" class="modal fade bs-example-modal-lg"
+    data-backdrop="static" id="modal_end_session" role="dialog" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header modal-header-warning">
+                    <button aria-hidden="true" class="close" data-dismiss="modal"
+                    type="button">&times;
+                        </button>
+                    <h4 class="modal-title">
+                            End Session
+                        </h4>
+                </div>
+
+                <div class="modal-body">
+                    Are you sure you want to end the session ?
+                </div>
+
+                <div class="modal-footer">
+                  <button id="button_modal_end_session" class="btn btn-success" data-dismiss="modal" type="button">
+                      OK
+                  </button>
+                  <button class="btn btn-default" data-dismiss="modal" type="button">
+                      Cancel
+                  </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div aria-labelledby="modal_about" class="modal fade bs-example-modal-lg"
     data-backdrop="static" id="modal_about" role="dialog" tabindex="-1">
@@ -1239,10 +1294,12 @@
             }
 
             if (settings.data.general_authentication_secret === '') {
+                $('#main_toolbar_end_session').addClass('hidden');
                 $("#general_authentication_secret").val('');
                 if ($("#general_use_authentication").prop('checked'))
                     $("#general_use_authentication").prop('checked', false).change();
             } else {
+                $('#main_toolbar_end_session').removeClass('hidden');
                 $("#general_authentication_secret").val(settings.data.general_authentication_secret);
                 if (!$("#general_use_authentication").prop('checked'))
                     $("#general_use_authentication").prop('checked', true).change();
@@ -1792,6 +1849,34 @@
                 } else {
                     $("#modal_verification_failed").modal('show');
                 }
+            });
+
+            $('#button_modal_end_session').click(function(e) {
+              $.ajax({
+                  type: 'POST',
+                  url: '/end_session.cgi',
+                  data: {
+                      'request': JSON_REQUEST_END_SESSION,
+                      'data': null
+                  },
+                  dataType: 'json',
+                  timeout: TIMEOUT_GENERIC,
+                  success: function(data) {
+                      var data_parsed = JSON.parse(JSON.stringify(data));
+                      if(data_parsed.request == JSON_REQUEST_END_SESSION &&
+                      data_parsed.status == JSON_STATUS_OK){
+                        window.location.replace(window.location.protocol +
+                            '//' +
+                            window.location.hostname +
+                            ':' +
+                            $('#general_website_port').val());
+                        window.location.reload(true);
+                      }
+                  },
+                  error: function(request, status, err) {
+                      // Ignored.
+                  }
+              });
             });
 
             $('#button_modal_warning_save_reset_ok').click(function(e) {

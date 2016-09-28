@@ -5,7 +5,7 @@ all: ./js ./css
 	@rm -rf ./build; \
 	mkdir ./build && \
 	cd ./js && \
-	cat jquery-2.2.4.min.js bootstrap.min.js > combined.js && \
+	cat jquery-2.2.4.min.js bootstrap.min.js sha1.js > combined.js && \
 	cd ../ && \
 	cd ./css && \
 	cat bootstrap.min.css bootstrap-theme.min.css customize.css > combined.css && \

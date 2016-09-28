@@ -1,27 +1,26 @@
+/* WIFI Extension 2.0
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
+ *
+ * web_interface.h: Webserver for WIFI Extension
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 #include "httpd.h"
 #include "c_types.h"
-
-// Defines.
-#define JSON_REQUEST_AUTHENTICATE 1
-#define JSON_REQUEST_GET_STATUS 2
-#define JSON_REQUEST_UPDATE_SETTINGS 3
-#define JSON_REQUEST_END_SESSION 4
-#define JSON_REQUEST_IS_ALREADY_AUTHENTICATED 5
-#define JSON_REQUEST_GET_SETTINGS 6
-
-#define JSON_STATUS_OK 1
-#define JSON_STATUS_FAILED 2
-
-#define HEADER_FIELD_TYPE_STRING 1
-#define HEADER_FIELD_TYPE_NUMERIC 2
-#define GENERIC_BUFFER_SIZE 1024
-#define POST_BUFFER_SIZE 2048
-#define MAX_ACTIVE_SESSION_COOKIES 32
-
-#define RR_AUTHENTICATION_SLOT_SIZE 32
-
-// Global variables.
-extern unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
 
 // Structs.
 struct get_status {
@@ -69,10 +68,7 @@ int ICACHE_FLASH_ATTR do_initialize_web_interface_session_tracking(void);
 int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_authenticate_html(HttpdConnData *connection_data);
 int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_data);
-
-int ICACHE_FLASH_ATTR do_check_secret(unsigned long slot,
-	unsigned long random_number_client, uint8_t *sha1_hmac_client);
-int ICACHE_FLASH_ATTR cgi_get_authentication_slot(HttpdConnData *connection_dat);
-int ICACHE_FLASH_ATTR cgi_authenticate_index_html(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR cgi_authenticate_get_status(HttpdConnData *connection_data);
-int ICACHE_FLASH_ATTR cgi_authenticate_update_settings(HttpdConnData *connection_data);
+int ICACHE_FLASH_ATTR do_check_secret(uint8_t slot, uint8_t *bytes_rn_client,
+	uint8_t *bytes_sha1_hmac_client);
+int ICACHE_FLASH_ATTR do_initialize_authentication_slots(void);
+int ICACHE_FLASH_ATTR cgi_init_authentication(HttpdConnData *connection_data);

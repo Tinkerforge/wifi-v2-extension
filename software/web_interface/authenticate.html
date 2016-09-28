@@ -1,3 +1,26 @@
+<!--
+/* WIFI Extension 2.0
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
+ *
+ * authenticate.html: Web Interface for WIFI Extension
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -159,14 +182,15 @@
          * Message related constants. Must be in sync with the defines in
          * file "web_interface.h" in firmware source code.
          */
-        var JSON_REQUEST_AUTHENTICATE = 1
-        var JSON_REQUEST_GET_STATUS = 2
-        var JSON_REQUEST_UPDATE_SETTINGS = 3
-        var JSON_REQUEST_END_SESSION = 4
-        var JSON_REQUEST_IS_ALREADY_AUTHENTICATED = 5
-        var JSON_REQUEST_GET_SETTINGS = 6
-        var JSON_STATUS_OK = 1
-        var JSON_STATUS_FAILED = 2
+        var JSON_REQUEST_AUTHENTICATE = 1;
+        var JSON_REQUEST_GET_STATUS = 2;
+        var JSON_REQUEST_UPDATE_SETTINGS = 3;
+        var JSON_REQUEST_END_SESSION = 4;
+        var JSON_REQUEST_IS_ALREADY_AUTHENTICATED = 5;
+        var JSON_REQUEST_GET_SETTINGS = 6;
+        var JSON_REQUEST_INIT_AUTHENTICATION = 7;
+        var JSON_STATUS_OK = 1;
+        var JSON_STATUS_FAILED = 2;
 
         // Time constants
         var TIMEOUT_GENERIC = 32000;
@@ -212,35 +236,116 @@
 
             // After the modal is already being shown event handler.
             $('#modal_submit').on('shown.bs.modal', function(e) {
-                // Submit the form here.
+                // Initiate authentication.
                 $.ajax({
                     type: 'POST',
-                    url: '/authenticate.cgi',
+                    url: '/init_authentication.cgi',
                     data: {
-                        'request': JSON_REQUEST_AUTHENTICATE,
-                        'data': $('#form_authenticate').serialize()
+                        'request': JSON_REQUEST_INIT_AUTHENTICATION,
+                        'data': null
                     },
                     dataType: 'json',
                     timeout: TIMEOUT_GENERIC,
                     success: function(data) {
-                        var data_parsed = JSON.parse(JSON.stringify(data));
+                      var data_parsed = JSON.parse(JSON.stringify(data));
 
-                        if (data_parsed.status === JSON_STATUS_OK) {
-                            if (!document.cookie) {
-                                $('#modal_submit').modal('hide');
-                                $('#modal_auth_failed_cookie').modal('show');
+                      if (data_parsed.request === JSON_REQUEST_INIT_AUTHENTICATION &&
+                        data_parsed.status === JSON_STATUS_OK) {
+                          var objSHA = null;
+                          var view_rn_client = null;
+                          var rn_client = new Uint32Array(1);
+                          var bytes_rn_client = new Array(4);
+                          var objJSONResponseData = new Object();
+                          var buffer_rn_client = new ArrayBuffer(4);
+                          var bytes_sha1_hmac_client = new Array(20);
+                          var buffer_rn_appended = new ArrayBuffer(8);
+                          var buffer_sha1_hmac_client = new ArrayBuffer(20);
+                          var data_parsed_data = JSON.parse(JSON.stringify(data_parsed.data));
 
-                                return;
+                          // Generate random number.
+                          window.crypto.getRandomValues(rn_client);
+
+                          // Append with server provided random number.
+
+                          // Buffer offset = 0.
+                          view_rn_client = new DataView(buffer_rn_client, 0);
+
+                          // Byte offset = 4, Little Endian = false
+                          view_rn_client.setUint32(0, rn_client[0], false);
+
+                          // Populate buffer_rn_appended.
+                          for(var i = 0; i < 8; i++){
+                            if(i < 4){
+                              buffer_rn_appended[i] = data_parsed_data.bytes_rn_server[i];
                             }
+                            else{
+                              buffer_rn_appended[i] = view_rn_client.getUint8(i - 4);
+                            }
+                          }
 
-                            window.location.replace(window.location.protocol +
-                                '//' +
-                                window.location.hostname + ':' +
-                                window.location.port);
-                        } else {
-                            $('#modal_submit').modal('hide');
-                            $('#modal_auth_failed_secret').modal('show');
-                        }
+                          // Generate SHA-1 HMAC with user entered secret.
+                          objSHA = new jsSHA('SHA-1', 'ARRAYBUFFER');
+                          objSHA.setHMACKey($('#secret').val(), 'TEXT');
+                          objSHA.update(buffer_rn_appended);
+                          buffer_sha1_hmac_client = objSHA.getHMAC('ARRAYBUFFER');
+
+                          /*
+                           * Send the HMAC along with slot and locally
+                           * generated random number to server.
+                           */
+
+                           // Set fields of response data.
+                           for(var i = 0; i < 4; i++){
+                            bytes_rn_client[i] = view_rn_client.getUint8(i);
+                           }
+
+                           for(var i = 0; i < 20; i++){
+                             bytes_sha1_hmac_client[i] = buffer_sha1_hmac_client[i]
+                           }
+                           objJSONResponseData.slot = data_parsed_data.slot;
+                           objJSONResponseData.bytes_rn_client = bytes_rn_client;
+                           objJSONResponseData.sha1_hmac_client = bytes_sha1_hmac_client;
+
+                          $.ajax({
+                              type: 'POST',
+                              url: '/authenticate.cgi',
+                              data: {
+                                  'request': JSON_REQUEST_AUTHENTICATE,
+                                  'data': JSON.stringify(objJSONResponseData)
+                              },
+                              dataType: 'json',
+                              timeout: TIMEOUT_GENERIC,
+                              success: function(data) {
+                                var data_parsed = JSON.parse(JSON.stringify(data));
+
+                                if(data_parsed.request == JSON_REQUEST_AUTHENTICATE &&
+                                data_parsed.status == JSON_STATUS_OK){
+                                  if (!document.cookie) {
+                                    $('#modal_submit').modal('hide');
+                                    $('#modal_auth_failed_cookie').modal('show');
+                                  }
+                                  else {
+                                    window.location.replace(window.location.protocol +
+                                        '//' +
+                                        window.location.hostname + ':' +
+                                        window.location.port);
+                                  }
+                                }
+                                else {
+                                  $('#modal_submit').modal('hide');
+                                  $('#modal_auth_failed_secret').modal('show');
+                                }
+                              },
+                              error: function(request, status, err) {
+                                $('#modal_submit').modal('hide');
+                                $('#modal_auth_failed_secret').modal('show');
+                              }
+                          });
+                      }
+                      else {
+                        $('#modal_submit').modal('hide');
+                        $('#modal_auth_failed_secret').modal('show');
+                      }
                     },
                     error: function(request, status, err) {
                         $('#modal_submit').modal('hide');

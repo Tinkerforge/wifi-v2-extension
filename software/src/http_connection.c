@@ -1,5 +1,6 @@
 /* WIFI Extension 2.0
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
  *
  * http_connection.c: Webserver for WIFI Extension
  *
@@ -43,19 +44,15 @@ HttpdBuiltInUrl builtInUrls[] = {
 	{"/authenticate.cgi", cgi_authenticate, NULL},
 	{"/get_settings.cgi", cgi_get_settings, NULL},
 	{"/update_settings.cgi", cgi_update_settings, NULL},
+	{"/init_authentication.cgi", cgi_init_authentication, NULL},
 	{"/is_already_authenticated.cgi", cgi_is_already_authneticated, NULL},
-
-	{"/get_authentication_slot.cgi", cgi_get_authentication_slot, NULL},
-	{"/authenticate_index_html.cgi", cgi_authenticate_index_html, NULL},
-	{"/authenticate_get_status.cgi", cgi_authenticate_get_status, NULL},
-	{"/authenticate_update_settings.cgi", cgi_authenticate_update_settings, NULL},
-
 	{"*", cgi_404, NULL},
 	{NULL, NULL, NULL}
 };
 
 void ICACHE_FLASH_ATTR http_open_connection(void) {
 	espFsInit((void*)(HTTP_ESPFS_POS));
+	do_initialize_authentication_slots();
 	do_initialize_web_interface_session_tracking();
 	httpdInit(builtInUrls, configuration_current.general_website_port);
 }

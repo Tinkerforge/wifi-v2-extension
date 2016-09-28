@@ -40,7 +40,7 @@ MODULES		= src src/drivers
 EXTRA_INCDIR    = include $(LIBESPHTTPD_PATH)/include
 
 # libraries used in this project, mainly provided by the SDK
-LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd
+LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd json
 
 # compiler flags using during compilation of source files
 CFLAGS		= -std=c99 -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH

@@ -1,20 +1,56 @@
+/* WIFI Extension 2.0
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
+ *
+ * web_interface.c: Webserver for WIFI Extension
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
 #include <string.h>
 #include "espmissingincludes.h"
 #include <esp8266.h>
+#include <jsonparse.h>
 #include "httpdespfs.h"
 #include "web_interface.h"
 #include "configuration.h"
 #include "communication.h"
 #include "tfp_connection.h"
 
-extern GetWifi2StatusReturn gw2sr;
-extern Configuration configuration_current;
+// Defines.
+#define JSON_REQUEST_AUTHENTICATE 1
+#define JSON_REQUEST_GET_STATUS 2
+#define JSON_REQUEST_UPDATE_SETTINGS 3
+#define JSON_REQUEST_END_SESSION 4
+#define JSON_REQUEST_IS_ALREADY_AUTHENTICATED 5
+#define JSON_REQUEST_GET_SETTINGS 6
+#define JSON_REQUEST_INIT_AUTHENTICATION 7
+#define JSON_STATUS_OK 1
+#define JSON_STATUS_FAILED 2
+#define HEADER_FIELD_TYPE_STRING 1
+#define HEADER_FIELD_TYPE_NUMERIC 2
+#define GENERIC_BUFFER_SIZE 1024
+#define POST_BUFFER_SIZE 2048
+#define MAX_ACTIVE_SESSION_COOKIES 8
+#define MAX_AUTHENTICATION_SLOTS 8
+#define JSON_PARSE_STATE_SLOT 1
+#define JSON_PARSE_STATE_BYTES_RN_CLIENT 2
+#define JSON_PARSE_STATE_SHA1_HMAC_CLIENT 3
 
-char buffer_post_form[POST_BUFFER_SIZE];
-int index_buffer_post_form = 0;
-
-const char *fmt_response_json = \
-	"{\"request\":%d,\"status\":%d,\"data\":%s}";
+// String formats.
+const char *fmt_response_json = "{\"request\":%d,\"status\":%d,\"data\":%s}";
 
 const char *fmt_response_json_status_data = \
 	"{\"operating_mode\":%d, \
@@ -67,23 +103,33 @@ const char *fmt_response_json_settings_data = \
 
 const char *fmt_set_session_cookie = "sid=%lu";
 
+// Variables
+int index_buffer_post_form = 0;
+extern GetWifi2StatusReturn gw2sr;
+char buffer_post_form[POST_BUFFER_SIZE];
+uint8_t current_session_cookie_index = 0;
+extern Configuration configuration_current;
+extern Configuration configuration_current;
+uint8_t current_authentication_slot_index = 0;
 unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
+unsigned long authentication_slots[MAX_AUTHENTICATION_SLOTS];
 
 int ICACHE_FLASH_ATTR do_get_sid(unsigned long *sid) {
-	for(int i = 0; i < MAX_ACTIVE_SESSION_COOKIES; i++) {
-		if(active_sessions[i] == 0) {
-			do {
-				*sid = os_random();
-			}
-			while(*sid <= 0);
+	do{
+		*sid = os_random();
+	}
+	while(*sid <= 0);
 
-			active_sessions[i] = *sid;
+	active_sessions[current_session_cookie_index] = *sid;
 
-			return 1;
-		}
+	if(current_session_cookie_index == MAX_ACTIVE_SESSION_COOKIES - 1){
+		current_session_cookie_index = 0;
+	}
+	else {
+		current_session_cookie_index++;
 	}
 
-	return -1;
+	return 1;
 }
 
 int ICACHE_FLASH_ATTR do_is_auth_enabled(void) {
@@ -94,9 +140,9 @@ int ICACHE_FLASH_ATTR do_is_auth_enabled(void) {
 }
 
 int ICACHE_FLASH_ATTR do_get_cookie_field(char *cookie,
-										  char *field,
-										  unsigned char type_field,
-										  void *value) {
+										char *field,
+										unsigned char type_field,
+										void *value) {
 	char *token;
 	char _cookie[GENERIC_BUFFER_SIZE];
 
@@ -149,14 +195,10 @@ int ICACHE_FLASH_ATTR do_has_cookie(HttpdConnData *connection_data,
 	}
 }
 
-
-
 int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data) {
 	struct get_status status;
 	char response[GENERIC_BUFFER_SIZE];
 	char response_status_data[GENERIC_BUFFER_SIZE];
-
-	httpdStartResponse(connection_data, 200);
 
 	if(((do_check_session(connection_data)) == 1) &&
 	   ((do_check_request(connection_data->post->buff,
@@ -217,6 +259,7 @@ int ICACHE_FLASH_ATTR cgi_get_status(HttpdConnData *connection_data) {
 				response_status_data);
 	}
 
+	httpdStartResponse(connection_data, 200);
 	httpdEndHeaders(connection_data);
 	httpdSend(connection_data, response, -1);
 
@@ -250,7 +293,7 @@ int ICACHE_FLASH_ATTR do_check_request(char *buffer_post, uint8 rid) {
 		}
 	}
 
-	return 0;
+	return -1;
 }
 
 int ICACHE_FLASH_ATTR do_check_session(HttpdConnData *connection_data) {
@@ -412,7 +455,6 @@ int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data) {
 	char response[GENERIC_BUFFER_SIZE];
 
 	httpdStartResponse(connection_data, 200);
-	httpdEndHeaders(connection_data);
 
 	if(((do_check_session(connection_data)) == 1) &&
 	   ((do_check_request(connection_data->post->buff,
@@ -427,39 +469,48 @@ int ICACHE_FLASH_ATTR cgi_end_session(HttpdConnData *connection_data) {
 					for(unsigned long i = 0; i < MAX_ACTIVE_SESSION_COOKIES; i++) {
 						if(sid == active_sessions[i]) {
 							active_sessions[i] = 0;
-
-							sprintf(response,
-									fmt_response_json,
-									JSON_REQUEST_GET_STATUS,
-									JSON_STATUS_OK,
-									"null");
-
-							httpdSend(connection_data, response, -1);
-
-							return HTTPD_CGI_DONE;
 						}
 					}
+					sprintf(response,
+							fmt_response_json,
+							JSON_REQUEST_END_SESSION,
+							JSON_STATUS_OK,
+							"null");
+
+					httpdEndHeaders(connection_data);
+					httpdSend(connection_data, response, -1);
+
+					return HTTPD_CGI_DONE;
 				}
 			}
 	}
 
 	sprintf(response,
 			fmt_response_json,
-			JSON_REQUEST_GET_STATUS,
+			JSON_REQUEST_END_SESSION,
 			JSON_STATUS_FAILED,
 			"null");
 
+	httpdEndHeaders(connection_data);
 	httpdSend(connection_data, response, -1);
 
 	return HTTPD_CGI_DONE;
 }
 
 int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data) {
+	uint8_t slot;
+	int json_type;
 	unsigned long sid;
+	char parsed_key[64];
+	uint8_t bytes_rn_client[4];
 	char data[GENERIC_BUFFER_SIZE];
+	uint8_t json_parse_current_state;
+	struct jsonparse_state json_state;
 	char response[GENERIC_BUFFER_SIZE];
+	uint8_t index_bytes_rn_client = 0;
+	uint8_t bytes_sha1_hmac_client[20];
+	uint8_t index_bytes_sha1_hmac_client = 0;
 	char header_set_cookie[GENERIC_BUFFER_SIZE];
-	char secret[CONFIGURATION_SECRET_MAX_LENGTH];
 
 	httpdStartResponse(connection_data, 200);
 
@@ -469,34 +520,118 @@ int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data) {
 				 		"data",
 				 		data,
 				 		GENERIC_BUFFER_SIZE)) > 0)) {
-			if((httpdFindArg(data,
-				 			 "secret",
-				 			 secret,
-				 			 CONFIGURATION_SECRET_MAX_LENGTH)) > 0) {
-				if((strcmp(configuration_current.general_authentication_secret, secret)) == 0) {
-					if((do_get_sid(&sid)) == 1) {
-						sprintf(header_set_cookie,
-								fmt_set_session_cookie,
-								sid);
+			// Sample data received from client.
+			/*
+			{
+				"slot":1,
+				"bytes_rn_client":[65,198,4,42],
+				"sha1_hmac_client":[7, 152, 199, 132, 100, 14, 26, 10, 169, 118,
+														228, 221, 254, 145, 51, 174, 124, 219, 77, 183]
+			}
+			*/
+			jsonparse_setup(&json_state, data, strlen(data));
 
-						httpdHeader(connection_data, "Set-Cookie", header_set_cookie);
-						httpdEndHeaders(connection_data);
+			while(json_type = jsonparse_next(&json_state))
+		  {
+		    switch (json_type)
+		    {
+		      case JSON_TYPE_ARRAY:
+		        break;
 
-						sprintf(response,
-								fmt_response_json,
-								JSON_REQUEST_AUTHENTICATE,
-								JSON_STATUS_OK,
-								"null");
+		      case JSON_TYPE_OBJECT:
+		        break;
 
-						httpdSend(connection_data, response, -1);
+		      case JSON_TYPE_PAIR:
+		        break;
 
-						return HTTPD_CGI_DONE;
+		      case JSON_TYPE_PAIR_NAME:
+					{
+						// Update JSON parse state here.
+		        jsonparse_copy_value(&json_state, parsed_key, 64);
+
+						if(strcmp(parsed_key, "slot") == 0){
+							json_parse_current_state = JSON_PARSE_STATE_SLOT;
+						}
+						else if(strcmp(parsed_key, "bytes_rn_client") == 0){
+							json_parse_current_state = JSON_PARSE_STATE_BYTES_RN_CLIENT;
+						}
+						else if(strcmp(parsed_key, "sha1_hmac_client") == 0){
+							json_parse_current_state = JSON_PARSE_STATE_SHA1_HMAC_CLIENT;
+						}
+
+		        break;
 					}
+
+		      case JSON_TYPE_STRING:
+		        break;
+
+		      case JSON_TYPE_INT:
+					{
+						if(json_parse_current_state == JSON_PARSE_STATE_SLOT){
+							slot = (uint8_t)jsonparse_get_value_as_int(&json_state);
+						}
+						else if(json_parse_current_state == JSON_PARSE_STATE_BYTES_RN_CLIENT){
+							bytes_rn_client[index_bytes_rn_client] =
+							(uint8_t)jsonparse_get_value_as_int(&json_state);
+							index_bytes_rn_client++;
+						}
+						else if(json_parse_current_state == JSON_PARSE_STATE_SHA1_HMAC_CLIENT){
+							bytes_sha1_hmac_client[index_bytes_sha1_hmac_client] =
+							(uint8_t)jsonparse_get_value_as_int(&json_state);
+							index_bytes_sha1_hmac_client++;
+						}
+
+		        break;
+					}
+
+		      case JSON_TYPE_NUMBER:
+					{
+						if(json_parse_current_state == JSON_PARSE_STATE_SLOT){
+							slot = (uint8_t)jsonparse_get_value_as_long(&json_state);
+						}
+						else if(json_parse_current_state == JSON_PARSE_STATE_BYTES_RN_CLIENT){
+							bytes_rn_client[index_bytes_rn_client] =
+							(uint8_t)jsonparse_get_value_as_long(&json_state);
+							index_bytes_rn_client++;
+						}
+						else if(json_parse_current_state == JSON_PARSE_STATE_SHA1_HMAC_CLIENT){
+							bytes_sha1_hmac_client[index_bytes_sha1_hmac_client] =
+							(uint8_t)jsonparse_get_value_as_long(&json_state);
+							index_bytes_sha1_hmac_client++;
+						}
+
+		        break;
+					}
+
+		      case JSON_TYPE_ERROR:
+		        break;
+
+		      default:
+		        break;
+		    }
+		  }
+
+			if(do_check_secret(slot, bytes_rn_client, bytes_sha1_hmac_client) == 1){
+				if((do_get_sid(&sid)) == 1) {
+					sprintf(header_set_cookie,
+							fmt_set_session_cookie,
+							sid);
+
+					httpdHeader(connection_data, "Set-Cookie", header_set_cookie);
+					httpdEndHeaders(connection_data);
+
+					sprintf(response,
+							fmt_response_json,
+							JSON_REQUEST_AUTHENTICATE,
+							JSON_STATUS_OK,
+							"null");
+
+					httpdSend(connection_data, response, -1);
+
+					return HTTPD_CGI_DONE;
 				}
 			}
 	}
-
-	httpdEndHeaders(connection_data);
 
 	sprintf(response,
 			fmt_response_json,
@@ -504,6 +639,7 @@ int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data) {
 			JSON_STATUS_FAILED,
 			"null");
 
+	httpdEndHeaders(connection_data);
 	httpdSend(connection_data, response, -1);
 
 	return HTTPD_CGI_DONE;
@@ -512,9 +648,6 @@ int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data) {
 int ICACHE_FLASH_ATTR cgi_get_settings(HttpdConnData *connection_data) {
 	char response[GENERIC_BUFFER_SIZE];
 	char response_settings[GENERIC_BUFFER_SIZE];
-
-	httpdStartResponse(connection_data, 200);
-	httpdEndHeaders(connection_data);
 
 	if(((do_check_session(connection_data)) == 1) &&
 	   ((do_check_request(connection_data->post->buff,
@@ -596,6 +729,8 @@ int ICACHE_FLASH_ATTR cgi_get_settings(HttpdConnData *connection_data) {
 				"null");
 	}
 
+	httpdStartResponse(connection_data, 200);
+	httpdEndHeaders(connection_data);
 	httpdSend(connection_data, response, -1);
 
 	return HTTPD_CGI_DONE;
@@ -1013,9 +1148,6 @@ int ICACHE_FLASH_ATTR cgi_authenticate_html(HttpdConnData *connection_data) {
 int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_data) {
 	char response[GENERIC_BUFFER_SIZE];
 
-	httpdStartResponse(connection_data, 200);
-	httpdEndHeaders(connection_data);
-
 	char cookie[GENERIC_BUFFER_SIZE];
 
 	if(((do_check_session(connection_data)) == 1) &&
@@ -1035,46 +1167,105 @@ int ICACHE_FLASH_ATTR cgi_is_already_authneticated(HttpdConnData *connection_dat
 				"null");
 	}
 
+	httpdStartResponse(connection_data, 200);
+	httpdEndHeaders(connection_data);
 	httpdSend(connection_data, response, -1);
 
 	return HTTPD_CGI_DONE;
 }
 
-int ICACHE_FLASH_ATTR do_check_secret(unsigned long slot,
-	unsigned long random_number_client, uint8_t *sha1_hmac_client){
-		/*
-		uint32_t _data = 12984583;
-		uint8_t key[64] = "test";
-		uint8_t data[4];
-		uint8_t mac[20];
-
-		data[0] = (_data >> 24) & 0xFF;
-		data[1] = (_data >> 16) & 0xFF;
-		data[2] = (_data >> 8) & 0xFF;
-		data[3] = _data & 0xFF;
-
-		int mr = hmac_sha1(key, 4, data, 4, mac);
-
-		printf("\n*** MR=%d***\n", mr);
-
-		for(uint8_t i = 0; i < 20; i++) {
-			printf("\n%d\n", mac[i]);
-		}
-		*/
+int ICACHE_FLASH_ATTR do_initialize_authentication_slots(void) {
+	for(int i = 0; i < MAX_AUTHENTICATION_SLOTS; i++) {
+		authentication_slots[i] = 0;
 	}
 
-int ICACHE_FLASH_ATTR cgi_get_authentication_slot(HttpdConnData *connection_dat){
-	return HTTPD_CGI_DONE;
+	return 1;
 }
 
-int ICACHE_FLASH_ATTR cgi_authenticate_index_html(HttpdConnData *connection_data){
-	return HTTPD_CGI_DONE;
+int ICACHE_FLASH_ATTR do_check_secret(uint8_t slot,
+	uint8_t *bytes_rn_client, uint8_t *bytes_sha1_hmac_client){
+		uint8_t data[8];
+		uint8_t bytes_sha1_hmac_server[20];
+		uint8_t key[CONFIGURATION_SECRET_MAX_LENGTH];
+
+		data[0] = (authentication_slots[slot] >> 24) & 0xFF;
+		data[1] = (authentication_slots[slot] >> 16) & 0xFF;
+		data[2] = (authentication_slots[slot] >> 8) & 0xFF;
+		data[3] = authentication_slots[slot] & 0xFF;
+
+		memcpy(&data[4], bytes_rn_client, 4);
+
+		strcpy(key, configuration_current.general_authentication_secret);
+
+		if(hmac_sha1(key, strlen(key), data, 8, bytes_sha1_hmac_server) != 0){
+			return -1;
+		}
+
+		for(uint8_t i = 0; i < 20; i++){
+			if(bytes_sha1_hmac_server[i] != bytes_sha1_hmac_client[i]){
+				return -1;
+			}
+		}
+
+		return 1;
 }
 
-int ICACHE_FLASH_ATTR cgi_authenticate_get_status(HttpdConnData *connection_data){
-	return HTTPD_CGI_DONE;
-}
+int ICACHE_FLASH_ATTR cgi_init_authentication(HttpdConnData *connection_data){
+	uint8_t byte_array_rn_server[4];
+	char response[GENERIC_BUFFER_SIZE];
+	char response_data[GENERIC_BUFFER_SIZE];
+	char *fmt_response_data_json = "{\"slot\":%d,\"bytes_rn_server\":[%d, %d, %d, %d]}";
 
-int ICACHE_FLASH_ATTR cgi_authenticate_update_settings(HttpdConnData *connection_data){
+	if(do_check_request(connection_data->post->buff, JSON_REQUEST_INIT_AUTHENTICATION) == 1){
+		do{
+			authentication_slots[current_authentication_slot_index] = os_random();
+		}
+		while(authentication_slots[current_authentication_slot_index] <= 0);
+
+		byte_array_rn_server[0] =
+		(authentication_slots[current_authentication_slot_index] >> 24) & 0xFF;
+
+		byte_array_rn_server[1] =
+		(authentication_slots[current_authentication_slot_index] >> 16) & 0xFF;
+
+		byte_array_rn_server[2] =
+		(authentication_slots[current_authentication_slot_index] >> 8) & 0xFF;
+
+		byte_array_rn_server[3] =
+		authentication_slots[current_authentication_slot_index] & 0xFF;
+
+		sprintf(response_data,
+			fmt_response_data_json,
+			current_authentication_slot_index,
+			byte_array_rn_server[0],
+			byte_array_rn_server[1],
+			byte_array_rn_server[2],
+			byte_array_rn_server[3]);
+
+		sprintf(response,
+			fmt_response_json,
+			JSON_REQUEST_INIT_AUTHENTICATION,
+			JSON_STATUS_OK,
+			response_data);
+
+		if(current_authentication_slot_index == MAX_AUTHENTICATION_SLOTS - 1){
+			current_authentication_slot_index = 0;
+		}
+		else{
+			current_authentication_slot_index++;
+		}
+	}
+	else{
+		sprintf(response,
+			fmt_response_json,
+			JSON_REQUEST_INIT_AUTHENTICATION,
+			JSON_STATUS_FAILED,
+			"null");
+	}
+
+	httpdStartResponse(connection_data, 200);
+	httpdEndHeaders(connection_data);
+	httpdSend(connection_data, response, -1);
+
 	return HTTPD_CGI_DONE;
 }

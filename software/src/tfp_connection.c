@@ -1,5 +1,6 @@
 /* WIFI Extension 2.0
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
  *
  * tfp_connection.c: Implementation of connection for Tinkerforge protocol
  *

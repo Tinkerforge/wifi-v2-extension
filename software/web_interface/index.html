@@ -455,12 +455,12 @@
                         <label class="col-sm-2 control-label"
                         for="general_website_port">Website Port:</label>
                         <div class="col-sm-5">
-                            <input class="form-control input_port" id="general_website_port"
-                            min="1" step="1" max="65535" name="general_website_port"
+                            <input class="form-control input_port_website" id="general_website_port"
+                            min="2" step="1" max="65534" name="general_website_port"
                             placeholder="Port on which this web interface is available"
                             type="number">
                             <p class="help-block hidden" id="hb_general_website_port_range">
-                                Port number must be in the range of 2 - 65535
+                                Port number must be in the range of 2 - 65534
                             </p>
                         </div>
                         <div class="col-sm-5">
@@ -1142,6 +1142,7 @@
         var TIMEOUT_UPDATE_STATUS = 8000;
 
         var timeout_get_status = null;
+        var input_port_last_valid_value = 0;
 
         function updateStatusGUI(status) {
             // Client enabled.
@@ -1280,6 +1281,7 @@
 
             if (settings.data.general_website_port < 2) {
                 // Disable website port input.
+                $('#general_website_port').val(80);
                 $("#general_disable_web_interface").prop('checked', true).change();
             }
 
@@ -1529,9 +1531,9 @@
 
             if ((general_port < 1 || general_port > 65535) ||
                 ($('#general_port').val() == '' || $('#general_port').val() == null)) {
-                validation_ok = false;
-                $('#markable_general_port').addClass('has-error');
-                $('#hb_general_port_range').removeClass('hidden');
+                  validation_ok = false;
+                  $('#markable_general_port').addClass('has-error');
+                  $('#hb_general_port_range').removeClass('hidden');
             }
 
             var general_websocket_port = parseInt($('#general_websocket_port').val());
@@ -1539,20 +1541,20 @@
             if ((general_websocket_port < 1 || general_websocket_port > 65535) ||
                 ($('#general_websocket_port').val() == '' ||
                 $('#general_websocket_port').val() == null)) {
-                validation_ok = false;
-                $('#markable_general_websocket_port').addClass('has-error');
-                $('#hb_general_websocket_port_range').removeClass('hidden');
+                  validation_ok = false;
+                  $('#markable_general_websocket_port').addClass('has-error');
+                  $('#hb_general_websocket_port_range').removeClass('hidden');
             }
 
             if (!$('#general_disable_web_interface').is(':checked')) {
                 var general_website_port = parseInt($('#general_website_port').val());
 
-                if ((general_website_port < 2 || general_website_port > 65535) ||
+                if ((general_website_port < 2 || general_website_port > 65534) ||
                     ($('#general_website_port').val() == '' ||
                     $('#general_website_port').val() == null)) {
-                    validation_ok = false;
-                    $('#markable_general_website_port').addClass('has-error');
-                    $('#hb_general_website_port_range').removeClass('hidden');
+                      validation_ok = false;
+                      $('#markable_general_website_port').addClass('has-error');
+                      $('#hb_general_website_port_range').removeClass('hidden');
                 }
             } else {
                 $('#general_website_port').val(1);
@@ -1828,10 +1830,34 @@
             });
 
             $('.input_port').keypress(function(e) {
-                var current_value = $(this).val() + String.fromCharCode(e.which);
+              var current_value = $(this).val();
+
+              if (parseInt(current_value) > 0 && parseInt(current_value) < 65536) {
+                input_port_last_valid_value = current_value;
+              }
+            });
+
+            $('.input_port').keyup(function(e) {
+                var current_value = $(this).val();
 
                 if (parseInt(current_value) < 1 || parseInt(current_value) > 65535) {
-                    e.preventDefault();
+                  $(this).val(input_port_last_valid_value);
+                }
+            });
+
+            $('.input_port_website').keypress(function(e) {
+              var current_value = $(this).val();
+
+              if (parseInt(current_value) > 1 && parseInt(current_value) < 65535) {
+                input_port_last_valid_value = current_value;
+              }
+            });
+
+            $('.input_port_website').keyup(function(e) {
+                var current_value = $(this).val();
+
+                if (parseInt(current_value) < 2 || parseInt(current_value) > 65534) {
+                  $(this).val(input_port_last_valid_value);
                 }
             });
 

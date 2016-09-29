@@ -104,7 +104,7 @@
                 </div>
 
                 <div class="modal-body">
-                    Are you sure you want to end the session ?
+                    Are you sure you want to end the current session ?
                 </div>
 
                 <div class="modal-footer">
@@ -1498,9 +1498,12 @@
                         // Hide the body of the page.
                         $("body").addClass('hidden');
                         $("body").removeClass('show');
+
                         window.location.replace(window.location.protocol +
                           '//' + window.location.hostname +
                           ':' + window.location.port + '/authenticate.html');
+
+                        window.location.reload(true);
                     } else {
                         updateStatusGUI(JSON.parse(JSON.stringify(data)));
                         // Show the body of the page.
@@ -1510,7 +1513,15 @@
                     }
                 },
                 error: function(request, status, err) {
-                    timeout_get_status = setTimeout(getStatus, TIMEOUT_UPDATE_STATUS);
+                  // Hide the body of the page.
+                  $("body").addClass('hidden');
+                  $("body").removeClass('show');
+
+                  window.location.replace(window.location.protocol +
+                    '//' + window.location.hostname +
+                    ':' + window.location.port + '/authenticate.html');
+
+                  window.location.reload(true);
                 }
             });
         }
@@ -1889,6 +1900,7 @@
                   timeout: TIMEOUT_GENERIC,
                   success: function(data) {
                       var data_parsed = JSON.parse(JSON.stringify(data));
+
                       if(data_parsed.request == JSON_REQUEST_END_SESSION &&
                       data_parsed.status == JSON_STATUS_OK){
                         window.location.replace(window.location.protocol +
@@ -1896,6 +1908,7 @@
                             window.location.hostname +
                             ':' +
                             $('#general_website_port').val());
+
                         window.location.reload(true);
                       }
                   },
@@ -1982,24 +1995,27 @@
                 }
             });
 
-            window.onbeforeunload = function() {
-                $.ajax({
-                    type: 'POST',
-                    url: '/end_session.cgi',
-                    data: {
-                        'request': JSON_REQUEST_END_SESSION,
-                        'data': null
-                    },
-                    dataType: 'json',
-                    timeout: TIMEOUT_GENERIC,
-                    success: function(data) {
-                        // Ignored.
-                    },
-                    error: function(request, status, err) {
-                        // Ignored.
-                    }
-                });
+            window.onbeforeunload = function(e) {
+              $.ajax({
+                  type: 'POST',
+                  url: '/end_session.cgi',
+                  data: {
+                      'request': JSON_REQUEST_END_SESSION,
+                      'data': null
+                  },
+                  dataType: 'json',
+                  timeout: TIMEOUT_GENERIC,
+                  success: function(data) {
+                      // Ignored.
+                  },
+                  error: function(request, status, err) {
+                      // Ignored.
+                  }
+              });
+
+              return null;
             }
+
             getSettings();
         });
     </script>

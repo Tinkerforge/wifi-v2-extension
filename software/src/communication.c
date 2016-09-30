@@ -151,7 +151,7 @@ void ICACHE_FLASH_ATTR set_wifi2_configuration(const int8_t cid, const SetWifi2C
 	configuration_current.general_port           = data->port;
 	configuration_current.general_websocket_port = data->websocket_port;
 	configuration_current.general_website_port   = data->website_port;
-	configuration_current.general_phy_mode       = data->phy_mode;
+	configuration_current.general_phy_mode       = data->phy_mode + 1;
 	configuration_current.general_sleep_mode     = data->sleep_mode;
 	configuration_current.general_website        = data->website;
 
@@ -285,7 +285,14 @@ void ICACHE_FLASH_ATTR set_wifi2_ap_configuration(const int8_t cid, const SetWif
 	os_memcpy(configuration_current.ap_ip, data->ip, 4);
 	os_memcpy(configuration_current.ap_subnet_mask, data->subnet_mask, 4);
 	os_memcpy(configuration_current.ap_gateway, data->gateway, 4);
-	configuration_current.ap_encryption = data->encryption;
+
+	if(data->encryption > 0){
+			configuration_current.ap_encryption = data->encryption + 1;
+	}
+	else{
+			configuration_current.ap_encryption = data->encryption;
+	}
+
 	configuration_current.ap_hidden     = data->hidden;
 	configuration_current.ap_channel    = data->channel;
 	os_memcpy(configuration_current.ap_mac_address, data->mac_address, 6);

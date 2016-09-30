@@ -479,16 +479,8 @@
                             <select class="form-control" id="general_phy_mode"
                             name="general_phy_mode">
                                     <!--
-                                    Indexed from 1 so that value can be chosen
-                                    directly from the data returned by the extension.
+                                    Updated on operating mode select changed event handler.
                                     -->
-                                    <option value="0">
-                                        B
-                                    </option>
-
-                                    <option value="1">
-                                        G
-                                    </option>
                                 </select>
                         </div>
                     </div>
@@ -511,7 +503,7 @@
                             <input class="form-control"
                             id="general_authentication_secret"
                             placeholder="Secret for authentication" type="password"
-                            name="general_authentication_secret" maxlength="63">
+                            name="general_authentication_secret" maxlength="64">
                             <p class="help-block hidden"
                             id="hb_general_authentication_secret_empty">
                                 Secret can not be empty
@@ -567,7 +559,7 @@
                         <div class="col-sm-10">
                             <input class="form-control" id="client_hostname"
                             name="client_hostname" placeholder="Hostname of the node"
-                            maxlength="31" type="text">
+                            maxlength="32" type="text">
                             <p class="help-block hidden" id="hb_client_hostname_ascii">
                                 Only ASCII characters are allowed for hostname
                             </p>
@@ -684,7 +676,7 @@
                             <input class="form-control" id="client_ssid"
                             name="client_ssid"
                             placeholder="SSID of the access point to connect to"
-                            maxlength="31" type="text">
+                            maxlength="32" type="text">
                             <p class="help-block hidden" id="hb_client_ssid_empty">
                                 SSID can not be empty
                             </p>
@@ -704,7 +696,7 @@
                                     Open (No Encryption)
                                 </option>
                                 <option value="1">
-                                    WPA/WPA2
+                                    WPA/WPA2 PSK
                                 </option>
                             </select>
                         </div>
@@ -718,7 +710,7 @@
                             <input class="form-control" id="client_password"
                             name="client_password"
                             placeholder="Password for connecting to the SSID"
-                            type="password" maxlength="63">
+                            type="password" maxlength="64">
 
                             <p class="help-block hidden" id="hb_client_password_empty">
                                 Password can not be empty when encryption is enabled
@@ -967,7 +959,7 @@
 
                         <div class="col-sm-10">
                             <input class="form-control" id="ap_ssid" name="ap_ssid"
-                            placeholder="SSID to broadcast" maxlength="31" type="text">
+                            placeholder="SSID to broadcast" maxlength="32" type="text">
                             <p class="help-block hidden" id="hb_ap_ssid_empty">
                                 Access point SSID can not be empty
                             </p>
@@ -989,7 +981,15 @@
                                 </option>
 
                                 <option value="1">
-                                    WPA/WPA2
+                                    WPA PSK
+                                </option>
+
+                                <option value="2">
+                                    WPA2 PSK
+                                </option>
+
+                                <option value="3">
+                                    WPA/WPA2 PSK
                                 </option>
                             </select>
                         </div>
@@ -1003,7 +1003,7 @@
                             <input class="form-control" id="ap_password"
                             name="ap_password"
                             placeholder="Password for connecting to the access point"
-                            type="password" maxlength="63">
+                            type="password" maxlength="64">
                             <p class="help-block hidden" id="hb_ap_password_empty">
                                 Access point password can not be empty
                             </p>
@@ -1033,7 +1033,7 @@
                             </p>
                         </div>
                         <div class="col-sm-5">
-                          <b>Note:</b> Applies only when client is not connected or is disabled
+                          <b>Note:</b> Applies when only access point mode is enabled
                         </div>
                     </div>
 
@@ -1143,6 +1143,7 @@
 
         var timeout_get_status = null;
         var input_port_last_valid_value = 0;
+        var ap_channel_last_valid_value = 0;
 
         function updateStatusGUI(status) {
             // Client enabled.
@@ -1287,14 +1288,6 @@
 
             $("#general_websocket_port").val(settings.data.general_websocket_port);
 
-            if (settings.data.general_phy_mode - 1 == 0) {
-                $("#general_phy_mode").val('0');
-            } else if (settings.data.general_phy_mode - 1 == 1) {
-                $("#general_phy_mode").val('1');
-            } else {
-                $("#general_phy_mode").val('0');
-            }
-
             if (settings.data.general_authentication_secret === '') {
                 $('#main_toolbar_end_session').addClass('hidden');
                 $("#general_authentication_secret").val('');
@@ -1307,13 +1300,21 @@
                     $("#general_use_authentication").prop('checked', true).change();
             }
 
+            // Client only.
             if (!settings.data.ap_enable && settings.data.client_enable) {
-                $("#general_mode").val(0).change();
-            } else if (settings.data.ap_enable && !settings.data.client_enable) {
-                $("#general_mode").val(1).change();
-            } else {
-                $("#general_mode").val(2).change();
+              $("#general_mode").val(0).change();
             }
+            // AP only.
+            else if (settings.data.ap_enable && !settings.data.client_enable) {
+              $("#general_mode").val(1).change();
+            }
+            // Client + AP.
+            else {
+              $("#general_mode").val(2).change();
+            }
+
+            // PHY mode must be updated after determining the current operating mode.
+            $('#general_phy_mode').val(settings.data.general_phy_mode - 1).change();
 
             // Client mode settings.
             $('#client_hostname').val(settings.data.client_hostname);
@@ -1394,10 +1395,7 @@
                     $('#client_mac_address').prop('checked', true).change();
             }
 
-
             // AP settings.
-
-
             $('#ap_static_ip_0').val(settings.data.ap_ip[0]);
             $('#ap_static_ip_1').val(settings.data.ap_ip[1]);
             $('#ap_static_ip_2').val(settings.data.ap_ip[2]);
@@ -1428,8 +1426,9 @@
 
             if (settings.data.ap_password === '') {
                 $('#ap_encryption').val(0).change();
-            } else {
-                $('#ap_encryption').val(1).change();
+            }
+            else if(settings.data.ap_encryption > 0){
+              $('#ap_encryption').val(settings.data.ap_encryption - 1).change();
             }
 
             $('#ap_channel').val(settings.data.ap_channel);
@@ -1661,7 +1660,7 @@
             var ap_encryption = $('#ap_encryption').val();
             var ap_password = $('#ap_password').val();
 
-            if (ap_encryption === '1') {
+            if (ap_encryption > '0') {
                 if (ap_password == '' || ap_password == null) {
                     validation_ok = false;
                     $('#ap_encryption_password_elements').addClass('has-error');
@@ -1782,15 +1781,35 @@
             });
 
             $('#general_mode').change(function(e) {
+                // Client only.
                 if ($('#general_mode').val() === '0') {
                     $('#panel_client_settings').show();
                     $('#panel_ap_settings').hide();
-                } else if ($('#general_mode').val() === '1') {
+                    // Update PHY select.
+                    $('#general_phy_mode').empty();
+                    $('#general_phy_mode').append(new Option('B', '0'));
+                    $('#general_phy_mode').append(new Option('G', '1'));
+                    $('#general_phy_mode').append(new Option('N', '2'));
+                }
+                // AP.
+                else if ($('#general_mode').val() === '1') {
                     $('#panel_client_settings').hide();
                     $('#panel_ap_settings').show();
-                } else {
+                    $("select[name=ShippingMethod] option:last").remove();
+                    // Update PHY select.
+                    $('#general_phy_mode').empty();
+                    $('#general_phy_mode').append(new Option('B', '0'));
+                    $('#general_phy_mode').append(new Option('G', '1'));
+                }
+                // Client + AP.
+                else {
                     $('#panel_client_settings').show();
                     $('#panel_ap_settings').show();
+                    $("select[name=ShippingMethod] option:last").remove();
+                    // Update PHY select.
+                    $('#general_phy_mode').empty();
+                    $('#general_phy_mode').append(new Option('B', '0'));
+                    $('#general_phy_mode').append(new Option('G', '1'));
                 }
             });
 
@@ -1827,7 +1846,7 @@
             $('#ap_encryption').change(function(e) {
                 if ($('#ap_encryption').val() === '0') {
                     $('#ap_encryption_password_elements').addClass('hidden');
-                } else if ($('#ap_encryption').val() === '1') {
+                } else{
                     $('#ap_encryption_password_elements').removeClass('hidden');
                 }
             });
@@ -1873,10 +1892,18 @@
             });
 
             $('#ap_channel').keypress(function(e) {
-                var current_value = $(this).val() + String.fromCharCode(e.which);
+                var current_value = $(this).val();
+
+                if (parseInt(current_value) > 0 && parseInt(current_value) < 14) {
+                    ap_channel_last_valid_value = current_value;
+                }
+            });
+
+            $('#ap_channel').keyup(function(e) {
+                var current_value = $(this).val();
 
                 if (parseInt(current_value) < 1 || parseInt(current_value) > 13) {
-                    e.preventDefault();
+                  $(this).val(ap_channel_last_valid_value);
                 }
             });
 

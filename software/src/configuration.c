@@ -195,7 +195,16 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 			  configuration_array_length(configuration_current.ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH));
 	conf.ssid_len = configuration_array_length(configuration_current.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH)-1;
 	conf.channel = configuration_current.ap_channel;
-	conf.authmode = configuration_current.ap_encryption;
+
+	if(configuration_current.ap_encryption == 1){
+		// WEP is not supported. Switches to default WPA/WPA2.
+		conf.authmode = 4;
+		configuration_current.ap_encryption = 4;
+	}
+	else{
+		conf.authmode = configuration_current.ap_encryption;
+	}
+
 	conf.ssid_hidden = configuration_current.ap_hidden;
 	conf.max_connection = 4; // Max number here is 4
 	conf.beacon_interval = 100;

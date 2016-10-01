@@ -771,7 +771,6 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 	char ap_mac_address_3[3];
 	char ap_mac_address_4[3];
 	char ap_mac_address_5[3];
-	uint8_t _ap_encryption;
 
 	if((httpdFindArg(data, "ap_ip_configuration", ap_ip_configuration, 2)) > 0) {
 		// DHCP.
@@ -817,26 +816,12 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 
 	// AP Encryption.
 	if((httpdFindArg(data, "ap_encryption", ap_encryption, 2)) > 0) {
-		_ap_encryption = (uint8_t)strtoul(ap_encryption, NULL, 10);
+ 		configuration_current.ap_encryption = (uint8_t)strtoul(ap_encryption, NULL, 10);
 
-		// Open.
-		if(_ap_encryption == 0){
-			_ap_encryption = 0;
-			strcpy(configuration_current.ap_password, "\0");
-		}
-		// WPA/WPA2.
-		else{
-			if((httpdFindArg(data, "ap_password", ap_password,
+		if((httpdFindArg(data, "ap_password", ap_password,
 			CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0) {
-				_ap_encryption++;
 				strcpy(configuration_current.ap_password, ap_password);
-			}
-			else {
-				_ap_encryption = 0;
-				strcpy(configuration_current.ap_password, "\0");
-			}
 		}
-		configuration_current.ap_encryption = _ap_encryption;
 	}
 
 	// AP Channel.
@@ -1086,7 +1071,6 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 			}
 			if((httpdFindArg(data, "general_phy_mode", general_phy_mode, 2)) > 0) {
 				configuration_current.general_phy_mode = (uint8_t)strtoul(general_phy_mode, NULL, 10);
-				configuration_current.general_phy_mode++;
 			}
 
 			if((httpdFindArg(data, "general_use_authentication", general_use_authentication, 2)) > 0) {

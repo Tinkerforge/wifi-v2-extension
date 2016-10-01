@@ -505,10 +505,6 @@
                             placeholder="Secret for authentication" type="password"
                             name="general_authentication_secret" maxlength="64">
                             <p class="help-block hidden"
-                            id="hb_general_authentication_secret_empty">
-                                Secret can not be empty
-                            </p>
-                            <p class="help-block hidden"
                             id="hb_general_authentication_secret_ascii">
                                 Only ASCII characters are allowed for secret
                             </p>
@@ -677,9 +673,6 @@
                             name="client_ssid"
                             placeholder="SSID of the access point to connect to"
                             maxlength="32" type="text">
-                            <p class="help-block hidden" id="hb_client_ssid_empty">
-                                SSID can not be empty
-                            </p>
                             <p class="help-block hidden" id="hb_client_ssid_ascii">
                                 Only ASCII characters are allowed for SSID
                             </p>
@@ -711,17 +704,8 @@
                             name="client_password"
                             placeholder="Password for connecting to the SSID"
                             type="password" maxlength="64">
-
-                            <p class="help-block hidden" id="hb_client_password_empty">
-                                Password can not be empty when encryption is enabled
-                            </p>
-
                             <p class="help-block hidden" id="hb_client_password_ascii">
                                 Only ASCII characters are allowed for password
-                            </p>
-
-                            <p class="help-block hidden" id="hb_client_password_length">
-                                Password must be atleast 8 characters long
                             </p>
                         </div>
 
@@ -960,9 +944,6 @@
                         <div class="col-sm-10">
                             <input class="form-control" id="ap_ssid" name="ap_ssid"
                             placeholder="SSID to broadcast" maxlength="32" type="text">
-                            <p class="help-block hidden" id="hb_ap_ssid_empty">
-                                Access point SSID can not be empty
-                            </p>
                             <p class="help-block hidden" id="hb_ap_ssid_ascii">
                                 Only ASCII characters are allowed for access point SSID
                             </p>
@@ -1004,14 +985,8 @@
                             name="ap_password"
                             placeholder="Password for connecting to the access point"
                             type="password" maxlength="64">
-                            <p class="help-block hidden" id="hb_ap_password_empty">
-                                Access point password can not be empty
-                            </p>
                             <p class="help-block hidden" id="hb_ap_password_ascii">
                                 Only ASCII characters are allowed for access point SSID
-                            </p>
-                            <p class="help-block hidden" id="hb_ap_password_length">
-                                Access point password must be at least 8 characters long
                             </p>
                         </div>
 
@@ -1532,7 +1507,7 @@
             return /^[\x00-\x7F]*$/.test(string_to_check);
         }
 
-        function do_verification(e) {
+        function do_validation(e) {
             var validation_ok = true;
 
             // Reset.
@@ -1573,21 +1548,12 @@
                 $('#general_website_port').val(1);
             }
 
-            var general_use_authentication = $('#general_use_authentication').prop('checked');
             var general_authentication_secret = $('#general_authentication_secret').val();
 
-            if (general_use_authentication) {
-                if (general_authentication_secret === '' ||
-                general_authentication_secret === null) {
-                    validation_ok = false;
-                    $('#general_use_authentication_elements').addClass('has-error');
-                    $('#hb_general_authentication_secret_empty').removeClass('hidden');
-                }
-                if (!isASCII(general_authentication_secret)) {
-                    validation_ok = false;
-                    $('#general_use_authentication_elements').addClass('has-error');
-                    $('#hb_general_authentication_secret_ascii').removeClass('hidden');
-                }
+            if (!isASCII(general_authentication_secret)) {
+                validation_ok = false;
+                $('#general_use_authentication_elements').addClass('has-error');
+                $('#hb_general_authentication_secret_ascii').removeClass('hidden');
             }
 
             // Client mode settings.
@@ -1601,12 +1567,6 @@
 
             var client_ssid = $('#client_ssid').val();
 
-            if (client_ssid == '' || client_ssid == null) {
-                validation_ok = false;
-                $('#markable_client_ssid').addClass('has-error');
-                $('#hb_client_ssid_empty').removeClass('hidden');
-            }
-
             if (!isASCII(client_ssid)) {
                 validation_ok = false;
                 $('#markable_client_ssid').addClass('has-error');
@@ -1616,23 +1576,11 @@
             var client_encryption = $('#client_encryption').val();
             var client_password = $('#client_password').val();
 
-            if (client_encryption === '1') {
-                if (client_password == '' || client_password == null) {
-                    validation_ok = false;
-                    $('#client_encryption_password_group').addClass('has-error');
-                    $('#hb_client_password_empty').removeClass('hidden');
-                }
-
+            if (client_encryption > '0') {
                 if (!isASCII(client_password)) {
                     validation_ok = false;
                     $('#client_encryption_password_group').addClass('has-error');
                     $('#hb_client_password_ascii').removeClass('hidden');
-                }
-
-                if (client_password.length < 8) {
-                    validation_ok = false;
-                    $('#client_encryption_password_group').addClass('has-error');
-                    $('#hb_client_password_length').removeClass('hidden');
                 }
             }
 
@@ -1648,12 +1596,6 @@
             // AP settings.
             var ap_ssid = $('#ap_ssid').val();
 
-            if (ap_ssid === '' || ap_ssid === null) {
-                validation_ok = false;
-                $('#markable_ap_ssid').addClass('has-error');
-                $('#hb_ap_ssid_empty').removeClass('hidden');
-            }
-
             if (!isASCII(ap_ssid)) {
                 validation_ok = false;
                 $('#markable_ap_ssid').addClass('has-error');
@@ -1664,22 +1606,10 @@
             var ap_password = $('#ap_password').val();
 
             if (ap_encryption > '0') {
-                if (ap_password == '' || ap_password == null) {
-                    validation_ok = false;
-                    $('#ap_encryption_password_elements').addClass('has-error');
-                    $('#hb_ap_password_empty').removeClass('hidden');
-                }
-
                 if (!isASCII(ap_password)) {
                     validation_ok = false;
                     $('#ap_encryption_password_elements').addClass('has-error');
                     $('#hb_ap_password_ascii').removeClass('hidden');
-                }
-
-                if (ap_password.length < 8) {
-                    validation_ok = false;
-                    $('#ap_encryption_password_elements').addClass('has-error');
-                    $('#hb_ap_password_length').removeClass('hidden');
                 }
             }
 
@@ -1911,7 +1841,7 @@
             });
 
             $('#button_save_reset_settings').click(function(e) {
-                if (do_verification()) {
+                if (do_validation()) {
                     $("#modal_warning_save_reset").modal('show');
                 } else {
                     $("#modal_verification_failed").modal('show');

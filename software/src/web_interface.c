@@ -760,7 +760,6 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 	char ap_static_gateway_2[4];
 	char ap_static_gateway_3[4];
 	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH];
-	char ap_encryption[2];
 	char ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
 	char ap_channel[3];
 	char ap_hide_ssid[2];
@@ -813,15 +812,17 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 	if((httpdFindArg(data, "ap_ssid", ap_ssid, CONFIGURATION_SSID_MAX_LENGTH)) > 0) {
 		strcpy(configuration_current.ap_ssid, ap_ssid);
 	}
+	else{
+		strcpy(configuration_current.ap_ssid, "\0");
+	}
 
 	// AP Encryption.
-	if((httpdFindArg(data, "ap_encryption", ap_encryption, 2)) > 0) {
- 		configuration_current.ap_encryption = (uint8_t)strtoul(ap_encryption, NULL, 10);
-
-		if((httpdFindArg(data, "ap_password", ap_password,
-			CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0) {
-				strcpy(configuration_current.ap_password, ap_password);
-		}
+	if((httpdFindArg(data, "ap_password", ap_password,
+		CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0) {
+			strcpy(configuration_current.ap_password, ap_password);
+	}
+	else{
+		strcpy(configuration_current.ap_password, "\0");
 	}
 
 	// AP Channel.
@@ -882,7 +883,6 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 	char client_static_gateway_2[4];
 	char client_static_gateway_3[4];
 	char client_ssid[CONFIGURATION_SSID_MAX_LENGTH];
-	char client_encryption[2];
 	char client_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
 	char client_connect_to_ap_with_specific_bssid[2];
 	char client_bssid_0[3];
@@ -900,11 +900,12 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 	char client_mac_address_5[3];
 
 	// Hostname in client mode.
-	if((httpdFindArg(data,
-					 "client_hostname",
-					 client_hostname,
-					 CONFIGURATION_HOSTNAME_MAX_LENGTH)) > 0) {
+	if((httpdFindArg(data, "client_hostname", client_hostname,
+	CONFIGURATION_HOSTNAME_MAX_LENGTH)) > 0) {
 		strcpy(configuration_current.client_hostname, client_hostname);
+	}
+	else{
+		strcpy(configuration_current.client_hostname, "\0");
 	}
 
 	// Client mode IP configuration.
@@ -946,31 +947,21 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 	}
 
 	// SSID to connect to in client mode.
-	if((httpdFindArg(data,
-					 "client_ssid",
-					 client_ssid,
-					 CONFIGURATION_SSID_MAX_LENGTH)) > 0) {
+	if((httpdFindArg(data, "client_ssid", client_ssid,
+	CONFIGURATION_SSID_MAX_LENGTH)) > 0) {
 		strcpy(configuration_current.client_ssid, client_ssid);
+	}
+	else {
+		strcpy(configuration_current.client_ssid, "\0");
 	}
 
 	// Encryption in client mode.
-	if((httpdFindArg(data, "client_encryption", client_encryption, 2)) > 0) {
-		// Open.
-		if(strtoul(client_encryption, NULL, 10) == 0) {
-			strcpy(configuration_current.client_password, "\0");
-		}
-		// WPA/WPA2.
-		else{
-			if((httpdFindArg(data,
-							 "client_password",
-							 client_password,
-							 CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0) {
-				strcpy(configuration_current.client_password, client_password);
-			}
-			else{
-				strcpy(configuration_current.client_password, "\0");
-			}
-		}
+	if((httpdFindArg(data, "client_password", client_password,
+	CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0) {
+		strcpy(configuration_current.client_password, client_password);
+	}
+	else{
+		strcpy(configuration_current.client_password, "\0");
 	}
 
 	// Connect to specific BSSID.
@@ -1032,7 +1023,6 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 	char general_websocket_port[6];
 	char general_website_port[6];
 	char general_phy_mode[2];
-	char general_use_authentication[2];
 	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH];
 	char general_mode[2];
 
@@ -1073,19 +1063,12 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 				configuration_current.general_phy_mode = (uint8_t)strtoul(general_phy_mode, NULL, 10);
 			}
 
-			if((httpdFindArg(data, "general_use_authentication", general_use_authentication, 2)) > 0) {
-				if(strtoul(general_use_authentication, NULL, 10) == 0) {
-					strcpy(configuration_current.general_authentication_secret, "\0");
-				}
-				else {
-					if((httpdFindArg(data,
-									 "general_authentication_secret",
-									 general_authentication_secret,
-									 CONFIGURATION_SECRET_MAX_LENGTH)) > 0) {
-						strcpy(configuration_current.general_authentication_secret,
-							   general_authentication_secret);
-					}
-				}
+			if((httpdFindArg(data, "general_authentication_secret", general_authentication_secret,
+			CONFIGURATION_SECRET_MAX_LENGTH)) > 0) {
+		  	strcpy(configuration_current.general_authentication_secret, general_authentication_secret);
+			}
+			else{
+				strcpy(configuration_current.general_authentication_secret, "\0");
 			}
 
 			// Client and AP mode settings based on operating mode.

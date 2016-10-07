@@ -760,6 +760,7 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 	char ap_static_gateway_2[4];
 	char ap_static_gateway_3[4];
 	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH];
+	char ap_encryption[2];
 	char ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
 	char ap_channel[3];
 	char ap_hide_ssid[2];
@@ -816,12 +817,21 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 		strcpy(configuration_current.ap_ssid, "\0");
 	}
 
-	// AP Encryption.
-	if((httpdFindArg(data, "ap_password", ap_password,
-		CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0) {
+	// AP Encryption and Password.
+	if((httpdFindArg(data, "ap_encryption", ap_encryption, 2)) > 0){
+		configuration_current.ap_encryption = (uint8_t)strtoul(ap_encryption, NULL,  10);
+
+		if((configuration_current.ap_encryption > 0) &&
+		((httpdFindArg(data, "ap_password", ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH)) > 0)){
 			strcpy(configuration_current.ap_password, ap_password);
+		}
+		else{
+			configuration_current.ap_encryption = 0;
+			strcpy(configuration_current.ap_password, "\0");
+		}
 	}
 	else{
+		configuration_current.ap_encryption = 0;
 		strcpy(configuration_current.ap_password, "\0");
 	}
 
@@ -1023,6 +1033,7 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 	char general_websocket_port[6];
 	char general_website_port[6];
 	char general_phy_mode[2];
+	char general_use_authentication[2];
 	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH];
 	char general_mode[2];
 
@@ -1063,9 +1074,16 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 				configuration_current.general_phy_mode = (uint8_t)strtoul(general_phy_mode, NULL, 10);
 			}
 
-			if((httpdFindArg(data, "general_authentication_secret", general_authentication_secret,
-			CONFIGURATION_SECRET_MAX_LENGTH)) > 0) {
-		  	strcpy(configuration_current.general_authentication_secret, general_authentication_secret);
+			if((httpdFindArg(data, "general_use_authentication", general_use_authentication, 2)) > 0) {
+				if(((strtoul(general_use_authentication, NULL, 10)) == 1) &&
+				((httpdFindArg(data, "general_authentication_secret", general_authentication_secret,
+				CONFIGURATION_SECRET_MAX_LENGTH)) > 0)){
+					strcpy(configuration_current.general_authentication_secret,
+						general_authentication_secret);
+				}
+				else{
+					strcpy(configuration_current.general_authentication_secret, "\0");
+				}
 			}
 			else{
 				strcpy(configuration_current.general_authentication_secret, "\0");

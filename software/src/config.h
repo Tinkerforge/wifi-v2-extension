@@ -1,7 +1,7 @@
 /* WIFI Extension 2.0
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
  *
- * config: WIFI Extension 2.0 configuration
+ * config.h: WIFI Extension 2.0 configuration
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

@@ -1,7 +1,7 @@
 /* master-brick
  * Copyright (C) 2012 Olaf Lüke <olaf@tinkerforge.com>
  *
- * wifi_brickd.h: Simplistic reimplementation of brickd for WIFI Extension
+ * brickd.h: Simplistic reimplementation of brickd for WIFI Extension
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

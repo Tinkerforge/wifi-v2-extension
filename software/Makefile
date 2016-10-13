@@ -123,7 +123,7 @@ $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
 	$(Q) $(ESPTOOL) elf2image -o $(FW_BASE)/ $(TARGET_OUT)
 
-$(FW_BASE)/%.zbin:
+$(FW_BASE)/%.zbin: $(FW_FILE_1) $(FW_FILE_2) $(WEBPAGE)
 	$(vecho) "FZ $(FW_FILE_Z)"
 	$(Q) cp $(WEBPAGE) $(FW_FILE_3)
 	$(Q) zip -j $(FW_FILE_Z) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_3)

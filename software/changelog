@@ -1,2 +1,7 @@
 2016-06-10: 2.0.0 (f8815d9)
 - Initial version
+
+2016-10-13: 2.0.1 (<unknown>)
+- Add web interface for configuration and status
+- Add RX/TX counters
+- Fix static IP configuration for access point mode

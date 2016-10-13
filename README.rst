@@ -33,7 +33,7 @@ Toolchain
 Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk
 into toolchain/ directory. The following instructions apply for ESP8266 SDK 2.0.0::
 
- sudo apt-get install build-essential gperf libtool libtool-bin help2man texinfo libncurses5-dev python2.7-dev
+ sudo apt-get install build-essential gperf libtool help2man texinfo libncurses5-dev python2.7-dev
  mkdir toolchain
  cd toolchain
  git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
@@ -69,9 +69,13 @@ libesphttpd must also be patched::
 Build
 -----
 
-Provided that all the steps of the Toolchain section was followed properly the
+Provided that all the steps of the toolchain section was followed properly the
 extension firmware can be built with::
 
  cd software
  make clean
  make
+
+The compiled firmware can be found here::
+
+ software/firmware/wifi_extension_v2_firmware.zbin

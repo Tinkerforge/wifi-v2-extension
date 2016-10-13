@@ -20,6 +20,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define _GNU_SOURCE // for strnlen
+#undef __STRICT_ANSI__ // for strnlen
+
+#include <string.h> // for strnlen
+
 #include "configuration.h"
 
 #include "espmissingincludes.h"
@@ -78,16 +83,6 @@ const Configuration configuration_default = {
 
 Configuration configuration_current;
 
-uint8_t ICACHE_FLASH_ATTR configuration_array_length(const uint8_t *data, const uint8_t max_length) {
-	for(uint8_t i = 0; i < max_length; i++) {
-		if(data[i] == '\0') {
-			return i+1;
-		}
-	}
-
-	return max_length;
-}
-
 uint8_t ICACHE_FLASH_ATTR configuration_calculate_checksum(void) {
 	uint8_t checksum = 0;
 
@@ -141,12 +136,8 @@ bool ICACHE_FLASH_ATTR configuration_check_array_null(const uint8_t *array, cons
 
 void ICACHE_FLASH_ATTR configuration_apply_client(void) {
 	struct station_config conf;
-	os_memcpy(&conf.ssid,
-			  configuration_current.client_ssid,
-			  configuration_array_length(configuration_current.client_ssid, CONFIGURATION_SSID_MAX_LENGTH));
-	os_memcpy(&conf.password,
-			  configuration_current.client_password,
-			  configuration_array_length(configuration_current.client_password, CONFIGURATION_PASSWORD_MAX_LENGTH));
+	os_memcpy(conf.ssid, configuration_current.client_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	os_memcpy(conf.password, configuration_current.client_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
 	os_memcpy(conf.bssid, configuration_current.client_bssid, 6);
 	if(configuration_check_array_null(configuration_current.client_bssid, 6)) {
 		conf.bssid_set = 0;
@@ -180,20 +171,18 @@ void ICACHE_FLASH_ATTR configuration_apply_client(void) {
 		wifi_set_macaddr(STATION_IF, configuration_current.client_mac_address);
 	}
 
+	char client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
+	os_memcpy(client_hostname, configuration_current.client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
 
-	wifi_station_set_hostname(configuration_current.client_hostname);
+	wifi_station_set_hostname(client_hostname);
 	wifi_station_set_reconnect_policy(true);
 }
 
 void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 	struct softap_config conf;
-	os_memcpy(&conf.ssid,
-			  configuration_current.ap_ssid,
-			  configuration_array_length(configuration_current.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH));
-	os_memcpy(&conf.password,
-			  configuration_current.ap_password,
-			  configuration_array_length(configuration_current.ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH));
-	conf.ssid_len = configuration_array_length(configuration_current.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH)-1;
+	os_memcpy(conf.ssid, configuration_current.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	os_memcpy(conf.password, configuration_current.ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	conf.ssid_len = strnlen(configuration_current.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
 	conf.channel = configuration_current.ap_channel;
 
 	if(configuration_current.ap_encryption == 1){

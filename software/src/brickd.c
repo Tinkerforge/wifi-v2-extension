@@ -19,6 +19,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define _GNU_SOURCE // for strnlen
+#undef __STRICT_ANSI__ // for strnlen
+
+#include <string.h> // for strnlen
+
 #include "brickd.h"
 
 #include "logging.h"
@@ -278,7 +283,7 @@ void ICACHE_FLASH_ATTR brickd_authenticate(const int8_t cid, const Authenticate 
 	memcpy(&nonces[1], data->client_nonce, 4);
 
 	hmac_sha1((uint8_t *)configuration_current.general_authentication_secret,
-	          strlen(configuration_current.general_authentication_secret),
+	          strnlen(configuration_current.general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH),
 	          (uint8_t *)nonces,
 	          sizeof(nonces),
 	          digest);

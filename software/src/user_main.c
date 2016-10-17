@@ -69,8 +69,8 @@ extern Configuration configuration_current;
 
 // Mesh enable callback.
 void ICACHE_FLASH_ATTR cb_enable_mesh() {
-	uint16_t count_p;
-	uint16_t count_c;
+	uint8_t count_p;
+	uint8_t count_c;
 	uint8_t *inf[128];
 	struct station_config router;
 
@@ -79,8 +79,9 @@ void ICACHE_FLASH_ATTR cb_enable_mesh() {
 	espconn_mesh_get_node_info(MESH_NODE_CHILD, inf, &count_c);
 
 	/*
-	 *The following two functions seems to dependent on particular mesh library
-	 */version.
+	 * The following two functions seems to dependent on particular mesh library
+	 * version.
+	 */
 	//espconn_mesh_is_root();
 	//espconn_mesh_is_root_candidate();
 

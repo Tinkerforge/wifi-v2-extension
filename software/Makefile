@@ -24,7 +24,7 @@ LIBESPHTTPD_HTML = ../../software/web_interface/build
 LIBESPHTTPD_PATH = ../toolchain/libesphttpd
 
 # base directory of the ESP8266 SDK package, absolute
-SDK_BASE	?= ../toolchain/esp-open-sdk/sdk/
+SDK_BASE	?= ../toolchain/esp-open-sdk/sdk
 
 WEBPAGE     ?= $(LIBESPHTTPD_PATH)/webpages.espfs
 
@@ -61,6 +61,8 @@ SDK_INCDIR	= include include/json
 FW_FILE_1_ADDR	= 0x00000
 FW_FILE_2_ADDR	= 0x10000
 FW_FILE_3_ADDR	= 0x100000
+FW_FILE_4_ADDR	= 0x3FC000
+FW_FILE_5_ADDR	= 0x3FE000
 
 # select which tools to use as compiler, librarian and linker
 CC		:= xtensa-lx106-elf-gcc
@@ -91,6 +93,8 @@ MODULE_INCDIR	:= $(addsuffix /include,$(INCDIR))
 FW_FILE_1	:= $(addprefix $(FW_BASE)/,$(FW_FILE_1_ADDR).bin)
 FW_FILE_2	:= $(addprefix $(FW_BASE)/,$(FW_FILE_2_ADDR).bin)
 FW_FILE_3	:= $(addprefix $(FW_BASE)/,$(FW_FILE_3_ADDR).bin)
+FW_FILE_4	:= $(addprefix $(FW_BASE)/,$(FW_FILE_4_ADDR).bin)
+FW_FILE_5	:= $(addprefix $(FW_BASE)/,$(FW_FILE_5_ADDR).bin)
 FW_FILE_Z   := $(addprefix $(FW_BASE)/,wifi_extension_v2_firmware.zbin)
 
 V ?= $(VERBOSE)
@@ -112,7 +116,7 @@ endef
 
 .PHONY: all checkdirs flash clean
 
-all: buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_Z)
+all: buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
 
 buildlibesphttpd:
 	make -C ./web_interface
@@ -123,10 +127,18 @@ $(FW_BASE)/%.bin: $(TARGET_OUT) | $(FW_BASE)
 	$(vecho) "FW $(FW_BASE)/"
 	$(Q) $(ESPTOOL) elf2image -o $(FW_BASE)/ $(TARGET_OUT)
 
-$(FW_BASE)/%.zbin: $(FW_FILE_1) $(FW_FILE_2) $(WEBPAGE)
-	$(vecho) "FZ $(FW_FILE_Z)"
+$(FW_FILE_3): $(WEBPAGE)
 	$(Q) cp $(WEBPAGE) $(FW_FILE_3)
-	$(Q) zip -j $(FW_FILE_Z) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_3)
+
+$(FW_FILE_4): $(SDK_BASE)/bin/esp_init_data_default.bin
+	$(Q) cp $(SDK_BASE)/bin/esp_init_data_default.bin $(FW_FILE_4)
+
+$(FW_FILE_5): $(SDK_BASE)/bin/blank.bin
+	$(Q) cp $(SDK_BASE)/bin/blank.bin $(FW_FILE_5)
+
+$(FW_BASE)/%.zbin: $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_3) $(FW_FILE_4) $(FW_FILE_5)
+	$(vecho) "FZ $(FW_FILE_Z)"
+	$(Q) zip -j $(FW_FILE_Z) $(FW_FILE_1) $(FW_FILE_2) $(FW_FILE_3) $(FW_FILE_4) $(FW_FILE_5)
 
 $(TARGET_OUT): $(APP_AR)
 	$(vecho) "LD $@"

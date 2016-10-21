@@ -1,8 +1,11 @@
 2016-06-10: 2.0.0 (f8815d9)
 - Initial version
 
-2016-10-13: 2.0.1 (<unknown>)
+2016-10-13: 2.0.1 (d41f171)
 - Update ESP8266 SDK to version 2.0.0
 - Add web interface for configuration and status
 - Add RX/TX counters
 - Fix static IP configuration for access point mode
+
+2016-10-21: 2.0.2 (<unknown>)
+- Add missing ESP8266 SDK firmware configration binaries

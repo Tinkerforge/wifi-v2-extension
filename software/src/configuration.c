@@ -175,7 +175,7 @@ void ICACHE_FLASH_ATTR configuration_apply_client(void) {
 	os_memcpy(client_hostname, configuration_current.client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
 
 	wifi_station_set_hostname(client_hostname);
-	wifi_station_set_reconnect_policy(true);
+	wifi_station_set_reconnect_policy(true); // Always call from user_init
 }
 
 void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
@@ -254,9 +254,19 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 	*/
 }
 
-void ICACHE_FLASH_ATTR configuration_apply(void) {
+void ICACHE_FLASH_ATTR configuration_apply_during_init(void) {
 	// TODO: Currently not implemented in brickv
 	wifi_set_sleep_type(NONE_SLEEP_T);
+
+	if(configuration_current.client_enable && configuration_current.ap_enable) {
+		wifi_set_opmode_current(STATIONAP_MODE);
+	} else if(configuration_current.client_enable) {
+		wifi_set_opmode_current(STATION_MODE);
+	} else if(configuration_current.ap_enable) {
+		wifi_set_opmode_current(SOFTAP_MODE);
+	} else {
+		wifi_set_opmode_current(NULL_MODE);
+	}
 
 	wifi_set_phy_mode(configuration_current.general_phy_mode+1);
 
@@ -270,16 +280,11 @@ void ICACHE_FLASH_ATTR configuration_apply(void) {
 		configuration_apply_ap();
 	}
 
-	if(configuration_current.client_enable && configuration_current.ap_enable) {
-		wifi_set_opmode_current(STATIONAP_MODE);
-	} else if(configuration_current.client_enable) {
-		wifi_set_opmode_current(STATION_MODE);
-	} else if(configuration_current.ap_enable) {
-		wifi_set_opmode_current(SOFTAP_MODE);
-	} else {
-		wifi_set_opmode_current(NULL_MODE);
-	}
-
+	// Do always call during user_init, otherwise it will only be effective after restart!
 	wifi_station_set_auto_connect(1);
+}
+
+void ICACHE_FLASH_ATTR configuration_apply_post_init(void) {
+	// Station connect can only be called after user_init
 	wifi_station_connect();
 }

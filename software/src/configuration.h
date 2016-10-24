@@ -75,7 +75,8 @@ typedef struct {
 void ICACHE_FLASH_ATTR configuration_use_default(void);
 void ICACHE_FLASH_ATTR configuration_load_from_eeprom(void);
 uint8_t ICACHE_FLASH_ATTR configuration_save_to_eeprom(void);
-void ICACHE_FLASH_ATTR configuration_apply(void);
+void ICACHE_FLASH_ATTR configuration_apply_during_init(void);
+void ICACHE_FLASH_ATTR configuration_apply_post_init(void);
 void ICACHE_FLASH_ATTR configuration_init(void);
 
 #endif

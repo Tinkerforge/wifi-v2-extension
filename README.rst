@@ -33,7 +33,7 @@ Toolchain
 Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk
 into toolchain/ directory. The following instructions apply for ESP8266 SDK 2.0.0::
 
- sudo apt-get install build-essential gperf libtool help2man texinfo libncurses5-dev python2.7-dev
+ sudo apt-get install build-essential gperf libtool help2man texinfo libncurses5-dev python2.7-dev autoconf
  mkdir toolchain
  cd toolchain
  git clone --recursive https://github.com/pfalcon/esp-open-sdk.git

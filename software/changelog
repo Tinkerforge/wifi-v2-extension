@@ -7,5 +7,6 @@
 - Add RX/TX counters
 - Fix static IP configuration for access point mode
 
-2016-10-21: 2.0.2 (<unknown>)
-- Add missing ESP8266 SDK firmware configration binaries
+2016-10-25: 2.0.2 (<unknown>)
+- Add missing ESP8266 SDK 2.0.0 configration binaries and adapt to configration
+  API changes to fix boot and connection problems

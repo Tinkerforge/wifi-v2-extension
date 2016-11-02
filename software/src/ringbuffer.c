@@ -74,6 +74,14 @@ bool ICACHE_FLASH_ATTR ringbuffer_add(Ringbuffer *rb, uint8_t data) {
 	return true;
 }
 
+void ICACHE_FLASH_ATTR ringbuffer_remove(Ringbuffer *rb, const uint16_t num) {
+	if(ringbuffer_get_used(rb) <= num) {
+		rb->start = rb->end;
+	} else {
+		rb->start = (rb->start + num) % rb->buffer_length;
+	}
+}
+
 bool ICACHE_FLASH_ATTR ringbuffer_get(Ringbuffer *rb, uint8_t *data) {
 	if(ringbuffer_is_empty(rb)) {
 		return false;

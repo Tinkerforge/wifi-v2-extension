@@ -112,7 +112,6 @@ extern GetWifi2StatusReturn gw2sr;
 char buffer_post_form[POST_BUFFER_SIZE];
 uint8_t current_session_cookie_index = 0;
 extern Configuration configuration_current;
-extern Configuration configuration_current;
 uint8_t current_authentication_slot_index = 0;
 unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
 unsigned long authentication_slots[MAX_AUTHENTICATION_SLOTS];

@@ -24,7 +24,7 @@
 #include "osapi.h"
 #include "logging.h"
 
-void ICACHE_FLASH_ATTR ringbuffer_init(Ringbuffer *rb, uint8_t *buffer, uint32_t buffer_length) {
+void ICACHE_FLASH_ATTR ringbuffer_init(Ringbuffer *rb, uint8_t *buffer, const uint32_t buffer_length) {
 	rb->overflow_counter = 0;
 	rb->low_watermark = 0;
 	rb->start = 0;
@@ -87,7 +87,7 @@ bool ICACHE_FLASH_ATTR ringbuffer_get(Ringbuffer *rb, uint8_t *data) {
 	return true;
 }
 
-uint32_t ICACHE_FLASH_ATTR ringbuffer_peak(Ringbuffer *rb, uint8_t *data, uint32_t length) {
+uint32_t ICACHE_FLASH_ATTR ringbuffer_peak(Ringbuffer *rb, uint8_t *data, const uint32_t length) {
 	uint32_t p = rb->start;
 	uint32_t peak_length = length;
 	uint32_t used = ringbuffer_get_used(rb);

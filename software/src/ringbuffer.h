@@ -36,13 +36,14 @@ typedef struct {
 	uint8_t *buffer;
 } Ringbuffer;
 
-void ICACHE_FLASH_ATTR ringbuffer_init(Ringbuffer *rb, uint8_t *buffer, uint32_t buffer_length);
+void ICACHE_FLASH_ATTR ringbuffer_init(Ringbuffer *rb, uint8_t *buffer, const uint32_t buffer_length);
 uint32_t ICACHE_FLASH_ATTR ringbuffer_get_free(Ringbuffer *rb);
 uint32_t ICACHE_FLASH_ATTR ringbuffer_get_used(Ringbuffer *rb);
 bool ICACHE_FLASH_ATTR ringbuffer_is_empty(Ringbuffer *rb);
 bool ICACHE_FLASH_ATTR ringbuffer_is_full(Ringbuffer *rb);
 bool ICACHE_FLASH_ATTR ringbuffer_add(Ringbuffer *rb, uint8_t data);
+void ICACHE_FLASH_ATTR ringbuffer_remove(Ringbuffer *rb, const uint16_t num);
 bool ICACHE_FLASH_ATTR ringbuffer_get(Ringbuffer *rb, uint8_t *data);
-uint32_t ICACHE_FLASH_ATTR ringbuffer_peak(Ringbuffer *rb, uint8_t *data, uint32_t length);
+uint32_t ICACHE_FLASH_ATTR ringbuffer_peak(Ringbuffer *rb, uint8_t *data, const uint32_t length);
 
 #endif

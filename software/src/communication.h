@@ -26,6 +26,8 @@
 #include <stdint.h>
 #include "c_types.h"
 
+#define COM_OUT_RINGBUFFER_LENGTH 512
+
 #define MESSAGE_HEADER_LENGTH_POSITION 4
 
 typedef struct {
@@ -40,6 +42,8 @@ typedef struct {
 	        error:2;
 } __attribute__((__packed__)) MessageHeader;
 
+void ICACHE_FLASH_ATTR com_init(void);
+void ICACHE_FLASH_ATTR com_poll(void);
 void ICACHE_FLASH_ATTR com_send(const void *data, const uint8_t length, const int8_t cid);
 bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t length, const int8_t cid);
 void ICACHE_FLASH_ATTR com_return_error(const void *data, const uint8_t ret_length, const uint8_t error_code, const int8_t cid);

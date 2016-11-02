@@ -31,9 +31,13 @@
 #include "ip_addr.h"
 #include "espconn.h"
 #include "gpio.h"
+#include "ringbuffer.h"
 
 bool wifi2_status_led_enabled = true;
 extern Configuration configuration_current;
+
+Ringbuffer com_out_rb;
+uint8_t com_out_rb_buffer[COM_OUT_RINGBUFFER_LENGTH];
 
 // We keep this global, some of the information is set dynamically by callbacks
 GetWifi2StatusReturn gw2sr = {
@@ -55,6 +59,10 @@ GetWifi2StatusReturn gw2sr = {
 	.ap_tx_count = 0,
 	.ap_connected_count = 0,
 };
+
+void ICACHE_FLASH_ATTR com_init(void) {
+	ringbuffer_init(&com_out_rb, com_out_rb_buffer, COM_OUT_RINGBUFFER_LENGTH);
+}
 
 bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t length, const int8_t cid) {
 	const MessageHeader *header = (const MessageHeader*)data;
@@ -100,9 +108,50 @@ void ICACHE_FLASH_ATTR com_send(const void *data, const uint8_t length, const in
 	if(cid == -2) { // UART
 		tfp_handle_packet(data, length);
 	} else { // WIFI
-		const bool ok = tfp_send_w_cid(data, length, cid);
-		// TOOD: What do we do here if the sending didn't work?
-		//       Do we need to have a send buffer for this?
+		// If ringbuffer not empty we add data to ringbuffer (we want to keep order)
+		// Else if we can't immediately send to master brick we also add to ringbuffer
+		if(!ringbuffer_is_empty(&com_out_rb) || tfp_send_w_cid(data, length, cid) == 0) {
+
+			if(ringbuffer_get_free(&com_out_rb) > (length + 2 + 1)) {
+				ringbuffer_add(&com_out_rb, cid);
+				for(uint8_t i = 0; i < length; i++) {
+					if(!ringbuffer_add(&com_out_rb, ((uint8_t*)data)[i])) {
+						// Should be unreachable
+						loge("Ringbuffer (com out) full!\n");
+					}
+				}
+			} else {
+				logw("Message does not fit in Buffer (com out): %d < %d\n", ringbuffer_get_free(&com_out_rb), length + 2);
+			}
+		}
+	}
+}
+
+void ICACHE_FLASH_ATTR com_poll(void) {
+	if(ringbuffer_is_empty(&com_out_rb)) {
+		return;
+	}
+
+	// cid is in data[0], TFP packet has off by one, use +1 for access
+	uint8_t data[TFP_RECV_BUFFER_SIZE + 1];
+	uint8_t length = ringbuffer_peak(&com_out_rb, data, TFP_RECV_BUFFER_SIZE + 1);
+
+	if(length > TFP_RECV_BUFFER_SIZE + 1) {
+		ringbuffer_init(&com_out_rb, com_out_rb.buffer, com_out_rb.buffer_length);
+		logd("com_poll: length > %d: %d\n", TFP_RECV_BUFFER_SIZE, length);
+		return;
+	}
+
+	if(length < TFP_MIN_LENGTH + 1) {
+		ringbuffer_init(&com_out_rb, com_out_rb.buffer, com_out_rb.buffer_length);
+		logd("com_poll: length < TFP_MIN_LENGTH\n");
+		return;
+	}
+
+	if(tfp_send_w_cid(data + 1, data[TFP_RECV_INDEX_LENGTH + 1], data[0]) != 0) {
+		ringbuffer_remove(&com_out_rb, data[TFP_RECV_INDEX_LENGTH + 1] + 1);
+	} else {
+		//logd("com_poll send error\n");
 	}
 }
 

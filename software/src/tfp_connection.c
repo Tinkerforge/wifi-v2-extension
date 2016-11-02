@@ -39,14 +39,10 @@ Ringbuffer tfp_rb;
 uint8_t tfp_rb_buffer[TFP_RING_BUFFER_SIZE];
 
 TFPConnection tfp_cons[TFP_MAX_CONNECTIONS];
+bool tfp_is_hold = false;
 
 extern GetWifi2StatusReturn gw2sr;
 extern Configuration configuration_current;
-
-#define PACKET_COUNT_RX 1
-#define PACKET_COUNT_TX 2
-#define TFP_RECV_INDEX_LENGTH 4
-#define TFP_MIN_LENGTH 8
 
 
 void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid) {
@@ -81,13 +77,42 @@ void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t leng
 	// Else if we can't immediately send to master brick we also add to ringbuffer
 	if(!ringbuffer_is_empty(&tfp_rb) || uart_con_send(data, length) == 0) {
 
-		// TODO: Test free size
-		for(uint8_t i = 0; i < length; i++) {
-			bool ret_ok = ringbuffer_add(&tfp_rb, data[i]);
-			if(!ret_ok) {
-				loge("ringbuffer full!\n");
+		if(ringbuffer_get_free(&tfp_rb) > (length + 2)) {
+			for(uint8_t i = 0; i < length; i++) {
+				if(!ringbuffer_add(&tfp_rb, data[i])) {
+					// Should be unreachable
+					loge("Ringbuffer full!\n");
+				}
+			}
+		} else {
+			logw("Message does not fit in Buffer: %d < %d\n", ringbuffer_get_free(&tfp_rb), length + 2);
+		}
+	}
+}
+
+void ICACHE_FLASH_ATTR tfp_recv_hold(void) {
+	if(!tfp_is_hold) {
+		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
+			if(tfp_cons[i].state == TFP_CON_STATE_OPEN || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
+				espconn_recv_hold(tfp_cons[i].con);
 			}
 		}
+
+		logd("hold: %d\n\r", ringbuffer_get_free(&tfp_rb));
+		tfp_is_hold = true;
+	}
+}
+
+void ICACHE_FLASH_ATTR tfp_recv_unhold(void) {
+	if(tfp_is_hold) {
+		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
+			if(tfp_cons[i].state == TFP_CON_STATE_OPEN || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
+				espconn_recv_unhold(tfp_cons[i].con);
+			}
+		}
+
+		logd("unhold: %d\n\r", ringbuffer_get_free(&tfp_rb));
+		tfp_is_hold = false;
 	}
 }
 
@@ -108,14 +133,16 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short 
 		if(tfp_con->recv_buffer_index == tfp_con->recv_buffer_expected_length) {
 			if(!com_handle_message(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length, tfp_con->cid)) {
 				brickd_route_from(tfp_con->recv_buffer, tfp_con->cid);
-
 				tfp_handle_packet(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length);
-
 			}
 
 			tfp_con->recv_buffer_index = 0;
 			tfp_con->recv_buffer_expected_length = TFP_MIN_LENGTH;
 		}
+	}
+
+	if(ringbuffer_get_free(&tfp_rb) < (5*MTU_LENGTH + 2)) {
+		tfp_recv_hold();
 	}
 }
 
@@ -207,8 +234,7 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length,
 	if(tfp_cons[cid].state == TFP_CON_STATE_OPEN) {
 		tfp_cons[cid].state = TFP_CON_STATE_SENDING;
 		os_memcpy(tfp_cons[cid].send_buffer, data, length);
-		const uint8_t status = espconn_send(tfp_cons[cid].con, (uint8_t*)data, length);
-		// TODO: Check status?
+		espconn_send(tfp_cons[cid].con, (uint8_t*)data, length);
 		return true;
 	}
 
@@ -284,6 +310,10 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		espconn_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
 	}
 
+	if(ringbuffer_get_free(&tfp_rb) > (6*MTU_LENGTH + 2)) {
+		tfp_recv_unhold();
+	}
+
 	return true;
 }
 
@@ -295,6 +325,7 @@ static esp_tcp tfp_con_listen_tcp;
 void ICACHE_FLASH_ATTR tfp_open_connection(void) {
 	ringbuffer_init(&tfp_rb, tfp_rb_buffer, TFP_RING_BUFFER_SIZE);
 	brickd_init();
+	com_init();
 
 	ets_memset(&tfp_con_listen, 0, sizeof(struct espconn));
 
@@ -341,12 +372,8 @@ void ICACHE_FLASH_ATTR tfp_poll(void) {
 		return;
 	}
 
-	// TODO: Are we sure that this is the only place where ringbuffer_get(&tfp_rb, ...) is called?
 	if(uart_con_send(data, data[TFP_RECV_INDEX_LENGTH]) != 0) {
-		uint8_t dummy;
-		for(uint8_t i = 0; i < data[TFP_RECV_INDEX_LENGTH]; i++) {
-			ringbuffer_get(&tfp_rb, &dummy);
-		}
+		ringbuffer_remove(&tfp_rb, data[TFP_RECV_INDEX_LENGTH]);
 	} else {
 		logd("tfp_poll send error\n");
 	}

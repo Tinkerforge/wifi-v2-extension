@@ -31,11 +31,18 @@
 #include "tfp_websocket_connection.h"
 
 
-#define TFP_RING_BUFFER_SIZE 1000
-
 #define TFP_SEND_BUFFER_SIZE 80
 #define TFP_RECV_BUFFER_SIZE 80
 #define TFP_MAX_CONNECTIONS 10
+
+#define TFP_RING_BUFFER_SIZE 10240 //4096
+#define PACKET_COUNT_RX 1
+#define PACKET_COUNT_TX 2
+#define TFP_RECV_INDEX_LENGTH 4
+#define TFP_MIN_LENGTH 8
+#define TFP_MAX_LENGTH 80
+
+#define MTU_LENGTH 1460
 
 #define TFP_CON_STATE_CLOSED            0
 #define TFP_CON_STATE_OPEN              1

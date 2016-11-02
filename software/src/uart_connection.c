@@ -90,6 +90,8 @@ static void ICACHE_FLASH_ATTR uart_con_timeout() {
 }
 
 static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
+	com_poll();
+
 	// If the uart buffer is empty, we try to get data from tfp ringbuffer
 	if(uart_con_buffer_send_size == 0) {
 		tfp_poll();

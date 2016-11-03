@@ -1,5 +1,6 @@
 /* ESP8266 drivers
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
  *
  * eeprom.c: Implementation of functions for standard AT24C EEPROMS
  *
@@ -75,13 +76,21 @@ bool ICACHE_FLASH_ATTR eeprom_write_page(const uint16_t address, const uint8_t *
 }
 
 void ICACHE_FLASH_ATTR eeprom_select(void) {
-    gpio_output_set(BIT5, 0, BIT5, 0);
+  gpio_output_set(BIT5, 0, BIT5, 0);
+
+	// GPIO2 as I2C SDA.
+	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, I2C_MASTER_SDA_FUNC);
+
 	os_delay_us(100);
 }
 
 void ICACHE_FLASH_ATTR eeprom_deselect(void) {
 	os_delay_us(100);
-    gpio_output_set(0, BIT5, BIT5, 0);
+
+	gpio_output_set(0, BIT5, BIT5, 0);
+
+	// GPIO2 as UART1 TX.
+	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_U1TXD_BK);
 }
 
 void ICACHE_FLASH_ATTR eeprom_init(void) {

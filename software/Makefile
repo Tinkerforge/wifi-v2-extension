@@ -40,10 +40,10 @@ MODULES		= src src/drivers
 EXTRA_INCDIR    = include $(LIBESPHTTPD_PATH)/include
 
 # libraries used in this project, mainly provided by the SDK
-LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd json mesh
+LIBS		= c gcc hal pp phy net80211 lwip wpa main esphttpd json mesh crypto
 
 # compiler flags using during compilation of source files
-CFLAGS		= -std=c99 -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH
+CFLAGS		= -std=c99 -Os -g -O2 -Wpointer-arith -Wundef -Werror -Wl,-EL -fno-inline-functions -nostdlib -mlongcalls -mtext-section-literals  -D__ets__ -DICACHE_FLASH -DESP_MESH_SUPPORT
 
 # linker flags used to generate the main object file
 LDFLAGS		= -L$(LIBESPHTTPD_PATH)/ -nostdlib -Wl,--no-check-sections -u call_user_start -Wl,-static
@@ -116,7 +116,24 @@ endef
 
 .PHONY: all checkdirs flash clean
 
-all: buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
+all: updatelibmesh buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
+
+updatelibmesh:
+	$(Q) rm $(SDK_BASE)/include/mesh.h
+	$(Q) cp src/mesh/include/mesh.h $(SDK_BASE)/include/
+	$(Q) rm $(SDK_BASE)/lib/liblwip.a
+	$(Q) rm $(SDK_BASE)/lib/libmain.a
+	$(Q) rm $(SDK_BASE)/lib/libmesh.a
+	$(Q) rm $(SDK_BASE)/lib/libnet80211.a
+	$(Q) rm $(SDK_BASE)/lib/libpp.a
+	$(Q) rm $(SDK_BASE)/lib/libwpa.a
+
+	$(Q) cp src/mesh/lib/liblwip.a $(SDK_BASE)/lib/
+	$(Q) cp src/mesh/lib/libmain.a $(SDK_BASE)/lib/
+	$(Q) cp src/mesh/lib/libmesh.a $(SDK_BASE)/lib/
+	$(Q) cp src/mesh/lib/libnet80211.a $(SDK_BASE)/lib/
+	$(Q) cp src/mesh/lib/libpp.a $(SDK_BASE)/lib/
+	$(Q) cp src/mesh/lib/libwpa.a $(SDK_BASE)/lib/
 
 buildlibesphttpd:
 	make -C ./web_interface

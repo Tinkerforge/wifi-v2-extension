@@ -1,5 +1,6 @@
 /* WIFI Extension 2.0
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
+ * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
  *
  * configuration.h: WIFI Extension configuration handling
  *
@@ -78,5 +79,6 @@ uint8_t ICACHE_FLASH_ATTR configuration_save_to_eeprom(void);
 void ICACHE_FLASH_ATTR configuration_apply_during_init(void);
 void ICACHE_FLASH_ATTR configuration_apply_post_init(void);
 void ICACHE_FLASH_ATTR configuration_init(void);
+void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void);
 
 #endif

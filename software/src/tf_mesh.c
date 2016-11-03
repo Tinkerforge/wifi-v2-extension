@@ -1,8 +1,7 @@
 /* WIFI Extension 2.0
- * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
  * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
  *
- * config.h: WIFI Extension 2.0 configuration
+ * configuration.h: Mesh networking implementation
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -20,28 +19,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#include "osapi.h"
+#include "tf_mesh.h"
+#include "espmissingincludes.h"
 
-#define UART_CONNECTION UART0
-#define UART_DEBUG UART1
+void ICACHE_FLASH_ATTR cb_tf_mesh_new_node(void *mac) {
+  if (!mac) {
+    return;
+  }
 
-#define LOGGING_LEVEL LOGGING_NONE
+  os_printf("\n[+]MSH:NEW_NODE = %s\n", MAC2STR(((uint8_t *)mac)));
+}
 
-/*
- * This is a temporary define. Ultimately this define will be replaced with a
- * configuration a field to determine whether the extension is in mesh mode or
- * not. Actual application of mesh settings will be implemented in the function
- * configuration_apply().
- *
- * To enable, set it to 1, anyother value to diable.
- *
- * By default mesh mode is disabled.
- */
-#define MESH_ENABLED 0
-
-#define FIRMWARE_VERSION_MAJOR    2
-#define FIRMWARE_VERSION_MINOR    0
-#define FIRMWARE_VERSION_REVISION 3
-
-#endif
+void ICACHE_FLASH_ATTR cb_tf_mesh_enable(int8_t status) {
+  os_printf("\n[+]MSH:MSH_EN_CB,r=%d\n", status);
+}

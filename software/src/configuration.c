@@ -35,6 +35,20 @@
 #include "user_interface.h"
 #include "pearson_hash.h"
 #include "communication.h"
+#include "tf_mesh.h"
+#include "config.h" // Needed for MESH_ENABLED. Ultimately will not be here.
+
+// These parameters will come from loaded configuration.
+#define TF_MESH_MAX_HOP 4
+static uint16_t TF_MESH_SERVER_PORT = 7000;
+#define TF_MESH_ROUTER_SSID "TF_MESH_DEV_AP"
+#define TF_MESH_NODE_SSID_PASSWORD "1234567890"
+#define TF_MESH_ROUTER_SSID_PASSWORD "1234567890"
+#define TF_MESH_NODE_SSID_PREFIX "TF_MESH_DEV_NODE"
+static uint8_t TF_MESH_SERVER_IP[4] = {192, 168, 178, 67};
+#define TF_MESH_NODE_SSID_AUTHENTICATION AUTH_WPA_WPA2_PSK
+uint8_t TF_MESH_ROUTER_BSSID[6] = {0x1A, 0xFE, 0x34, 0x0D, 0x0D, 0x0D};
+static uint8_t TF_MESH_GROUP_ID[6] = {0x18, 0xFE, 0x34, 0x00, 0x00, 0x50};
 
 const Configuration configuration_default = {
 	// Configuration info
@@ -254,34 +268,111 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 	*/
 }
 
+void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
+	// For mesh mode we operate on station mode and configure the station interface.
+	struct station_config config_st;
+
+	wifi_set_sleep_type(NONE_SLEEP_T);
+
+	// This is particularly important if the mesh router SSID is hidden.
+	config_st.bssid_set = 1;
+
+	os_memset(&config_st, 0, sizeof(config_st));
+	os_memcpy(config_st.bssid, TF_MESH_ROUTER_BSSID, sizeof(config_st.bssid));
+	os_memcpy(config_st.ssid, TF_MESH_ROUTER_SSID, os_strlen(TF_MESH_ROUTER_SSID));
+	os_memcpy(config_st.password, TF_MESH_ROUTER_SSID_PASSWORD,
+		os_strlen(TF_MESH_ROUTER_SSID_PASSWORD));
+
+	// Set MAC address of station and AP interfaces if there are user defined ones.
+	if(!configuration_check_array_null(configuration_current.client_mac_address, 6)) {
+		wifi_set_macaddr(STATION_IF, configuration_current.client_mac_address);
+	}
+
+	if(!configuration_check_array_null(configuration_current.ap_mac_address, 6)) {
+		wifi_set_macaddr(SOFTAP_IF, configuration_current.ap_mac_address);
+	}
+
+	/*
+	 * If the mesh router doesn't have DHCP then static IP must be configured on
+	 * the station interface.
+	 */
+
+	// Apply station interface configuration.
+	wifi_station_set_config_current(&config_st);
+
+	// Setup mesh network parameters.
+	espconn_mesh_set_router(&config_st);
+
+	espconn_mesh_encrypt_init(TF_MESH_NODE_SSID_AUTHENTICATION,
+	  TF_MESH_NODE_SSID_PASSWORD,
+	  os_strlen(TF_MESH_NODE_SSID_PASSWORD));
+
+	espconn_mesh_set_max_hops(TF_MESH_MAX_HOP);
+
+	espconn_mesh_set_ssid_prefix(TF_MESH_NODE_SSID_PREFIX,
+	  os_strlen(TF_MESH_NODE_SSID_PREFIX));
+
+	espconn_mesh_group_id_init((uint8_t *)TF_MESH_GROUP_ID,
+	sizeof(TF_MESH_GROUP_ID));
+
+	// Used in MESH_ONLINE mode.
+	espconn_mesh_server_init((struct ip_addr *)TF_MESH_SERVER_IP,
+	TF_MESH_SERVER_PORT);
+
+	// Callback for the event when a new child joins a node.
+	espconn_mesh_regist_usr_cb(cb_tf_mesh_new_node);
+
+	/*
+	 * Enable mesh.
+	 *
+	 * Two possible modes of operation are,
+	 *
+	 * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
+	 * 								within the mesh network.
+	 *
+	 * 2. MESH_ONLINE: Has connection to server specified by TF_MESH_SERVER_IP and
+	 * 								 TF_MESH_SERVER_PORT which is initialised by,
+	 *								 espconn_mesh_server_init().
+	 */
+	espconn_mesh_enable(cb_tf_mesh_enable, MESH_LOCAL);
+}
+
 void ICACHE_FLASH_ATTR configuration_apply_during_init(void) {
 	// TODO: Currently not implemented in brickv
 	wifi_set_sleep_type(NONE_SLEEP_T);
 
-	if(configuration_current.client_enable && configuration_current.ap_enable) {
-		wifi_set_opmode_current(STATIONAP_MODE);
-	} else if(configuration_current.client_enable) {
-		wifi_set_opmode_current(STATION_MODE);
-	} else if(configuration_current.ap_enable) {
-		wifi_set_opmode_current(SOFTAP_MODE);
-	} else {
-		wifi_set_opmode_current(NULL_MODE);
-	}
+	/*
+	 * Ultimately this will be detected from the loaded configuration like how it
+	 * is done currently for STATION, AP and STATION+AP mode.
+	 */
+	#if(MESH_ENABLED == 1)
+		configuration_apply_tf_mesh();
+	#else
+		if(configuration_current.client_enable && configuration_current.ap_enable) {
+			wifi_set_opmode_current(STATIONAP_MODE);
+		} else if(configuration_current.client_enable) {
+			wifi_set_opmode_current(STATION_MODE);
+		} else if(configuration_current.ap_enable) {
+			wifi_set_opmode_current(SOFTAP_MODE);
+		} else {
+			wifi_set_opmode_current(NULL_MODE);
+		}
 
-	wifi_set_phy_mode(configuration_current.general_phy_mode+1);
+		wifi_set_phy_mode(configuration_current.general_phy_mode+1);
 
-	// Client
-	if(configuration_current.client_enable) {
-		configuration_apply_client();
-	}
+		// Client
+		if(configuration_current.client_enable) {
+			configuration_apply_client();
+		}
 
-	// Access Point
-	if(configuration_current.ap_enable) {
-		configuration_apply_ap();
-	}
+		// Access Point
+		if(configuration_current.ap_enable) {
+			configuration_apply_ap();
+		}
 
-	// Do always call during user_init, otherwise it will only be effective after restart!
-	wifi_station_set_auto_connect(1);
+		// Do always call during user_init, otherwise it will only be effective after restart!
+		wifi_station_set_auto_connect(1);
+	#endif
 }
 
 void ICACHE_FLASH_ATTR configuration_apply_post_init(void) {

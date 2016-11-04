@@ -415,43 +415,12 @@ void ICACHE_FLASH_ATTR disable_wifi2_status_led(const int8_t cid, const DisableW
 	com_return_setter(cid, data);
 }
 
-/*
- * Only applies when WiFi Extension V2 debug is enabled.
- * Allows to flash the WiFi Extension V2 when debugging is enabled.
- *
- * NOTE: When debug output is enabled in WiFi Extension V2 firmware, calling
- * the getter "is_wifi2_status_led_enabled()" will disable debug output until
- * the extension is reset. This getter is used by brickv to set GPIO2 of the
- * ESP8266 module on the extension to high state during firmware flashing, to
- * bring the module in UART flash mode.
- */
-#ifdef DEBUG_ENABLED
-	void ICACHE_FLASH_ATTR gpio2_set_high_bm(void) {
-		PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_GPIO2);
-		gpio_output_set(BIT2, 0, BIT2, 0);
-	}
-#endif
-
 void ICACHE_FLASH_ATTR is_wifi2_status_led_enabled(const int8_t cid, const IsWifi2StatusLEDEnabled *data) {
 	IsWifi2StatusLEDEnabledReturn iw2sleder;
 
 	iw2sleder.header        = data->header;
 	iw2sleder.header.length = sizeof(IsWifi2StatusLEDEnabledReturn);
 	iw2sleder.enabled       = wifi2_status_led_enabled;
-
-	/*
-	 * Only applies when WiFi Extension V2 debug is enabled.
-	 * Allows to flash the WiFi Extension V2 when debugging is enabled.
-	 *
-	 * NOTE: When debug output is enabled in WiFi Extension V2 firmware, calling
-	 * the getter "is_wifi2_status_led_enabled()" will disable debug output until
-	 * the extension is reset. This getter is used by brickv to set GPIO2 of the
-	 * ESP8266 module on the extension to high state during firmware flashing, to
-	 * bring the module in UART flash mode.
-	 */
-	#ifdef DEBUG_ENABLED
-		gpio2_set_high_bm();
-	#endif
 
 	com_send(&iw2sleder, sizeof(IsWifi2StatusLEDEnabledReturn), cid);
 }

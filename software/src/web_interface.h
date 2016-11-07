@@ -19,6 +19,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+ #ifndef WEB_INTERFACE_H
+ #define WEB_INTERFACE_H
+
 #include "httpd.h"
 #include "c_types.h"
 
@@ -72,3 +75,5 @@ int ICACHE_FLASH_ATTR do_check_secret(uint8_t slot, uint8_t *bytes_rn_client,
 	uint8_t *bytes_sha1_hmac_client);
 int ICACHE_FLASH_ATTR do_initialize_authentication_slots(void);
 int ICACHE_FLASH_ATTR cgi_init_authentication(HttpdConnData *connection_data);
+
+#endif

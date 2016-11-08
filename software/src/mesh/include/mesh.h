@@ -217,6 +217,7 @@ bool espconn_mesh_set_router(struct station_config *router);
 bool espconn_mesh_encrypt_init(AUTH_MODE mode, uint8_t *passwd, uint8_t pw_len);
 bool espconn_mesh_group_id_init(uint8_t *grp_id, uint16_t gid_len);
 bool espconn_mesh_regist_conn_ready_cb(espconn_mesh_usr_callback cb);
+bool espconn_mesh_regist_rebuild_fail_cb(espconn_mesh_usr_callback cb);
 bool espconn_mesh_regist_usr_cb(espconn_mesh_usr_callback cb);
 bool espconn_mesh_server_init(struct ip_addr *ip, uint16_t port);
 bool espconn_mesh_set_max_hops(uint8_t max_hops);
@@ -244,3 +245,4 @@ void espconn_mesh_setup_timer(os_timer_t *timer, uint32_t time,
 #endif
 
 #endif
+

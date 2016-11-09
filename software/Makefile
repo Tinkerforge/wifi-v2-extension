@@ -119,21 +119,21 @@ endef
 all: updatelibmesh buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
 
 updatelibmesh:
-	$(Q) rm $(SDK_BASE)/include/mesh.h
-	$(Q) cp src/mesh/include/mesh.h $(SDK_BASE)/include/
-	$(Q) rm $(SDK_BASE)/lib/liblwip.a
-	$(Q) rm $(SDK_BASE)/lib/libmain.a
-	$(Q) rm $(SDK_BASE)/lib/libmesh.a
-	$(Q) rm $(SDK_BASE)/lib/libnet80211.a
-	$(Q) rm $(SDK_BASE)/lib/libpp.a
-	$(Q) rm $(SDK_BASE)/lib/libwpa.a
+	$(Q) rm -v $(SDK_BASE)/include/mesh.h
+	$(Q) cp -v src/mesh/include/mesh.h $(SDK_BASE)/include/
+	$(Q) rm -v $(SDK_BASE)/lib/liblwip.a
+	$(Q) rm -v $(SDK_BASE)/lib/libmain.a
+	$(Q) rm -v $(SDK_BASE)/lib/libmesh.a
+	$(Q) rm -v $(SDK_BASE)/lib/libnet80211.a
+	$(Q) rm -v $(SDK_BASE)/lib/libpp.a
+	$(Q) rm -v $(SDK_BASE)/lib/libwpa.a
 
-	$(Q) cp src/mesh/lib/liblwip.a $(SDK_BASE)/lib/
-	$(Q) cp src/mesh/lib/libmain.a $(SDK_BASE)/lib/
-	$(Q) cp src/mesh/lib/libmesh.a $(SDK_BASE)/lib/
-	$(Q) cp src/mesh/lib/libnet80211.a $(SDK_BASE)/lib/
-	$(Q) cp src/mesh/lib/libpp.a $(SDK_BASE)/lib/
-	$(Q) cp src/mesh/lib/libwpa.a $(SDK_BASE)/lib/
+	$(Q) cp -v src/mesh/lib/liblwip.a $(SDK_BASE)/lib/
+	$(Q) cp -v src/mesh/lib/libmain.a $(SDK_BASE)/lib/
+	$(Q) cp -v src/mesh/lib/libmesh.a $(SDK_BASE)/lib/
+	$(Q) cp -v src/mesh/lib/libnet80211.a $(SDK_BASE)/lib/
+	$(Q) cp -v src/mesh/lib/libpp.a $(SDK_BASE)/lib/
+	$(Q) cp -v src/mesh/lib/libwpa.a $(SDK_BASE)/lib/
 
 buildlibesphttpd:
 	make -C ./web_interface

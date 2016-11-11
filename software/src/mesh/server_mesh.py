@@ -4,8 +4,10 @@ import sys
 import binascii
 import struct
 
-global HOST, PORT
+global HOST, PORT, clients
+
 HOST, PORT = "0.0.0.0", 7000
+clients = 0
 
 if sys.version_info[0] < 3:
     import SocketServer as socketserver
@@ -13,6 +15,10 @@ else:
     import socketserver
 
 class MeshHandler(socketserver.BaseRequestHandler):
+    global clients
+
+    clients = 0
+
     def do_broadcast(self, response):
         response[4] = 0
         response[5] = 0
@@ -25,6 +31,9 @@ class MeshHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         print('\n[+] MESH_SERVER: New client connected\n')
+
+        global clients
+        clients = clients + 1
 
         try:
             while True:
@@ -106,6 +115,8 @@ class MeshHandler(socketserver.BaseRequestHandler):
 
                 print('\n[+] MESH_SERVER: Sending broadcast response to node\n')
                 print('\n[+] MESH_SERVER: Broadcast packet = ' + response_str + '\n')
+
+                print('\n[+] MESH_SERVER: Total clients connected = ' + str(clients) + '\n')
 
                 self.request.sendall(response)
 

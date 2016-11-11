@@ -73,7 +73,7 @@ class MeshHandler(socketserver.BaseRequestHandler):
                 '''
                 response[1] = response[1] & ~0x01
 
-                print('\n[+] MESH_SERVER: request = ' + req_str + '\n')
+                print('\n[+] MESH_SERVER: Request = ' + req_str + '\n')
 
                 _payload_str = ' ({0}_{1}_{2}_{3})\n'.format(str(payload[0:3].decode()),
                 hex(payload[3]), hex(payload[4]), hex(payload[5]))
@@ -105,7 +105,7 @@ class MeshHandler(socketserver.BaseRequestHandler):
                         response_str = response_str + str(d) + ', '
 
                 print('\n[+] MESH_SERVER: Sending broadcast response to node\n')
-                print('\n[+] MESH_SERVER: broadcast packet = ' + response_str + '\n')
+                print('\n[+] MESH_SERVER: Broadcast packet = ' + response_str + '\n')
 
                 self.request.sendall(response)
 

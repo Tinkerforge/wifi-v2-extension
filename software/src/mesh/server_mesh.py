@@ -74,7 +74,11 @@ class MeshHandler(socketserver.BaseRequestHandler):
                 response[1] = response[1] & ~0x01
 
                 print('\n[+] MESH_SERVER: request = ' + req_str + '\n')
-                print('\n[+] MESH_SERVER: Payload = ' + payload_str + '\n')
+
+                _payload_str = ' ({0}_{1}_{2}_{3})\n'.format(str(payload[0:3].decode()),
+                hex(payload[3]), hex(payload[4]), hex(payload[5]))
+
+                print('\n[+] MESH_SERVER: Payload = ' + payload_str + _payload_str)
 
                 response_str = ''
 

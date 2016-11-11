@@ -7,7 +7,6 @@ import struct
 global HOST, PORT, clients
 
 HOST, PORT = "0.0.0.0", 7000
-clients = 0
 
 if sys.version_info[0] < 3:
     import SocketServer as socketserver
@@ -15,10 +14,6 @@ else:
     import socketserver
 
 class MeshHandler(socketserver.BaseRequestHandler):
-    global clients
-
-    clients = 0
-
     def do_broadcast(self, response):
         response[4] = 0
         response[5] = 0
@@ -31,9 +26,6 @@ class MeshHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         print('\n[+] MESH_SERVER: New client connected\n')
-
-        global clients
-        clients = clients + 1
 
         try:
             while True:
@@ -116,29 +108,10 @@ class MeshHandler(socketserver.BaseRequestHandler):
                 print('\n[+] MESH_SERVER: Sending broadcast response to node\n')
                 print('\n[+] MESH_SERVER: Broadcast packet = ' + response_str + '\n')
 
-                print('\n[+] MESH_SERVER: Total clients connected = ' + str(clients) + '\n')
-
                 self.request.sendall(response)
 
         except Exception as e:
             print('\n[+] MESH_SERVER: Exception, ' + str(e) + '\n')
-
-    def read_full(self, n):
-        while len(self.buf) < n:
-            try:
-
-
-                if not req:
-                    raise(Exception('\n[+] MESH_SERVER: Receive error\n'))
-                self.buf.extend(req)
-
-            except Exception as e:
-                print('\n[+] MESH_SERVER: Exception, ' + str(e) + '\n')
-
-        read = self.buf[0:n]
-        self.buf = self.buf[n:]
-
-        return bytes(read)
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     daemon_threads = True

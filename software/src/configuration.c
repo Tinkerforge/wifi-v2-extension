@@ -35,20 +35,10 @@
 #include "user_interface.h"
 #include "pearson_hash.h"
 #include "communication.h"
-#include "tf_mesh.h"
-#include "config.h" // Needed for MESH_ENABLED. Ultimately will not be here.
 
-// These parameters will come from loaded configuration.
-#define TF_MESH_MAX_HOP 4
-static uint16_t TF_MESH_SERVER_PORT = 7000;
-#define TF_MESH_ROUTER_SSID "TF_MESH_DEV_AP"
-#define TF_MESH_NODE_SSID_PASSWORD "1234567890"
-#define TF_MESH_ROUTER_SSID_PASSWORD "1234567890"
-#define TF_MESH_NODE_SSID_PREFIX "TF_MESH_DEV_NODE"
-static uint8_t TF_MESH_SERVER_IP[4] = {192, 168, 178, 67};
-#define TF_MESH_NODE_SSID_AUTHENTICATION AUTH_WPA_WPA2_PSK
-uint8_t TF_MESH_ROUTER_BSSID[6] = {0x1A, 0xFE, 0x34, 0x0D, 0x0D, 0x0D};
-static uint8_t TF_MESH_GROUP_ID[6] = {0x18, 0xFE, 0x34, 0x00, 0x00, 0x50};
+// Mesh related.
+#include "mesh.h"
+#include "tfp_mesh_connection.h"
 
 const Configuration configuration_default = {
 	// Configuration info
@@ -270,18 +260,35 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 
 void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	// For mesh mode we operate on station mode and configure the station interface.
+	os_printf("\n[+]MSH:Applying mesh configuration\n");
+
+	struct ip_info info_ip;
 	struct station_config config_st;
+	char hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1] = {0};
 
 	wifi_set_sleep_type(NONE_SLEEP_T);
 
-	// This is particularly important if the mesh router SSID is hidden.
-	config_st.bssid_set = 1;
+	/*
+	 * Even though in mesh mode enabling and configuring only station interface is
+	 * enough, we enable STATIONAP mode to apply AP mode settings like AP MAC address
+	 * if user provides one.
+	 */
+	wifi_set_opmode_current(STATIONAP_MODE);
 
-	os_memset(&config_st, 0, sizeof(config_st));
-	os_memcpy(config_st.bssid, TF_MESH_ROUTER_BSSID, sizeof(config_st.bssid));
-	os_memcpy(config_st.ssid, TF_MESH_ROUTER_SSID, os_strlen(TF_MESH_ROUTER_SSID));
-	os_memcpy(config_st.password, TF_MESH_ROUTER_SSID_PASSWORD,
-		os_strlen(TF_MESH_ROUTER_SSID_PASSWORD));
+	os_bzero(&config_st, sizeof(config_st));
+	os_bzero(&info_ip, sizeof(info_ip));
+
+	os_memcpy(config_st.ssid, TFP_MESH_ROUTER_SSID, os_strlen(TFP_MESH_ROUTER_SSID));
+	os_memcpy(config_st.password, TFP_MESH_ROUTER_SSID_PASSWORD,
+		os_strlen(TFP_MESH_ROUTER_SSID_PASSWORD));
+	os_memcpy(config_st.bssid, TFP_MESH_ROUTER_BSSID, sizeof(config_st.bssid));
+
+	if(configuration_check_array_null(configuration_current.client_bssid, 6)) {
+		config_st.bssid_set = 0;
+	}
+	else{
+		config_st.bssid_set = 1;
+	}
 
 	// Set MAC address of station and AP interfaces if there are user defined ones.
 	if(!configuration_check_array_null(configuration_current.client_mac_address, 6)) {
@@ -293,9 +300,35 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	}
 
 	/*
-	 * If the mesh router doesn't have DHCP then static IP must be configured on
+	 * If the mesh router doesn't have DHCP enabled then static IP must be configured on
 	 * the station interface.
 	 */
+	if(configuration_check_array_null(configuration_current.client_ip, 4)) {
+		wifi_station_dhcpc_start();
+	}
+	else {
+		wifi_station_dhcpc_stop();
+
+		IP4_ADDR(&info_ip.ip, configuration_current.client_ip[0],
+			configuration_current.client_ip[1],
+			configuration_current.client_ip[2],
+			configuration_current.client_ip[3]);
+		IP4_ADDR(&info_ip.gw, configuration_current.client_gateway[0],
+			configuration_current.client_gateway[1],
+			configuration_current.client_gateway[2],
+			configuration_current.client_gateway[3]);
+		IP4_ADDR(&info_ip.netmask, configuration_current.client_subnet_mask[0],
+			configuration_current.client_subnet_mask[1],
+			configuration_current.client_subnet_mask[2],
+			configuration_current.client_subnet_mask[3]);
+
+		wifi_set_ip_info(STATION_IF, &info_ip);
+	}
+
+	os_memcpy(hostname, configuration_current.client_hostname,
+		CONFIGURATION_HOSTNAME_MAX_LENGTH);
+
+	wifi_station_set_hostname(hostname);
 
 	// Apply station interface configuration.
 	wifi_station_set_config_current(&config_st);
@@ -303,38 +336,24 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	// Setup mesh network parameters.
 	espconn_mesh_set_router(&config_st);
 
-	espconn_mesh_encrypt_init(TF_MESH_NODE_SSID_AUTHENTICATION,
-	  TF_MESH_NODE_SSID_PASSWORD,
-	  os_strlen(TF_MESH_NODE_SSID_PASSWORD));
+	espconn_mesh_encrypt_init(TFP_MESH_NODE_SSID_AUTHENTICATION,
+	  TFP_MESH_NODE_SSID_PASSWORD,
+	  os_strlen(TFP_MESH_NODE_SSID_PASSWORD));
 
-	espconn_mesh_set_max_hops(TF_MESH_MAX_HOP);
+	espconn_mesh_set_max_hops(TFP_MESH_MAX_HOP);
 
-	espconn_mesh_set_ssid_prefix(TF_MESH_NODE_SSID_PREFIX,
-	  os_strlen(TF_MESH_NODE_SSID_PREFIX));
+	espconn_mesh_set_ssid_prefix(TFP_MESH_NODE_SSID_PREFIX,
+	  os_strlen(TFP_MESH_NODE_SSID_PREFIX));
 
-	espconn_mesh_group_id_init((uint8_t *)TF_MESH_GROUP_ID,
-	sizeof(TF_MESH_GROUP_ID));
+	espconn_mesh_group_id_init((uint8_t *)TFP_MESH_GROUP_ID,
+	sizeof(TFP_MESH_GROUP_ID));
 
 	// Used in MESH_ONLINE mode.
-	espconn_mesh_server_init((struct ip_addr *)TF_MESH_SERVER_IP,
-	TF_MESH_SERVER_PORT);
+	espconn_mesh_server_init((struct ip_addr *)TFP_MESH_SERVER_IP,
+	TFP_MESH_SERVER_PORT);
 
 	// Callback for the event when a new child joins a node.
-	espconn_mesh_regist_usr_cb(cb_tf_mesh_new_node);
-
-	/*
-	 * Enable mesh.
-	 *
-	 * Two possible modes of operation are,
-	 *
-	 * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
-	 * 								within the mesh network.
-	 *
-	 * 2. MESH_ONLINE: Has connection to server specified by TF_MESH_SERVER_IP and
-	 * 								 TF_MESH_SERVER_PORT which is initialised by,
-	 *								 espconn_mesh_server_init().
-	 */
-	espconn_mesh_enable(cb_tf_mesh_enable, MESH_LOCAL);
+	espconn_mesh_regist_usr_cb(cb_tfp_mesh_new_node);
 }
 
 void ICACHE_FLASH_ATTR configuration_apply_during_init(void) {

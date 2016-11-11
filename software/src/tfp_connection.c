@@ -35,6 +35,9 @@
 #include "user_interface.h"
 #include "logging.h"
 
+// Mesh related.
+#include "tfp_mesh_connection.h"
+
 Ringbuffer tfp_rb;
 uint8_t tfp_rb_buffer[TFP_RING_BUFFER_SIZE];
 
@@ -323,33 +326,39 @@ static espconn tfp_con_listen;
 static esp_tcp tfp_con_listen_tcp;
 
 void ICACHE_FLASH_ATTR tfp_open_connection(void) {
+	// Common initialisations.
 	ringbuffer_init(&tfp_rb, tfp_rb_buffer, TFP_RING_BUFFER_SIZE);
 	brickd_init();
 	com_init();
-
-	ets_memset(&tfp_con_listen, 0, sizeof(struct espconn));
 
 	for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
 		tfp_init_con(i);
 	}
 
-	// Initialize the ESPConn
-	espconn_create(&tfp_con_listen);
-	tfp_con_listen.type = ESPCONN_TCP;
-	tfp_con_listen.state = ESPCONN_NONE;
+	#if(MESH_ENABLED == 1)
+		// Start mesh.
+		tfp_mesh_enable();
+	#else
+		ets_memset(&tfp_con_listen, 0, sizeof(struct espconn));
 
-	// Make it a TCP connection
-	tfp_con_listen.proto.tcp = &tfp_con_listen_tcp;
-	tfp_con_listen.proto.tcp->local_port = configuration_current.general_port;
+		// Initialize the ESPConn
+		espconn_create(&tfp_con_listen);
+		tfp_con_listen.type = ESPCONN_TCP;
+		tfp_con_listen.state = ESPCONN_NONE;
 
-	espconn_regist_reconcb(&tfp_con_listen, tfp_reconnect_callback);
-	espconn_regist_connectcb(&tfp_con_listen, tfp_connect_callback);
+		// Make it a TCP connection
+		tfp_con_listen.proto.tcp = &tfp_con_listen_tcp;
+		tfp_con_listen.proto.tcp->local_port = configuration_current.general_port;
 
-	// Start listening
-	espconn_accept(&tfp_con_listen);
+		espconn_regist_reconcb(&tfp_con_listen, tfp_reconnect_callback);
+		espconn_regist_connectcb(&tfp_con_listen, tfp_connect_callback);
 
-	// Set server timeout (in seconds)
-	espconn_regist_time(&tfp_con_listen, 7200, 0);
+		// Start listening
+		espconn_accept(&tfp_con_listen);
+
+		// Set server timeout (in seconds)
+		espconn_regist_time(&tfp_con_listen, 7200, 0);
+	#endif
 }
 
 void ICACHE_FLASH_ATTR tfp_poll(void) {

@@ -37,9 +37,10 @@ static esp_tcp tfp_mesh_sock_tcp;
 uint16_t TFP_MESH_SERVER_PORT = 7000;
 uint8_t TFP_MESH_SERVER_IP[4] = {192, 168, 178, 67};
 uint8_t TFP_MESH_ROUTER_BSSID[6] = {0x1A, 0xFE, 0x34, 0x0D, 0x0D, 0x0D};
-uint8_t TFP_MESH_GROUP_ID[6] = {0x18, 0xFE, 0x34, 0x00, 0x00, 0x50};
+uint8_t TFP_MESH_GROUP_ID[6] = {0x1A, 0xFE, 0x34, 0x00, 0x00, 0x00};
 
 os_timer_t tmr_tfp_mesh_stat;
+os_timer_t tmr_tfp_mesh_test_send;
 
 void ICACHE_FLASH_ATTR tfp_mesh_enable(void) {
   /*
@@ -125,6 +126,15 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void* arg) {
   os_timer_setfn(&tmr_tfp_mesh_stat,
     (os_timer_func_t *)cb_tmr_tfp_mesh_stat, NULL);
   os_timer_arm(&tmr_tfp_mesh_stat, 8000, true);
+
+  /*
+   * Send test packet.
+   *
+   * Next packet is sent when response is received for the current packet.
+   * This is the suggested approach to periodically send packets through the
+   * mesh network.
+   */
+  tfp_mesh_send_test_pkt(&tfp_mesh_sock);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
@@ -143,6 +153,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
  */
 void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned short len) {
   int i = 0;
+  uint8_t mac[6];
   uint8_t *data = NULL;
   uint16_t len_data = 6;
   char data_1[3], data_2[3];
@@ -160,8 +171,23 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
   os_memcpy(data_1, data, 3);
   os_memcpy(data_2, &data[3], 3);
 
-  os_printf("\n[+]MSH:Recevied,LEN=%d,DATA=%c%c%c_0x%x_0x%x_0x%x\n", len, data_1[0], data_1[1],
+  os_printf("\n[+]MSH:Received,LEN=%d,DATA=%c%c%c_0x%x_0x%x_0x%x\n", len, data_1[0], data_1[1],
   data_1[2], data_2[0], data_2[1], data_2[2]);
+
+  wifi_get_macaddr(STATION_IF, mac);
+
+  if(data_2[0] == mac[3]) {
+    /*
+     * Setup timer to periodically send test packet.
+     * Do this only when a packet with self MAC arrives.
+     */
+    os_timer_disarm(&tmr_tfp_mesh_test_send);
+    os_timer_setfn(&tmr_tfp_mesh_test_send,
+      (os_timer_func_t *)cb_tmr_tfp_mesh_test_send, NULL);
+
+    // Send test packet after 2 seconds after receiving a response.
+    os_timer_arm(&tmr_tfp_mesh_test_send, 2000, false);
+  }
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac) {
@@ -208,6 +234,10 @@ void cb_tmr_tfp_mesh_stat(void) {
 
   os_printf("\n[+]MSH:Routing table\n");
 	espconn_mesh_disp_route_table();
+}
+
+void cb_tmr_tfp_mesh_test_send(void) {
+  os_timer_disarm(&tmr_tfp_mesh_test_send);
 
   tfp_mesh_send_test_pkt(&tfp_mesh_sock);
 }

@@ -42,8 +42,10 @@ extern uint8_t TFP_MESH_GROUP_ID[6];
 extern uint8_t TFP_MESH_ROUTER_BSSID[6];
 
 extern os_timer_t tmr_tfp_mesh_stat;
+extern os_timer_t tmr_tfp_mesh_test_send;
 
 void cb_tmr_tfp_mesh_stat(void);
+void cb_tmr_tfp_mesh_test_send(void);
 
 /*
  * 1. Connect to server IP:PORT and maintain the socket. Also register the callbacks for the socket.

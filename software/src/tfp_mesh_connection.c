@@ -153,7 +153,6 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
  */
 void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned short len) {
   int i = 0;
-  uint8_t mac[6];
   uint8_t *data = NULL;
   uint16_t len_data = 6;
   char data_1[3], data_2[3];
@@ -174,20 +173,12 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
   os_printf("\n[+]MSH:Received,LEN=%d,DATA=%c%c%c_0x%x_0x%x_0x%x\n", len, data_1[0], data_1[1],
   data_1[2], data_2[0], data_2[1], data_2[2]);
 
-  wifi_get_macaddr(STATION_IF, mac);
+  os_timer_disarm(&tmr_tfp_mesh_test_send);
+  os_timer_setfn(&tmr_tfp_mesh_test_send,
+    (os_timer_func_t *)cb_tmr_tfp_mesh_test_send, NULL);
 
-  if(data_2[0] == mac[3]) {
-    /*
-     * Setup timer to periodically send test packet.
-     * Do this only when a packet with self MAC arrives.
-     */
-    os_timer_disarm(&tmr_tfp_mesh_test_send);
-    os_timer_setfn(&tmr_tfp_mesh_test_send,
-      (os_timer_func_t *)cb_tmr_tfp_mesh_test_send, NULL);
-
-    // Send test packet after 2 seconds after receiving a response.
-    os_timer_arm(&tmr_tfp_mesh_test_send, 2000, false);
-  }
+  // Send test packet after 2 seconds after receiving a response.
+  os_timer_arm(&tmr_tfp_mesh_test_send, 2000, false);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac) {

@@ -330,9 +330,6 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 
 	wifi_station_set_hostname(hostname);
 
-	// Apply station interface configuration.
-	wifi_station_set_config_current(&config_st);
-
 	// Setup mesh network parameters.
 	espconn_mesh_set_router(&config_st);
 

@@ -396,5 +396,7 @@ void ICACHE_FLASH_ATTR configuration_apply_during_init(void) {
 
 void ICACHE_FLASH_ATTR configuration_apply_post_init(void) {
 	// Station connect can only be called after user_init
-	wifi_station_connect();
+	#if(MESH_ENABLED != 1)
+		wifi_station_connect();
+	#endif
 }

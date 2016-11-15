@@ -36,7 +36,7 @@ static esp_tcp tfp_mesh_sock_tcp;
 // Mesh network parameters.
 uint16_t TFP_MESH_SERVER_PORT = 7000;
 uint8_t TFP_MESH_SERVER_IP[4] = {192, 168, 178, 67};
-uint8_t TFP_MESH_ROUTER_BSSID[6] = {0x1A, 0xFE, 0x34, 0x0D, 0x0D, 0x0D};
+uint8_t TFP_MESH_ROUTER_BSSID[6] = {0x34, 0x31, 0xC4, 0xEA, 0x3C, 0x8E};
 uint8_t TFP_MESH_GROUP_ID[6] = {0x1A, 0xFE, 0x34, 0x00, 0x00, 0x00};
 
 os_timer_t tmr_tfp_mesh_stat;

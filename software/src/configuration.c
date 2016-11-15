@@ -40,50 +40,113 @@
 #include "mesh.h"
 #include "tfp_mesh_connection.h"
 
-const Configuration configuration_default = {
-	// Configuration info
-	.conf_checksum = 0,
-	.conf_version = CONFIGURATION_EXPECTED_VERSION,
-	.conf_length = sizeof(Configuration),
+#if(MESH_ENABLED != 1)
+	const Configuration configuration_default = {
+		// Configuration info
+		.conf_checksum = 0,
+		.conf_version = CONFIGURATION_EXPECTED_VERSION,
+		.conf_length = sizeof(Configuration),
 
-	// General configuration
-	.general_port = 4223,
-	.general_websocket_port = 4280,
-	.general_website_port = 80,
-	.general_phy_mode = 1,
-	.general_sleep_mode = 0, // Currently unused
-	/*
-	 * The field "general_website" is currently unused.
-	 * The web interface is currently enabled/disabled
-	 * based on the port specified for it.
-	 */
-	.general_website = 0,
-	.general_authentication_secret = "",
+		// General configuration
+		.general_port = 4223,
+		.general_websocket_port = 4280,
+		.general_website_port = 80,
+		.general_phy_mode = 1,
+		.general_sleep_mode = 0, // Currently unused
+		/*
+		 * The field "general_website" is currently unused.
+		 * The web interface is currently enabled/disabled
+		 * based on the port specified for it.
+		 */
+		.general_website = 0,
+		.general_authentication_secret = "",
 
-	// Client configuration
-	.client_enable = 1,
-	.client_ssid = "Tinkerforge WLAN",
-	.client_ip = {0, 0, 0, 0},
-	.client_subnet_mask = {0, 0, 0, 0},
-	.client_gateway = {0, 0, 0, 0},
-	.client_mac_address = {0, 0, 0, 0, 0, 0},
-	.client_bssid = {0, 0, 0, 0, 0, 0},
-	.client_hostname = "wifi-extension-v2",
-	.client_password = "25842149320894763607",
+		// Client configuration
+		.client_enable = 1,
+		.client_ssid = "Tinkerforge WLAN",
+		.client_ip = {0, 0, 0, 0},
+		.client_subnet_mask = {0, 0, 0, 0},
+		.client_gateway = {0, 0, 0, 0},
+		.client_mac_address = {0, 0, 0, 0, 0, 0},
+		.client_bssid = {0, 0, 0, 0, 0, 0},
+		.client_hostname = "wifi-extension-v2",
+		.client_password = "25842149320894763607",
 
-	// AP configuration
-	.ap_enable = 1,
-	.ap_ssid = "Wifi Extension 2.0 Access Point",
-	.ap_ip = {0, 0, 0, 0},
-	.ap_subnet_mask = {0, 0, 0, 0},
-	.ap_gateway = {0, 0, 0, 0},
-	.ap_encryption = 4,
-	.ap_hidden = false,
-	.ap_mac_address = {0, 0, 0, 0, 0, 0},
-	.ap_channel = 1,
-	.ap_hostname = "\0", // Currently unused
-	.ap_password = "password"
-};
+		// AP configuration
+		.ap_enable = 1,
+		.ap_ssid = "Wifi Extension 2.0 Access Point",
+		.ap_ip = {0, 0, 0, 0},
+		.ap_subnet_mask = {0, 0, 0, 0},
+		.ap_gateway = {0, 0, 0, 0},
+		.ap_encryption = 4,
+		.ap_hidden = false,
+		.ap_mac_address = {0, 0, 0, 0, 0, 0},
+		.ap_channel = 1,
+		.ap_hostname = "\0", // Currently unused
+		.ap_password = "password"
+	};
+#else
+	const Configuration configuration_default = {
+		// Configuration info
+		.conf_checksum = 0,
+		.conf_version = CONFIGURATION_EXPECTED_VERSION + 1,
+		.conf_length = sizeof(Configuration),
+
+		// General configuration
+		.general_port = 4223,
+		.general_websocket_port = 4280,
+		.general_website_port = 80,
+		.general_phy_mode = 1,
+		.general_sleep_mode = 0, // Currently unused
+		/*
+		 * The field "general_website" is currently unused.
+		 * The web interface is currently enabled/disabled
+		 * based on the port specified for it.
+		 */
+		.general_website = 0,
+		.general_authentication_secret = "",
+
+		// Client configuration
+		.client_enable = 1,
+		.client_ssid = "Tinkerforge WLAN",
+		.client_ip = {0, 0, 0, 0},
+		.client_subnet_mask = {0, 0, 0, 0},
+		.client_gateway = {0, 0, 0, 0},
+		.client_mac_address = {0, 0, 0, 0, 0, 0},
+		.client_bssid = {0, 0, 0, 0, 0, 0},
+		.client_hostname = "wifi-extension-v2",
+		.client_password = "25842149320894763607",
+
+		// AP configuration
+		.ap_enable = 1,
+		.ap_ssid = "Wifi Extension 2.0 Access Point",
+		.ap_ip = {0, 0, 0, 0},
+		.ap_subnet_mask = {0, 0, 0, 0},
+		.ap_gateway = {0, 0, 0, 0},
+		.ap_encryption = 4,
+		.ap_hidden = false,
+		.ap_mac_address = {0, 0, 0, 0, 0, 0},
+		.ap_channel = 1,
+		.ap_hostname = "\0", // Currently unused
+		.ap_password = "password",
+
+		// Mesh configuration
+		.mesh_enable = 0,
+		.mesh_router_ssid = "Tinkerforge WLAN",
+		.mesh_router_password = "25842149320894763607",
+		.mesh_router_bssid = {0, 0, 0, 0, 0, 0},
+		.mesh_router_ip = {0, 0, 0, 0},
+		.mesh_router_subnet_mask = {0, 0, 0, 0},
+		.mesh_router_gateway = {0, 0, 0, 0},
+		.mesh_prefix = "TF_MESH",
+		.mesh_group_id = {0x18, 0xFE, 0x34, 0x00, 0x00, 0x00},
+		.mesh_server_ip = {192, 168, 178, 67},
+		.mesh_server_port = 7000,
+		.mesh_node_mac_address = {0, 0, 0, 0, 0, 0},
+		.mesh_node_encryption = 4,
+		.mesh_node_password = "password"
+	};
+#endif
 
 Configuration configuration_current;
 

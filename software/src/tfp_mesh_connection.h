@@ -45,7 +45,6 @@ extern os_timer_t tmr_tfp_mesh_stat;
 extern os_timer_t tmr_tfp_mesh_test_send;
 
 void cb_tmr_tfp_mesh_stat(void);
-void cb_tmr_tfp_mesh_test_send(void);
 
 /*
  * 1. Connect to server IP:PORT and maintain the socket. Also register the callbacks for the socket.
@@ -56,7 +55,6 @@ void cb_tmr_tfp_mesh_test_send(void);
  *
  * 4. Dont forget to do packet counting.
  */
-void ICACHE_FLASH_ATTR tfp_mesh_enable(void);
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
 bool ICACHE_FLASH_ATTR tfp_mesh_send(const uint8_t *data, const uint8_t length);
 

@@ -40,25 +40,6 @@ uint8_t TFP_MESH_ROUTER_BSSID[6] = {0x34, 0x31, 0xC4, 0xEA, 0x3C, 0x8E};
 uint8_t TFP_MESH_GROUP_ID[6] = {0x1A, 0xFE, 0x34, 0x00, 0x00, 0x00};
 
 os_timer_t tmr_tfp_mesh_stat;
-os_timer_t tmr_tfp_mesh_test_send;
-
-void ICACHE_FLASH_ATTR tfp_mesh_enable(void) {
-  /*
-   * Enable mesh.
-   *
-   * Two possible modes of operation are,
-   *
-   * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
-   * 								within the mesh network.
-   *
-   * 2. MESH_ONLINE: Has connection to server specified by TF_MESH_SERVER_IP and
-   * 								 TF_MESH_SERVER_PORT which is initialised by,
-   *								 espconn_mesh_server_init().
-   *
-   * This function must be called in user_init();
-   */
-  espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
-}
 
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
   // Clear out socket data structure storage.
@@ -81,6 +62,8 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
 
   if(espconn_mesh_connect(&tfp_mesh_sock)) {
     // Re-enable mesh.
+    os_printf("\n[+]MSH:Re-enable=Connect failed\n");
+
     if(espconn_mesh_is_root()) {
       espconn_mesh_enable(cb_tfp_mesh_enable, MESH_LOCAL);
     }
@@ -126,15 +109,6 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void* arg) {
   os_timer_setfn(&tmr_tfp_mesh_stat,
     (os_timer_func_t *)cb_tmr_tfp_mesh_stat, NULL);
   os_timer_arm(&tmr_tfp_mesh_stat, 8000, true);
-
-  /*
-   * Send test packet.
-   *
-   * Next packet is sent when response is received for the current packet.
-   * This is the suggested approach to periodically send packets through the
-   * mesh network.
-   */
-  tfp_mesh_send_test_pkt(&tfp_mesh_sock);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
@@ -172,13 +146,6 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
 
   os_printf("\n[+]MSH:Received,LEN=%d,DATA=%c%c%c_0x%x_0x%x_0x%x\n", len, data_1[0], data_1[1],
   data_1[2], data_2[0], data_2[1], data_2[2]);
-
-  os_timer_disarm(&tmr_tfp_mesh_test_send);
-  os_timer_setfn(&tmr_tfp_mesh_test_send,
-    (os_timer_func_t *)cb_tmr_tfp_mesh_test_send, NULL);
-
-  // Send test packet after 2 seconds after receiving a response.
-  os_timer_arm(&tmr_tfp_mesh_test_send, 2000, false);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac) {
@@ -193,6 +160,13 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac) {
 }
 
 void cb_tmr_tfp_mesh_stat(void) {
+  uint8_t opmode = 0;
+  struct station_config config_st;
+  struct softap_config config_ap;
+
+  os_bzero(&config_st, sizeof(struct station_config));
+  os_bzero(&config_ap, sizeof(struct softap_config));
+
   if(espconn_mesh_is_root()) {
     os_printf("\n[+]MSH:Root node\n");
   }
@@ -223,12 +197,27 @@ void cb_tmr_tfp_mesh_stat(void) {
     os_printf("\n[+]MSH:Status=Local\n");
   }
 
+  // Print station and AP config.
+  opmode = wifi_get_opmode();
+
+  if(!wifi_station_get_config(&config_st)) {
+    os_printf("\n[+]MSH:Read failed=station config\n");
+  }
+
+  if(!wifi_softap_get_config(&config_ap)) {
+    os_printf("\n[+]MSH:Read failed=softap config\n");
+  }
+
+  os_printf("\n[+]MSH:OPMODE=0x%x\n", opmode);
+
+  os_printf("\n[+]MSH:STCFG:AP=%s,PWD=%s,BSET=%d\n",
+  config_st.ssid, config_st.password, config_st.bssid_set);
+
+  os_printf("\n[+]MSH:APCFG:MC=%d,SH=%d\n", config_ap.max_connection,
+  config_ap.ssid_hidden);
+
   os_printf("\n[+]MSH:Routing table\n");
 	espconn_mesh_disp_route_table();
-}
-
-void cb_tmr_tfp_mesh_test_send(void) {
-  os_timer_disarm(&tmr_tfp_mesh_test_send);
 
   tfp_mesh_send_test_pkt(&tfp_mesh_sock);
 }
@@ -246,8 +235,7 @@ void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock) {
   os_bzero(src_mac_addr, sizeof(src_mac_addr));
   os_bzero(dst_mac_addr, sizeof(dst_mac_addr));
 
-  os_memcpy(src_mac_addr, configuration_current.client_mac_address,
-    sizeof(configuration_current.client_mac_address));
+  wifi_get_macaddr(STATION_IF, src_mac_addr);
 
   data[0] = 'M';
   data[1] = 'A';
@@ -256,6 +244,9 @@ void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock) {
   os_memcpy(&data[3], &src_mac_addr[3], 3);
   os_memcpy(dst_mac_addr, TFP_MESH_SERVER_IP, sizeof(TFP_MESH_SERVER_IP));
   os_memcpy(&dst_mac_addr[4], &TFP_MESH_SERVER_PORT, sizeof(TFP_MESH_SERVER_PORT));
+
+  os_printf("\n[+]MSH:Send data = %c%c%c_0x%x_0x%x_0x%x\n", data[0], data[1],
+  data[2], data[3], data[4], data[5]);
 
   m_header = (struct mesh_header_format*)espconn_mesh_create_packet
   (
@@ -281,6 +272,8 @@ void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock) {
   m_header->proto.d = 1; // Upwards packet.
 
   if (!espconn_mesh_set_usr_data(m_header, data, sizeof(data))) {
+    os_printf("\n[+]MSH:Send fail=set user data\n");
+
     os_free(m_header);
 
     return;

@@ -41,7 +41,6 @@ void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 
 	uart_con_init();
 
-	// TFP connection is opened regardless of whether mesh is enabled or not.
 	tfp_open_connection();
 
 	#if(MESH_ENABLED != 1)

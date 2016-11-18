@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-import binascii
+import socket
 import struct
 
 global HOST, PORT, clients
@@ -115,10 +115,11 @@ class MeshHandler(socketserver.BaseRequestHandler):
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     daemon_threads = True
+    allow_reuse_address = True
 
 if __name__ == "__main__":
-    socketserver.TCPServer.allow_reuse_address = True
     server = ThreadedTCPServer((HOST, PORT), MeshHandler)
+    server.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
     print('\n[+] MESH_SERVER: Listening on ' + HOST + ':' + str(PORT) + '\n')
 

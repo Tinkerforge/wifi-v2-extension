@@ -101,15 +101,16 @@ void ICACHE_FLASH_ATTR user_init() {
 	gpio_init();
 	wifi_status_led_install(12, PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
 
-	// Initially configure GPIO2 as UART1 TX.
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_U1TXD_BK);
-
 	#if(MESH_ENABLED == 1)
 		configuration_use_default();
 	#else
-		i2c_master_init();
-		eeprom_init();
-		configuration_load_from_eeprom();
+		#ifdef DEBUG_ENABLED
+			configuration_use_default();
+		#else
+			i2c_master_init();
+			eeprom_init();
+			configuration_load_from_eeprom();
+		#endif
 	#endif
 
 	// The documentation says we can not call station_connect and similar

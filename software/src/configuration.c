@@ -89,7 +89,7 @@
 	const Configuration configuration_default = {
 		// Configuration info
 		.conf_checksum = 0,
-		.conf_version = CONFIGURATION_EXPECTED_VERSION + 1,
+		.conf_version = CONFIGURATION_EXPECTED_VERSION,
 		.conf_length = sizeof(Configuration),
 
 		// General configuration
@@ -134,17 +134,16 @@
 		.mesh_enable = 0,
 		.mesh_router_ssid = "Tinkerforge WLAN",
 		.mesh_router_password = "25842149320894763607",
-		.mesh_router_bssid = {0, 0, 0, 0, 0, 0},
 		.mesh_router_ip = {0, 0, 0, 0},
 		.mesh_router_subnet_mask = {0, 0, 0, 0},
 		.mesh_router_gateway = {0, 0, 0, 0},
-		.mesh_prefix = "TF_MESH",
-		.mesh_group_id = {0x18, 0xFE, 0x34, 0x00, 0x00, 0x00},
-		.mesh_server_ip = {192, 168, 178, 67},
-		.mesh_server_port = 7000,
-		.mesh_node_mac_address = {0, 0, 0, 0, 0, 0},
-		.mesh_node_encryption = 4,
-		.mesh_node_password = "password"
+		.mesh_router_bssid = {0x34, 0x31, 0xC4, 0xEA, 0x3C, 0x8E}, // Must be set if mesh router is hidden.
+		.mesh_ssid_prefix = "TF_MESH",
+		.mesh_password = "password",
+		.mesh_group_id = {0x1A, 0xFE, 0x34, 0x00, 0x00, 0x00},
+		.mesh_server_ip = {192, 168, 178, 67}, // IP of the brickd to connect the mesh network to.
+		.mesh_server_port = 7000, // Port of the brickd to connect the mesh network to.
+		.mesh_node_mac_address = {0, 0, 0, 0, 0, 0}
 	};
 #endif
 
@@ -321,132 +320,111 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 	*/
 }
 
-void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
-	bool setup_ok = true;
-	struct station_config config_st;
-	struct softap_config config_ap;
+#if(MESH_ENABLED == 1)
+	void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
+		bool setup_ok = true;
+		struct station_config config_st;
 
-	os_printf("\n[+]MSH:Applying mesh configuration\n");
+		os_printf("\n[+]MSH:Applying mesh configuration\n");
 
-	wifi_set_sleep_type(NONE_SLEEP_T);
-	wifi_set_opmode_current(STATIONAP_MODE);
-	os_bzero(&config_st, sizeof(struct station_config));
-	os_bzero(&config_ap, sizeof(struct softap_config));
+		os_bzero(&config_st, sizeof(struct station_config));
 
-	/*
-	struct station_config {
-		uint8 ssid[32];
-		uint8 password[64];
-		uint8 bssid_set;
-		uint8 bssid[6];
-	};
+		// Configure station interface.
+		config_st.bssid_set = 1; // Must be set if mesh router is hidden.
+		os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid,
+			os_strlen(configuration_current.mesh_router_ssid));
+		os_memcpy(config_st.password, configuration_current.mesh_router_password,
+			os_strlen(configuration_current.mesh_router_password));
+		os_memcpy(&config_st.bssid, configuration_current.mesh_router_bssid,
+		sizeof(configuration_current.mesh_router_bssid)); // Must be set if mesh router is hidden.
 
-	typedef enum _auth_mode {
-		AUTH_OPEN = 0,
-		AUTH_WEP,
-		AUTH_WPA_PSK,
-		AUTH_WPA2_PSK,
-		AUTH_WPA_WPA2_PSK
-	} AUTH_MODE;
-
-	struct softap_config {
-		uint8 ssid[32];
-		uint8 password[64];
-		uint8 ssid_len;
-		uint8 channel;// support 1 ~ 13
-		uint8 authmode; // Don’t support AUTH_WEP in soft-AP mode
-		uint8 ssid_hidden; // default 0
-		uint8 max_connection;// default 4, max 4
-		uint16 beacon_interval; // 100 ~ 60000 ms, default 100
-	};
-	*/
-
-	// Configure station interface.
-	config_st.bssid_set = 1;
-	os_memcpy(config_st.ssid, TFP_MESH_ROUTER_SSID, os_strlen(TFP_MESH_ROUTER_SSID));
-	os_memcpy(config_st.password, TFP_MESH_ROUTER_SSID_PASSWORD, os_strlen(TFP_MESH_ROUTER_SSID_PASSWORD));
-	os_bzero(&config_st.bssid, sizeof(config_st.bssid));
-
-	wifi_station_set_config_current(&config_st);
-
-	config_ap.channel = 1;
-	config_ap.ssid_hidden = 1;
-	config_ap.max_connection = 4;
-	config_ap.beacon_interval = 100;
-
-	wifi_softap_set_config_current(&config_ap);
-
-	wifi_station_set_reconnect_policy(true);
-	wifi_station_dhcpc_start();
-
-	// Setup mesh network parameters.
-	if(!espconn_mesh_set_router(&config_st)) {
-		os_printf("\n[+]MSH:Set router failed\n");
-		setup_ok = false;
-	}
-
-	if(!espconn_mesh_encrypt_init(TFP_MESH_NODE_SSID_AUTHENTICATION,
-	  TFP_MESH_NODE_SSID_PASSWORD,
-	  os_strlen(TFP_MESH_NODE_SSID_PASSWORD))) {
-			os_printf("\n[+]MSH:Encrypt init failed\n");
+		// Setup mesh network parameters.
+		if(!espconn_mesh_set_router(&config_st)) {
 			setup_ok = false;
-	}
 
-	if(!espconn_mesh_set_max_hops(TFP_MESH_MAX_HOP)) {
-		os_printf("\n[+]MSH:Set max hop failed\n");
-		setup_ok = false;
-	}
+			os_printf("\n[+]MSH:Set router failed\n");
+		}
 
-	if(!espconn_mesh_set_ssid_prefix(TFP_MESH_NODE_SSID_PREFIX,
-	  os_strlen(TFP_MESH_NODE_SSID_PREFIX))) {
-			os_printf("\n[+]MSH:Set SSID prefix failed\n");
+		/*
+		 * Seems like this encryption mode is causing trouble for child node to join
+		 * parent node within the mesh network.
+		 */
+		if(!espconn_mesh_encrypt_init(AUTH_OPEN, configuration_current.mesh_password,
+			os_strlen(configuration_current.mesh_password))) {
+				setup_ok = false;
+
+				os_printf("\n[+]MSH:Encrypt init failed\n");
+		}
+
+		/*
+		 * Do we need to set this in configuration?
+		 * Max hop and routing table is managed dynamically on the new mesh library.
+		 */
+		if(!espconn_mesh_set_max_hops(4)) {
 			setup_ok = false;
-	}
 
-	if(!espconn_mesh_group_id_init((uint8_t *)TFP_MESH_GROUP_ID,
-	sizeof(TFP_MESH_GROUP_ID))) {
-		os_printf("\n[+]MSH:Set group ID failed\n");
-		setup_ok = false;
-	}
+			os_printf("\n[+]MSH:Set max hop failed\n");
+		}
 
-	// Used in MESH_ONLINE mode.
-	if(!espconn_mesh_server_init((struct ip_addr *)TFP_MESH_SERVER_IP,
-	TFP_MESH_SERVER_PORT)) {
-		os_printf("\n[+]MSH:Mesh server init failed\n");
-		setup_ok = false;
-	}
+		if(!espconn_mesh_set_ssid_prefix(configuration_current.mesh_ssid_prefix,
+			os_strlen(configuration_current.mesh_ssid_prefix))) {
+				setup_ok = false;
 
-	// Callback for the event when a new child joins a node.
-	if(!espconn_mesh_regist_usr_cb(cb_tfp_mesh_new_node)) {
-		os_printf("\n[+]MSH:CB register new child failed\n");
-		setup_ok = false;
-	}
+				os_printf("\n[+]MSH:Set SSID prefix failed\n");
+		}
 
-	if(!setup_ok) {
-		os_printf("\n[+]MSH:Error occurred while configuring mesh parameters\n");
-	}
-	else {
-		os_printf("\n[+]MSH:Configuring mesh parameters all OK\n");
-	}
+		if(!espconn_mesh_group_id_init((uint8_t *)configuration_current.mesh_group_id,
+		sizeof(configuration_current.mesh_group_id))) {
+			setup_ok = false;
 
-	/*
-   * Enable mesh.
-   *
-   * Two possible modes of operation are,
-   *
-   * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
-   * 								within the mesh network.
-   *
-   * 2. MESH_ONLINE: Has connection to server specified by TF_MESH_SERVER_IP and
-   * 								 TF_MESH_SERVER_PORT which is initialised by,
-   *								 espconn_mesh_server_init().
-   *
-   * This function must be called in user_init();
-   */
-  espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
+			os_printf("\n[+]MSH:Set group ID failed\n");
+		}
 
-	os_printf("\n[+]MSH:Enabled, wait for CB\n");
-}
+		// Used in MESH_ONLINE mode.
+		if(!espconn_mesh_server_init((struct ip_addr *)configuration_current.mesh_server_ip,
+		configuration_current.mesh_server_port)) {
+			setup_ok = false;
+
+			os_printf("\n[+]MSH:Mesh server init failed\n");
+		}
+
+		// Callback for the event when a new child joins a node.
+		if(!espconn_mesh_regist_usr_cb(cb_tfp_mesh_new_node)) {
+			setup_ok = false;
+
+			os_printf("\n[+]MSH:CB register new child failed\n");
+		}
+
+		if(!setup_ok) {
+			os_printf("\n[+]MSH:Configuring mesh parameters failed\n");
+
+			return;
+		}
+		else {
+			os_printf("\n[+]MSH:Configuring mesh parameters OK\n");
+		}
+
+		espconn_mesh_print_ver();
+
+		/*
+		 * Enable mesh (drum roll...)
+		 *
+		 * Two possible modes of operation are,
+		 *
+		 * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
+		 * 								within the mesh network.
+		 *
+		 * 2. MESH_ONLINE: Has connection to server specified by TF_MESH_SERVER_IP and
+		 * 								 TF_MESH_SERVER_PORT which is initialised by,
+		 *								 espconn_mesh_server_init().
+		 *
+		 * This function must be called in user_init();
+		 */
+		espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
+
+		os_printf("\n[+]MSH:Enabled, wait for CB\n");
+	}
+#endif
 
 void ICACHE_FLASH_ATTR configuration_apply_during_init(void) {
 	// TODO: Currently not implemented in brickv

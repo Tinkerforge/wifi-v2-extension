@@ -34,7 +34,43 @@
 #include "eeprom.h"
 #include "logging.h"
 #include "configuration.h"
+#include <spi_flash.h>
+#include "espconn.h"
+
 extern Configuration configuration_current;
+
+void ICACHE_FLASH_ATTR print_mesh_stat() {
+	uint8_t ret = 0;
+
+	os_printf("\n[+]MSH-STAT:DHCP(C)=%d\n", wifi_station_dhcpc_status());
+	os_printf("\n[+]MSH-STAT:DHCP(S)=%d\n", wifi_softap_dhcps_status());
+
+	ret = wifi_get_opmode();
+
+	if(ret == 0x01) {
+		os_printf("\n[+]MSH-STAT:Station mode\n");
+	}
+	else if(ret == 0x02) {
+		os_printf("\n[+]MSH-STAT:AP mode\n");
+	}
+	else if(ret == 0x03) {
+		os_printf("\n[+]MSH-STAT:Station+AP mode\n");
+	}
+
+	ret = wifi_get_phy_mode();
+
+	if(ret == PHY_MODE_11B) {
+		os_printf("\n[+]MSH-STAT:PHY mode=B\n");
+	}
+	else if(ret == PHY_MODE_11G) {
+		os_printf("\n[+]MSH-STAT:PHY mode=G\n");
+	}
+	else if(ret == PHY_MODE_11N) {
+		os_printf("\n[+]MSH-STAT:PHY mode=N\n");
+	}
+
+	os_printf("\n[+]MSH-STAT:TCP MAX CONN=%d\n", espconn_tcp_get_max_con());
+}
 
 void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 	configuration_apply_post_init();
@@ -49,6 +85,8 @@ void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 		if(configuration_current.general_website_port > 1) {
 			http_open_connection();
 		}
+	#else
+		print_mesh_stat();
 	#endif
 }
 
@@ -66,9 +104,13 @@ void ICACHE_FLASH_ATTR user_init() {
 	// Initially configure GPIO2 as UART1 TX.
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_U1TXD_BK);
 
-	i2c_master_init();
-	eeprom_init();
-	configuration_load_from_eeprom();
+	#if(MESH_ENABLED == 1)
+		configuration_use_default();
+	#else
+		i2c_master_init();
+		eeprom_init();
+		configuration_load_from_eeprom();
+	#endif
 
 	// The documentation says we can not call station_connect and similar
 	// in user_init, so we do it in the callback after it is done!

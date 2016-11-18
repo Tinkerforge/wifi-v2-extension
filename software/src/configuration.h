@@ -26,7 +26,12 @@
 #include "config.h"
 #include "c_types.h"
 
-#define CONFIGURATION_EXPECTED_VERSION 1
+#if(MESH_ENABLED != 1)
+	#define CONFIGURATION_EXPECTED_VERSION 1
+#else
+	#define CONFIGURATION_EXPECTED_VERSION 2
+#endif
+
 #define CONFIGURATION_ADDRESS 32
 
 #define CONFIGURATION_SECRET_MAX_LENGTH 64
@@ -118,17 +123,16 @@
 		bool     mesh_enable;
 		char     mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
 		char     mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
-		uint8_t  mesh_router_bssid[6];
 		uint8_t  mesh_router_ip[4];
 		uint8_t  mesh_router_subnet_mask[4];
 		uint8_t  mesh_router_gateway[4];
-		char		 mesh_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
+		uint8_t  mesh_router_bssid[6];
+		char		 mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
+		char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
 		uint8_t  mesh_group_id[6];
 		uint8_t  mesh_server_ip[4];
-		uint16_t  mesh_server_port;
+		uint16_t mesh_server_port;
 		uint8_t  mesh_node_mac_address[6];
-		uint8_t  mesh_node_encryption;
-		char     mesh_node_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
 	} Configuration;
 #endif
 

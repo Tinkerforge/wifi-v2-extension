@@ -116,7 +116,8 @@ endef
 
 .PHONY: all checkdirs flash clean
 
-all: updatelibmesh buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
+#all: updatelibmesh buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
+all: buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
 
 updatelibmesh:
 	$(Q) rm -v $(SDK_BASE)/include/mesh.h

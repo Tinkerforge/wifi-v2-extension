@@ -25,47 +25,30 @@
 #include "c_types.h"
 #include "user_interface.h"
 
-// These parameters will come from loaded configuration.
-#define TFP_MESH_MAX_HOP 4
-
-#define TFP_MESH_ROUTER_SSID "Tinkerforge WLAN"
-#define TFP_MESH_ROUTER_SSID_PASSWORD "25842149320894763607"
-
-#define TFP_MESH_NODE_SSID_PREFIX "TF_MESH_DEV_NODE"
-#define TFP_MESH_NODE_SSID_AUTHENTICATION AUTH_WPA_WPA2_PSK
-#define TFP_MESH_NODE_SSID_PASSWORD "1234567890"
-
-extern uint8_t TFP_MESH_SERVER_IP[4];
-extern uint16_t TFP_MESH_SERVER_PORT;
-
-extern uint8_t TFP_MESH_GROUP_ID[6];
-extern uint8_t TFP_MESH_ROUTER_BSSID[6];
-
-extern os_timer_t tmr_tfp_mesh_stat;
-extern os_timer_t tmr_tfp_mesh_test_send;
-
-void cb_tmr_tfp_mesh_stat(void);
-
 /*
- * 1. Connect to server IP:PORT and maintain the socket. Also register the callbacks for the socket.
+ * 1. Connect to server IP:PORT and maintain the socket. Also register the
+ * callbacks for the socket.
  *
  * 2. Put received data on the ring buffer.
  *
- * 3. Put outgoing data (going up the stack from master brick) to the send function (queue?).
+ * 3. Put outgoing data (going up the stack from master brick) to the send
+ * function.
  *
  * 4. Dont forget to do packet counting.
  */
-void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
-bool ICACHE_FLASH_ATTR tfp_mesh_send(const uint8_t *data, const uint8_t length);
 
-// Callbacks.
-void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status);
-void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void* arg);
-void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg);
-void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned short len);
-void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac);
+#if(MESH_ENABLED == 1)
+  void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
+  void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock);
 
-void cb_tmr_tfp_mesh_stat(void);
-void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock);
+  // Callbacks.
+  void cb_tmr_tfp_mesh_stat(void);
+  void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg);
+  void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void* arg);
+  void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac);
+  void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status);
+  void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata,
+    unsigned short len);
+#endif
 
 #endif

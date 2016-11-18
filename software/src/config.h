@@ -26,10 +26,6 @@
 #define UART_CONNECTION UART0
 #define UART_DEBUG UART1
 
-/*
- * When debug is enabled the EEPROM where extension configuration is stored can
- * not be read so default configuration will be used.
- */
 #define LOGGING_LEVEL LOGGING_NONE
 
 /*

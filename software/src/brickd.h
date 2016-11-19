@@ -22,9 +22,6 @@
 #ifndef BRICKD_H
 #define BRICKD_H
 
-#include <stdint.h>
-#include <stdbool.h>
-
 #include "espmissingincludes.h"
 #include "communication.h"
 

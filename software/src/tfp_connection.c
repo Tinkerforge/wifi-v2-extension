@@ -21,7 +21,6 @@
  */
 
 #include "tfp_connection.h"
-
 #include "gpio.h"
 #include "espmissingincludes.h"
 #include "osapi.h"

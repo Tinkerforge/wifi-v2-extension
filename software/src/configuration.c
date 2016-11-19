@@ -26,7 +26,6 @@
 #include <string.h> // for strnlen
 
 #include "configuration.h"
-
 #include "espmissingincludes.h"
 #include "eeprom.h"
 #include "ip_addr.h"

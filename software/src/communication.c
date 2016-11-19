@@ -21,7 +21,6 @@
  */
 
 #include "communication.h"
-
 #include "tfp_connection.h"
 #include "configuration.h"
 #include "brickd.h"

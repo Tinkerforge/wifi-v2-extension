@@ -31,14 +31,14 @@ Toolchain
 ---------
 
 Clone and build toolchain from https://github.com/pfalcon/esp-open-sdk
-into toolchain/ directory. The following instructions apply for ESP8266 SDK 2.0.0::
+into toolchain/ directory. The following instructions apply for ESP8266 SDK 1.5.3::
 
  sudo apt-get install build-essential gperf libtool libtool-bin help2man texinfo libncurses5-dev python2.7-dev autoconf
  mkdir toolchain
  cd toolchain
  git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
  cd esp-open-sdk
- make STANDALONE=y VENDOR_SDK=2.0.0
+ make STANDALONE=y VENDOR_SDK=1.5.3
 
 Update toolchain::
 
@@ -46,7 +46,7 @@ Update toolchain::
  git pull
  git submodule sync
  git submodule update
- make STANDALONE=y VENDOR_SDK=2.0.0
+ make STANDALONE=y VENDOR_SDK=1.5.3
 
 Additionally we use libesphttpd::
 

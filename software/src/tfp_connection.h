@@ -22,9 +22,7 @@
 #ifndef TFP_CONNECTION_H
 #define TFP_CONNECTION_H
 
-#include <stdint.h>
 #include "c_types.h"
-
 #include "brickd.h"
 #include "websocket.h"
 #include "tfp_websocket_connection.h"

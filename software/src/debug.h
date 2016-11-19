@@ -22,7 +22,6 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-#include "stdint.h"
 #include "c_types.h"
 
 void ICACHE_FLASH_ATTR debug_enable(const uint8_t uart);

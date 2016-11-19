@@ -23,7 +23,6 @@
 #ifndef COMMUNICATION_H
 #define COMMUNICATION_H
 
-#include <stdint.h>
 #include "c_types.h"
 
 #define COM_OUT_RINGBUFFER_LENGTH 512

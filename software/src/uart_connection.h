@@ -22,7 +22,6 @@
 #ifndef UART_CONNECTION_H
 #define UART_CONNECTION_H
 
-#include <stdint.h>
 #include "c_types.h"
 
 void ICACHE_FLASH_ATTR uart_con_init(void);

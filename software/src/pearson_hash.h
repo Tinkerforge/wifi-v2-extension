@@ -22,7 +22,7 @@
 #ifndef PEARSON_HASH_H
 #define PEARSON_HASH_H
 
-#include <stdint.h>
+#include "c_types.h"
 
 #define PEARSON_PERMUTATION_SIZE 256
 

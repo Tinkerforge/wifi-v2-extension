@@ -34,13 +34,8 @@
  * not. Actual application of mesh settings will be implemented in the function
  * configuration_apply().
  *
- * To enable, set it to 1, any other value to diable.
- *
- * Note that if mesh experimental code is enabled it will require some libraries
- * in the SDK to be updated otherwise compilation will fail. To achieve this
- * uncomment the rule "all" in the Makefile.
- *
- * By default mesh mode is disabled.
+ * To enable, set it to 1, any other value to diable. By default mesh mode
+ * is disabled.
  */
 #define MESH_ENABLED 0
 

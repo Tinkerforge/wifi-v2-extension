@@ -53,7 +53,7 @@ LD_SCRIPT	= wifi_v2.ld
 
 # various paths from the SDK used in this project
 SDK_LIBDIR	= lib
-SDK_LDDIR	= ../../../software/src/ld
+SDK_LDDIR	= src/ld
 SDK_INCDIR	= include include/json
 
 # we create two different files for uploading into the flash
@@ -84,7 +84,7 @@ LIBS		:= $(addprefix -l,$(LIBS))
 APP_AR		:= $(addprefix $(BUILD_BASE)/,$(TARGET)_app.a)
 TARGET_OUT	:= $(addprefix $(BUILD_BASE)/,$(TARGET).out)
 
-LD_SCRIPT	:= $(addprefix -T$(SDK_BASE)/$(SDK_LDDIR)/,$(LD_SCRIPT))
+LD_SCRIPT	:= $(addprefix -T$(SDK_LDDIR)/,$(LD_SCRIPT))
 
 INCDIR	:= $(addprefix -I,$(SRC_DIR))
 EXTRA_INCDIR	:= $(addprefix -I,$(EXTRA_INCDIR))
@@ -116,8 +116,7 @@ endef
 
 .PHONY: all checkdirs flash clean
 
-#all: updatelibmesh buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
-all: buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
+all: updatelibmesh buildlibesphttpd checkdirs $(TARGET_OUT) $(FW_FILE_Z)
 
 updatelibmesh:
 	$(Q) rm -v $(SDK_BASE)/include/mesh.h

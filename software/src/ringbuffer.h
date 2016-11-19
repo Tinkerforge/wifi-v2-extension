@@ -22,9 +22,6 @@
 #ifndef WIFI_RINGBUFFER_H
 #define WIFI_RINGBUFFER_H
 
-#include <stdbool.h>
-#include <stdint.h>
-
 #include "espmissingincludes.h"
 
 typedef struct {

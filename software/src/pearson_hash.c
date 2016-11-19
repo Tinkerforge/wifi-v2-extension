@@ -21,8 +21,6 @@
 
 #include "pearson_hash.h"
 
-#include <stdint.h>
-
 // We use the Pearson Hash for fast hashing
 // See: http://en.wikipedia.org/wiki/Pearson_hashing
 // the permutation table is taken from the original paper:

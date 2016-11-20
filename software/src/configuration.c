@@ -344,10 +344,6 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 			os_printf("\n[+]MSH:Set router failed\n");
 		}
 
-		/*
-		 * Seems like this encryption mode is causing trouble for child node to join
-		 * parent node within the mesh network.
-		 */
 		if(!espconn_mesh_encrypt_init(AUTH_OPEN, configuration_current.mesh_password,
 			os_strlen(configuration_current.mesh_password))) {
 				setup_ok = false;

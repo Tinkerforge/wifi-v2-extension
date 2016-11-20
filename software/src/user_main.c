@@ -42,34 +42,36 @@ extern Configuration configuration_current;
 void ICACHE_FLASH_ATTR print_mesh_stat() {
 	uint8_t ret = 0;
 
-	os_printf("\n[+]MSH-STAT:DHCP(C)=%d\n", wifi_station_dhcpc_status());
-	os_printf("\n[+]MSH-STAT:DHCP(S)=%d\n", wifi_softap_dhcps_status());
+	os_printf("\n[+]MSH:=== Node initial status ===\n\n");
+
+	os_printf("DHCP(C)=%d\n", wifi_station_dhcpc_status());
+	os_printf("DHCP(S)=%d\n", wifi_softap_dhcps_status());
 
 	ret = wifi_get_opmode();
 
 	if(ret == 0x01) {
-		os_printf("\n[+]MSH-STAT:Station mode\n");
+		os_printf("Mode=Station\n");
 	}
 	else if(ret == 0x02) {
-		os_printf("\n[+]MSH-STAT:AP mode\n");
+		os_printf("Mode=AP\n");
 	}
 	else if(ret == 0x03) {
-		os_printf("\n[+]MSH-STAT:Station+AP mode\n");
+		os_printf("Mode=Station+AP\n");
 	}
 
 	ret = wifi_get_phy_mode();
 
 	if(ret == PHY_MODE_11B) {
-		os_printf("\n[+]MSH-STAT:PHY mode=B\n");
+		os_printf("PHY mode=B\n");
 	}
 	else if(ret == PHY_MODE_11G) {
-		os_printf("\n[+]MSH-STAT:PHY mode=G\n");
+		os_printf("PHY mode=G\n");
 	}
 	else if(ret == PHY_MODE_11N) {
-		os_printf("\n[+]MSH-STAT:PHY mode=N\n");
+		os_printf("PHY mode=N\n");
 	}
 
-	os_printf("\n[+]MSH-STAT:TCP MAX CONN=%d\n", espconn_tcp_get_max_con());
+	os_printf("TCP maximum connection=%d\n\n", espconn_tcp_get_max_con());
 }
 
 void ICACHE_FLASH_ATTR user_init_done_cb(void) {

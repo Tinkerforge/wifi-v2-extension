@@ -28,6 +28,9 @@
 #include "mesh.h"
 #include "tfp_mesh_connection.h"
 
+uint32_t count_pkt_s = 0;
+uint32_t count_pkt_r = 0;
+
 #if(MESH_ENABLED == 1)
   extern Configuration configuration_current;
 
@@ -155,58 +158,63 @@
     else if(ret == ESPCONN_IF) {
       os_printf("\n[+]MSH:Send fail, UDP data fail\n");
     }
-    else if(ret == 0) {
-      os_printf("\n[+]MSH:Send OK\n");
-    }
 
     os_free(m_header);
   }
 
   void cb_tmr_tfp_mesh_stat(void) {
+    int8_t status_node = espconn_mesh_get_status();
+
+    os_printf("\n[+]MSH:=== Periodic node status report ===\n\n");
+
     if(espconn_mesh_is_root()) {
-      os_printf("\n[+]MSH:Root node\n");
+      os_printf("R:IS\n");
     }
     else {
-      os_printf("\n[+]MSH:Not root node\n");
+      os_printf("R:NOT\n");
     }
 
-    if(espconn_mesh_is_root_candidate()) {
-      os_printf("\n[+]MSH:Root candidate\n");
+    if(status_node == MESH_DISABLE) {
+      os_printf("S:DISB\n");
+    }
+    else if (status_node == MESH_WIFI_CONN) {
+      os_printf("S:WIFI\n");
+    }
+    else if (status_node == MESH_NET_CONN) {
+      os_printf("S:IP\n");
+    }
+    else if (status_node == MESH_ONLINE_AVAIL) {
+      os_printf("S:ONLI\n");
+    }
+    else if (status_node == MESH_LOCAL_AVAIL) {
+      os_printf("S:LOCA\n");
+    }
+
+    os_printf("SND=%dPKT/S\n", count_pkt_s/8);
+    os_printf("RCV=%dPKT/S", count_pkt_r/8);
+
+    count_pkt_s = 0;
+    count_pkt_r = 0;
+
+    if(espconn_mesh_get_sub_dev_count() > 0) {
+      espconn_mesh_disp_route_table();
+      os_printf("\n");
     }
     else {
-      os_printf("\n[+]MSH:Not root candidate\n");
+      os_printf("\nROUTE=0\n\n");
     }
-
-    if(espconn_mesh_get_status() == MESH_DISABLE) {
-      os_printf("\n[+]MSH:Status=Disabled\n");
-    }
-    else if (espconn_mesh_get_status() == MESH_WIFI_CONN) {
-      os_printf("\n[+]MSH:Status=Connecting to WiFi\n");
-    }
-    else if (espconn_mesh_get_status() == MESH_NET_CONN) {
-      os_printf("\n[+]MSH:Status=Got IP\n");
-    }
-    else if (espconn_mesh_get_status() == MESH_ONLINE_AVAIL) {
-      os_printf("\n[+]MSH:Status=Online\n");
-    }
-    else if (espconn_mesh_get_status() == MESH_LOCAL_AVAIL) {
-      os_printf("\n[+]MSH:Status=Local\n");
-    }
-
-    os_printf("\n[+]MSH:Routing table\n");
-    espconn_mesh_disp_route_table();
   }
 
   void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
     espconn * sock = (espconn*)arg;
-
-    os_printf("\n[+]MSH:CB mesh sent\n");
 
     if(sock != &tfp_mesh_sock) {
       os_printf("\n[+]MSH:Wrong socket\n");
 
       return;
     }
+
+    count_pkt_s++;
 
     tfp_mesh_send_test_pkt(sock);
   }
@@ -268,7 +276,7 @@
 
     uint8_t *_mac = (uint8_t *)mac;
 
-    os_printf("\n[+]MSH:CB new node join,MAC=[%x:%x:%x:%x:%x:%x]\n", _mac[0],
+    os_printf("\n[+]MSH:CB new node joined,MAC=[%x:%x:%x:%x:%x:%x]\n", _mac[0],
     _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
   }
 
@@ -286,7 +294,6 @@
   void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned short len) {
     int i = 0;
     uint8_t *data = NULL;
-    char data_1[3], data_2[3];
     espconn *sock = (espconn *)arg;
     struct mesh_header_format *m_header = (struct mesh_header_format *)pdata;
 
@@ -302,10 +309,6 @@
       return;
     }
 
-    os_memcpy(data_1, data, 3);
-    os_memcpy(data_2, &data[3], 3);
-
-    os_printf("\n[+]MSH:Received,DATA=%c%c%c0x%x0x%x0x%x\n", data_1[0], data_1[1],
-    data_1[2], data_2[0], data_2[1], data_2[2]);
+    count_pkt_r++;
   }
 #endif

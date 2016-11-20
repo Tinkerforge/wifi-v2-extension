@@ -105,9 +105,6 @@
     os_memcpy(&dst_mac_addr[4], &configuration_current.mesh_server_port,
       sizeof(configuration_current.mesh_server_port));
 
-    os_printf("\n[+]MSH:Send data=%c%c%c_0x%x_0x%x_0x%x\n", data[0], data[1],
-    data[2], data[3], data[4], data[5]);
-
     m_header = (struct mesh_header_format*)espconn_mesh_create_packet
     (
       dst_mac_addr, // Destination address.
@@ -159,7 +156,7 @@
       os_printf("\n[+]MSH:Send fail, UDP data fail\n");
     }
     else if(ret == 0) {
-      os_printf("\n[+]MSH:Send OK,LEN=%d\n", m_header->len);
+      os_printf("\n[+]MSH:Send OK\n");
     }
 
     os_free(m_header);
@@ -289,7 +286,6 @@
   void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned short len) {
     int i = 0;
     uint8_t *data = NULL;
-    uint16_t len_data = 6;
     char data_1[3], data_2[3];
     espconn *sock = (espconn *)arg;
     struct mesh_header_format *m_header = (struct mesh_header_format *)pdata;
@@ -300,7 +296,7 @@
       return;
     }
 
-    if(!espconn_mesh_get_usr_data(m_header, &data, &len_data)) {
+    if(!espconn_mesh_get_usr_data(m_header, &data, &len)) {
       os_printf("\n[+]MSH:Error getting user data\n");
 
       return;
@@ -309,7 +305,7 @@
     os_memcpy(data_1, data, 3);
     os_memcpy(data_2, &data[3], 3);
 
-    os_printf("\n[+]MSH:Received,LEN=%d,DATA=%c%c%c_0x%x_0x%x_0x%x\n", len, data_1[0],
-    data_1[1], data_1[2], data_2[0], data_2[1], data_2[2]);
+    os_printf("\n[+]MSH:Received,DATA=%c%c%c0x%x0x%x0x%x\n", data_1[0], data_1[1],
+    data_1[2], data_2[0], data_2[1], data_2[2]);
   }
 #endif

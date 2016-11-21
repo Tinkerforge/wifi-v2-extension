@@ -24,6 +24,7 @@
 #define COMMUNICATION_H
 
 #include "c_types.h"
+#include "configuration.h"
 
 #define COM_OUT_RINGBUFFER_LENGTH 512
 
@@ -68,6 +69,8 @@ void ICACHE_FLASH_ATTR com_return_setter(const int8_t cid, const void *data);
 #define FID_ENABLE_WIFI2_STATUS_LED 99
 #define FID_DISABLE_WIFI2_STATUS_LED 100
 #define FID_IS_WIFI2_STATUS_LED_ENABLED 101
+#define FID_SET_WIFI2_MESH_CONFIGURATION 102
+#define FID_GET_WIFI2_MESH_CONFIGURATION 103
 
 typedef struct {
 	MessageHeader header;
@@ -99,6 +102,26 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
+	bool     mesh_enable;
+	char     mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH];
+	char     mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
+	uint8_t  mesh_router_ip[4];
+	uint8_t  mesh_router_subnet_mask[4];
+	uint8_t  mesh_router_gateway[4];
+	uint8_t  mesh_router_bssid[6];
+	char		 mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
+	char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
+	uint8_t  mesh_group_id[6];
+	uint8_t  mesh_server_ip[4];
+	uint16_t mesh_server_port;
+} __attribute__((__packed__)) SetWifi2MeshConfiguration;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) GetWifi2MeshConfiguration;
+
+typedef struct {
+	MessageHeader header;
 	uint16_t port;
 	uint16_t websocket_port;
 	uint16_t website_port;
@@ -106,6 +129,22 @@ typedef struct {
 	uint8_t sleep_mode;
 	uint8_t website;
 } __attribute__((__packed__)) GetWifi2ConfigurationReturn;
+
+typedef struct {
+	MessageHeader header;
+	bool     mesh_enable;
+	char     mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH];
+	char     mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
+	uint8_t  mesh_router_ip[4];
+	uint8_t  mesh_router_subnet_mask[4];
+	uint8_t  mesh_router_gateway[4];
+	uint8_t  mesh_router_bssid[6];
+	char		 mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
+	char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
+	uint8_t  mesh_group_id[6];
+	uint8_t  mesh_server_ip[4];
+	uint16_t mesh_server_port;
+} __attribute__((__packed__)) GetWifi2MeshConfigurationReturn;
 
 typedef struct {
 	MessageHeader header;
@@ -285,5 +324,7 @@ void ICACHE_FLASH_ATTR get_wifi2_firmware_version(const int8_t cid, const GetWif
 void ICACHE_FLASH_ATTR enable_wifi2_status_led(const int8_t cid, const EnableWifi2StatusLED *data);
 void ICACHE_FLASH_ATTR disable_wifi2_status_led(const int8_t cid, const DisableWifi2StatusLED *data);
 void ICACHE_FLASH_ATTR is_wifi2_status_led_enabled(const int8_t cid, const IsWifi2StatusLEDEnabled *data);
+void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid, const SetWifi2MeshConfiguration *data);
+void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid, const GetWifi2MeshConfiguration *data);
 
 #endif

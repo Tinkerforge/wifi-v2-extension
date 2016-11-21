@@ -39,112 +39,64 @@
 #include "mesh.h"
 #include "tfp_mesh_connection.h"
 
-#if(MESH_ENABLED != 1)
-	const Configuration configuration_default = {
-		// Configuration info
-		.conf_checksum = 0,
-		.conf_version = CONFIGURATION_EXPECTED_VERSION,
-		.conf_length = sizeof(Configuration),
+const Configuration configuration_default = {
+	// Configuration info
+	.conf_checksum = 0,
+	.conf_version = CONFIGURATION_EXPECTED_VERSION,
+	.conf_length = sizeof(Configuration),
 
-		// General configuration
-		.general_port = 4223,
-		.general_websocket_port = 4280,
-		.general_website_port = 80,
-		.general_phy_mode = 1,
-		.general_sleep_mode = 0, // Currently unused
-		/*
-		 * The field "general_website" is currently unused.
-		 * The web interface is currently enabled/disabled
-		 * based on the port specified for it.
-		 */
-		.general_website = 0,
-		.general_authentication_secret = "",
+	// General configuration
+	.general_port = 4223,
+	.general_websocket_port = 4280,
+	.general_website_port = 80,
+	.general_phy_mode = 1,
+	.general_sleep_mode = 0, // Currently unused
+	/*
+	 * The field "general_website" is currently unused.
+	 * The web interface is currently enabled/disabled
+	 * based on the port specified for it.
+	 */
+	.general_website = 0,
+	.general_authentication_secret = "",
 
-		// Client configuration
-		.client_enable = 1,
-		.client_ssid = "Tinkerforge WLAN",
-		.client_ip = {0, 0, 0, 0},
-		.client_subnet_mask = {0, 0, 0, 0},
-		.client_gateway = {0, 0, 0, 0},
-		.client_mac_address = {0, 0, 0, 0, 0, 0},
-		.client_bssid = {0, 0, 0, 0, 0, 0},
-		.client_hostname = "wifi-extension-v2",
-		.client_password = "25842149320894763607",
+	// Client configuration
+	.client_enable = 1,
+	.client_ssid = "Tinkerforge WLAN",
+	.client_ip = {0, 0, 0, 0},
+	.client_subnet_mask = {0, 0, 0, 0},
+	.client_gateway = {0, 0, 0, 0},
+	.client_mac_address = {0, 0, 0, 0, 0, 0},
+	.client_bssid = {0, 0, 0, 0, 0, 0},
+	.client_hostname = "wifi-extension-v2",
+	.client_password = "25842149320894763607",
 
-		// AP configuration
-		.ap_enable = 1,
-		.ap_ssid = "Wifi Extension 2.0 Access Point",
-		.ap_ip = {0, 0, 0, 0},
-		.ap_subnet_mask = {0, 0, 0, 0},
-		.ap_gateway = {0, 0, 0, 0},
-		.ap_encryption = 4,
-		.ap_hidden = false,
-		.ap_mac_address = {0, 0, 0, 0, 0, 0},
-		.ap_channel = 1,
-		.ap_hostname = "\0", // Currently unused
-		.ap_password = "password"
-	};
-#else
-	const Configuration configuration_default = {
-		// Configuration info
-		.conf_checksum = 0,
-		.conf_version = CONFIGURATION_EXPECTED_VERSION,
-		.conf_length = sizeof(Configuration),
+	// AP configuration
+	.ap_enable = 1,
+	.ap_ssid = "Wifi Extension 2.0 Access Point",
+	.ap_ip = {0, 0, 0, 0},
+	.ap_subnet_mask = {0, 0, 0, 0},
+	.ap_gateway = {0, 0, 0, 0},
+	.ap_encryption = 4,
+	.ap_hidden = false,
+	.ap_mac_address = {0, 0, 0, 0, 0, 0},
+	.ap_channel = 1,
+	.ap_hostname = "\0", // Currently unused
+	.ap_password = "password",
 
-		// General configuration
-		.general_port = 4223,
-		.general_websocket_port = 4280,
-		.general_website_port = 80,
-		.general_phy_mode = 1,
-		.general_sleep_mode = 0, // Currently unused
-		/*
-		 * The field "general_website" is currently unused.
-		 * The web interface is currently enabled/disabled
-		 * based on the port specified for it.
-		 */
-		.general_website = 0,
-		.general_authentication_secret = "",
-
-		// Client configuration
-		.client_enable = 1,
-		.client_ssid = "Tinkerforge WLAN",
-		.client_ip = {0, 0, 0, 0},
-		.client_subnet_mask = {0, 0, 0, 0},
-		.client_gateway = {0, 0, 0, 0},
-		.client_mac_address = {0, 0, 0, 0, 0, 0},
-		.client_bssid = {0, 0, 0, 0, 0, 0},
-		.client_hostname = "wifi-extension-v2",
-		.client_password = "25842149320894763607",
-
-		// AP configuration
-		.ap_enable = 1,
-		.ap_ssid = "Wifi Extension 2.0 Access Point",
-		.ap_ip = {0, 0, 0, 0},
-		.ap_subnet_mask = {0, 0, 0, 0},
-		.ap_gateway = {0, 0, 0, 0},
-		.ap_encryption = 4,
-		.ap_hidden = false,
-		.ap_mac_address = {0, 0, 0, 0, 0, 0},
-		.ap_channel = 1,
-		.ap_hostname = "\0", // Currently unused
-		.ap_password = "password",
-
-		// Mesh configuration
-		.mesh_enable = 0,
-		.mesh_router_ssid = "Tinkerforge WLAN",
-		.mesh_router_password = "25842149320894763607",
-		.mesh_router_ip = {0, 0, 0, 0},
-		.mesh_router_subnet_mask = {0, 0, 0, 0},
-		.mesh_router_gateway = {0, 0, 0, 0},
-		.mesh_router_bssid = {0x34, 0x31, 0xC4, 0xEA, 0x3C, 0x8E}, // Must be set if mesh router is hidden.
-		.mesh_ssid_prefix = "TF_MESH",
-		.mesh_password = "password",
-		.mesh_group_id = {0x1A, 0xFE, 0x34, 0x00, 0x00, 0x00},
-		.mesh_server_ip = {192, 168, 178, 67}, // IP of the brickd to connect the mesh network to.
-		.mesh_server_port = 7000, // Port of the brickd to connect the mesh network to.
-		.mesh_node_mac_address = {0, 0, 0, 0, 0, 0}
-	};
-#endif
+	// Mesh configuration
+	.mesh_enable = 0,
+	.mesh_router_ssid = "Tinkerforge WLAN",
+	.mesh_router_password = "25842149320894763607",
+	.mesh_router_ip = {0, 0, 0, 0},
+	.mesh_router_subnet_mask = {0, 0, 0, 0},
+	.mesh_router_gateway = {0, 0, 0, 0},
+	.mesh_router_bssid = {0, 0, 0, 0, 0, 0}, // Must be set if mesh router is hidden.
+	.mesh_ssid_prefix = "TF_MESH",
+	.mesh_password = "password",
+	.mesh_group_id = {0x1A, 0xFE, 0x34, 0x00, 0x00, 0x00},
+	.mesh_server_ip = {192, 168, 178, 67}, // IP of the brickd to connect the mesh network to.
+	.mesh_server_port = 4240, // Port of the brickd to connect the mesh network to.
+};
 
 Configuration configuration_current;
 
@@ -319,145 +271,197 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 	*/
 }
 
-#if(MESH_ENABLED == 1)
-	void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
-		bool setup_ok = true;
-		struct station_config config_st;
+void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
+	bool setup_ok = true;
+	struct station_config config_st;
+	struct ip_info ip_static_mesh_router;
 
-		os_printf("\n[+]MSH:Applying mesh configuration\n");
+	os_printf("\n[+]MSH:Applying mesh configuration\n");
 
-		os_bzero(&config_st, sizeof(struct station_config));
+	// Reset structs.
+	os_bzero(&config_st, sizeof(struct station_config));
+	os_bzero(&ip_static_mesh_router, sizeof(struct ip_info));
 
-		// Configure station interface.
-		config_st.bssid_set = 1; // Must be set if mesh router is hidden.
-		os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid,
-			os_strlen(configuration_current.mesh_router_ssid));
-		os_memcpy(config_st.password, configuration_current.mesh_router_password,
-			os_strlen(configuration_current.mesh_router_password));
+	os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+
+	if(configuration_check_array_null(configuration_current.mesh_router_bssid,
+		sizeof(configuration_current.mesh_router_bssid))) {
+			config_st.bssid_set = 0;
+			os_bzero(&config_st.bssid, sizeof(configuration_current.mesh_router_bssid));
+	}
+	else {
+		config_st.bssid_set = 1;
 		os_memcpy(&config_st.bssid, configuration_current.mesh_router_bssid,
-		sizeof(configuration_current.mesh_router_bssid)); // Must be set if mesh router is hidden.
+		sizeof(configuration_current.mesh_router_bssid));
+	}
 
-		// Setup mesh network parameters.
-		if(!espconn_mesh_set_router(&config_st)) {
+	os_memcpy(config_st.password, configuration_current.mesh_router_password,
+		CONFIGURATION_PASSWORD_MAX_LENGTH);
+
+	// Static IP configuration for mesh router.
+	if(!configuration_check_array_null(configuration_current.mesh_router_ip,
+		sizeof(configuration_current.mesh_router_ip))) {
+			wifi_station_dhcpc_stop();
+
+			IP4_ADDR(&ip_static_mesh_router.ip,
+				configuration_current.mesh_router_ip[0],
+				configuration_current.mesh_router_ip[1],
+				configuration_current.mesh_router_ip[2],
+				configuration_current.mesh_router_ip[3]);
+
+			IP4_ADDR(&ip_static_mesh_router.netmask,
+				configuration_current.mesh_router_subnet_mask[0],
+				configuration_current.mesh_router_subnet_mask[1],
+				configuration_current.mesh_router_subnet_mask[2],
+				configuration_current.mesh_router_subnet_mask[3]);
+
+			IP4_ADDR(&ip_static_mesh_router.gw,
+				configuration_current.mesh_router_gateway[0],
+				configuration_current.mesh_router_gateway[1],
+				configuration_current.mesh_router_gateway[2],
+				configuration_current.mesh_router_gateway[3]);
+
+			wifi_set_ip_info(STATION_IF, &ip_static_mesh_router);
+	}
+
+	// Setup mesh network parameters.
+	if(!espconn_mesh_set_ssid_prefix(configuration_current.mesh_ssid_prefix,
+		os_strlen(configuration_current.mesh_ssid_prefix))) {
 			setup_ok = false;
 
-			os_printf("\n[+]MSH:Set router failed\n");
-		}
+			os_printf("\n[+]MSH:Set SSID prefix failed\n");
+	}
 
-		if(!espconn_mesh_encrypt_init(AUTH_OPEN, configuration_current.mesh_password,
+	if(!espconn_mesh_group_id_init((uint8_t *)configuration_current.mesh_group_id,
+	sizeof(configuration_current.mesh_group_id))) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Set group ID failed\n");
+	}
+
+	// Used in MESH_ONLINE mode.
+	if(!espconn_mesh_server_init((struct ip_addr *)configuration_current.mesh_server_ip,
+	configuration_current.mesh_server_port)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Mesh server init failed\n");
+	}
+
+	if(!espconn_mesh_set_router(&config_st)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Set router failed\n");
+	}
+
+	if(os_strlen(configuration_current.mesh_password) == 0) {
+		if(!espconn_mesh_encrypt_init(AUTH_OPEN, "\0", 1)) {
+				setup_ok = false;
+
+				os_printf("\n[+]MSH:Encrypt init failed\n");
+		}
+	}
+	else {
+		if(!espconn_mesh_encrypt_init(AUTH_WPA_WPA2_PSK, configuration_current.mesh_password,
 			os_strlen(configuration_current.mesh_password))) {
 				setup_ok = false;
 
 				os_printf("\n[+]MSH:Encrypt init failed\n");
 		}
-
-		/*
-		 * Do we need to set this in configuration?
-		 * Max hop and routing table is managed dynamically on the new mesh library.
-		 */
-		if(!espconn_mesh_set_max_hops(4)) {
-			setup_ok = false;
-
-			os_printf("\n[+]MSH:Set max hop failed\n");
-		}
-
-		if(!espconn_mesh_set_ssid_prefix(configuration_current.mesh_ssid_prefix,
-			os_strlen(configuration_current.mesh_ssid_prefix))) {
-				setup_ok = false;
-
-				os_printf("\n[+]MSH:Set SSID prefix failed\n");
-		}
-
-		if(!espconn_mesh_group_id_init((uint8_t *)configuration_current.mesh_group_id,
-		sizeof(configuration_current.mesh_group_id))) {
-			setup_ok = false;
-
-			os_printf("\n[+]MSH:Set group ID failed\n");
-		}
-
-		// Used in MESH_ONLINE mode.
-		if(!espconn_mesh_server_init((struct ip_addr *)configuration_current.mesh_server_ip,
-		configuration_current.mesh_server_port)) {
-			setup_ok = false;
-
-			os_printf("\n[+]MSH:Mesh server init failed\n");
-		}
-
-		// Callback for the event when a new child joins a node.
-		if(!espconn_mesh_regist_usr_cb(cb_tfp_mesh_new_node)) {
-			setup_ok = false;
-
-			os_printf("\n[+]MSH:CB register new child failed\n");
-		}
-
-		if(!setup_ok) {
-			os_printf("\n[+]MSH:Configuring mesh parameters failed\n");
-
-			return;
-		}
-		else {
-			os_printf("\n[+]MSH:Configuring mesh parameters OK\n");
-		}
-
-		espconn_mesh_print_ver();
-
-		/*
-		 * Enable mesh (drum roll...)
-		 *
-		 * Two possible modes of operation are,
-		 *
-		 * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
-		 * 								within the mesh network.
-		 *
-		 * 2. MESH_ONLINE: Has connection to server specified by TF_MESH_SERVER_IP and
-		 * 								 TF_MESH_SERVER_PORT which is initialised by,
-		 *								 espconn_mesh_server_init().
-		 *
-		 * This function must be called in user_init();
-		 */
-		espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
-
-		os_printf("\n[+]MSH:Enabled, wait for CB\n");
 	}
-#endif
+
+	/*
+	 * Do we need to set this in configuration?
+	 * Max hop and routing table is managed dynamically on the new mesh library.
+	 */
+	if(!espconn_mesh_set_max_hops(4)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Set max hop failed\n");
+	}
+
+	// Callback for the event when a new child joins a node.
+	if(!espconn_mesh_regist_usr_cb(cb_tfp_mesh_new_node)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:CB register new child failed\n");
+	}
+
+	if(!setup_ok) {
+		os_printf("\n[+]MSH:Configuring mesh parameters failed\n");
+
+		return;
+	}
+	else {
+		os_printf("\n[+]MSH:Configuring mesh parameters OK\n");
+	}
+
+	espconn_mesh_print_ver();
+
+	/*
+	 * Enable mesh (drum roll...)
+	 *
+	 * Two possible modes of operation are,
+	 *
+	 * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
+	 * 								within the mesh network.
+	 *
+	 * 2. MESH_ONLINE: Has connection to server specified by TF_MESH_SERVER_IP and
+	 * 								 TF_MESH_SERVER_PORT which is initialised by,
+	 *								 espconn_mesh_server_init().
+	 *
+	 * This function must be called in user_init();
+	 */
+	espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
+
+	os_printf("\n[+]MSH:Enabled, wait for CB\n");
+}
 
 void ICACHE_FLASH_ATTR configuration_apply_during_init(void) {
 	// TODO: Currently not implemented in brickv
 	wifi_set_sleep_type(NONE_SLEEP_T);
 
-	#if(MESH_ENABLED == 1)
+	if(configuration_current.mesh_enable) {
 		configuration_apply_tf_mesh();
-	#else
-		if(configuration_current.client_enable && configuration_current.ap_enable) {
-			wifi_set_opmode_current(STATIONAP_MODE);
-		} else if(configuration_current.client_enable) {
-			wifi_set_opmode_current(STATION_MODE);
-		} else if(configuration_current.ap_enable) {
-			wifi_set_opmode_current(SOFTAP_MODE);
-		} else {
-			wifi_set_opmode_current(NULL_MODE);
-		}
 
-		wifi_set_phy_mode(configuration_current.general_phy_mode+1);
+		return;
+	}
+	else if(configuration_current.client_enable && configuration_current.ap_enable) {
+		wifi_set_opmode_current(STATIONAP_MODE);
+	}
+	else if(configuration_current.client_enable) {
+		wifi_set_opmode_current(STATION_MODE);
+	}
+	else if(configuration_current.ap_enable) {
+		wifi_set_opmode_current(SOFTAP_MODE);
+	}
+	else {
+		wifi_set_opmode_current(NULL_MODE);
+	}
 
-		// Client
-		if(configuration_current.client_enable) {
-			configuration_apply_client();
-		}
+	wifi_set_phy_mode(configuration_current.general_phy_mode+1);
 
-		// Access Point
-		if(configuration_current.ap_enable) {
-			configuration_apply_ap();
-		}
+	// Client
+	if(configuration_current.client_enable) {
+		configuration_apply_client();
+	}
 
-		// Do always call during user_init, otherwise it will only be effective after restart!
-		wifi_station_set_auto_connect(1);
-	#endif
+	// Access Point
+	if(configuration_current.ap_enable) {
+		configuration_apply_ap();
+	}
+
+	// Do always call during user_init, otherwise it will only be effective after restart!
+	wifi_station_set_auto_connect(1);
 }
 
 void ICACHE_FLASH_ATTR configuration_apply_post_init(void) {
-	// Station connect can only be called after user_init
-	#if(MESH_ENABLED != 1)
+	/*
+	 * Station connect can only be called after user_init.
+	 *
+	 * No need to explicitly connect station when in mesh mode as it is handled
+	 * by the mesh library.
+	 */
+	if(configuration_current.mesh_enable == 0) {
 		wifi_station_connect();
-	#endif
+	}
 }

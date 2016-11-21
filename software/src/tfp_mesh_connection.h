@@ -36,19 +36,16 @@
  *
  * 4. Dont forget to do packet counting.
  */
+void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
+void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock);
 
-#if(MESH_ENABLED == 1)
-  void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
-  void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock);
-
-  // Callbacks.
-  void cb_tmr_tfp_mesh_stat(void);
-  void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg);
-  void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void* arg);
-  void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac);
-  void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status);
-  void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata,
-    unsigned short len);
-#endif
+// Callbacks.
+void cb_tmr_tfp_mesh_stat(void);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void* arg);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata,
+  unsigned short len);
 
 #endif

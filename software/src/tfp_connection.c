@@ -334,7 +334,7 @@ void ICACHE_FLASH_ATTR tfp_open_connection(void) {
 		tfp_init_con(i);
 	}
 
-	#if(MESH_ENABLED != 1)
+	if(!configuration_current.mesh_enable) {
 		ets_memset(&tfp_con_listen, 0, sizeof(struct espconn));
 
 		// Initialize the ESPConn
@@ -354,9 +354,10 @@ void ICACHE_FLASH_ATTR tfp_open_connection(void) {
 
 		// Set server timeout (in seconds)
 		espconn_regist_time(&tfp_con_listen, 7200, 0);
-	#else
+	}
+	else {
 		os_printf("\n[+]MSH:TFP init\n");
-	#endif
+	}
 }
 
 void ICACHE_FLASH_ATTR tfp_poll(void) {

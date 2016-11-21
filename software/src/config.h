@@ -28,17 +28,6 @@
 
 #define LOGGING_LEVEL LOGGING_NONE
 
-/*
- * This is a temporary define. Ultimately this define will be replaced with a
- * configuration a field to determine whether the extension is in mesh mode or
- * not. Actual application of mesh settings will be implemented in the function
- * configuration_apply().
- *
- * To enable, set it to 1, any other value to diable. By default mesh mode
- * is disabled.
- */
-#define MESH_ENABLED 0
-
 #define FIRMWARE_VERSION_MAJOR    2
 #define FIRMWARE_VERSION_MINOR    0
 #define FIRMWARE_VERSION_REVISION 3

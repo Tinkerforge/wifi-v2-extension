@@ -6,7 +6,7 @@ import struct
 
 global HOST, PORT, clients
 
-HOST, PORT = "0.0.0.0", 7000
+HOST, PORT = "0.0.0.0", 4240
 
 if sys.version_info[0] < 3:
     import SocketServer as socketserver

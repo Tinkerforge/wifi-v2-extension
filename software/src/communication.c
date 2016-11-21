@@ -98,6 +98,8 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		case FID_ENABLE_WIFI2_STATUS_LED:         enable_wifi2_status_led(cid, (EnableWifi2StatusLED*)data);                 return true;
 		case FID_DISABLE_WIFI2_STATUS_LED:        disable_wifi2_status_led(cid, (DisableWifi2StatusLED*)data);               return true;
 		case FID_IS_WIFI2_STATUS_LED_ENABLED:     is_wifi2_status_led_enabled(cid, (IsWifi2StatusLEDEnabled*)data);          return true;
+		case FID_SET_WIFI2_MESH_CONFIGURATION:    set_wifi2_mesh_configuration(cid, (SetWifi2MeshConfiguration*)data);       return true;
+		case FID_GET_WIFI2_MESH_CONFIGURATION:    get_wifi2_mesh_configuration(cid, (GetWifi2MeshConfiguration*)data);       return true;
 	}
 
 	return false;
@@ -219,6 +221,92 @@ void ICACHE_FLASH_ATTR get_wifi2_configuration(const int8_t cid, const GetWifi2C
 	gw2cr.website        = configuration_current.general_website;
 
 	com_send(&gw2cr, sizeof(GetWifi2ConfigurationReturn), cid);
+}
+
+void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid,
+	const SetWifi2MeshConfiguration *data) {
+
+	configuration_current.mesh_enable = data->mesh_enable;
+
+	os_memcpy(configuration_current.mesh_router_ssid, data->mesh_router_ssid,
+		sizeof(data->mesh_router_ssid));
+
+	os_memcpy(configuration_current.mesh_router_password, data->mesh_router_password,
+		sizeof(data->mesh_router_password));
+
+	os_memcpy(configuration_current.mesh_router_ip, data->mesh_router_ip,
+		sizeof(data->mesh_router_ip));
+
+	os_memcpy(configuration_current.mesh_router_subnet_mask, data->mesh_router_subnet_mask,
+		sizeof(data->mesh_router_subnet_mask));
+
+	os_memcpy(configuration_current.mesh_router_gateway, data->mesh_router_gateway,
+		sizeof(data->mesh_router_gateway));
+
+	os_memcpy(configuration_current.mesh_router_bssid, data->mesh_router_bssid,
+		sizeof(data->mesh_router_bssid));
+
+	os_memcpy(configuration_current.mesh_ssid_prefix, data->mesh_ssid_prefix,
+		sizeof(data->mesh_ssid_prefix));
+
+	os_memcpy(configuration_current.mesh_password, data->mesh_password,
+		sizeof(data->mesh_password));
+
+	os_memcpy(configuration_current.mesh_group_id, data->mesh_group_id,
+		sizeof(data->mesh_group_id));
+
+	os_memcpy(configuration_current.mesh_server_ip, data->mesh_server_ip,
+		sizeof(data->mesh_server_ip));
+
+	configuration_current.mesh_server_port = data->mesh_server_port;
+
+	com_return_setter(cid, data);
+}
+
+void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
+	const GetWifi2MeshConfiguration *data) {
+	GetWifi2MeshConfigurationReturn gw2mcr;
+
+	os_bzero(&gw2mcr, sizeof(GetWifi2MeshConfigurationReturn));
+
+	gw2mcr.header         = data->header;
+	gw2mcr.header.length  = sizeof(GetWifi2MeshConfigurationReturn);
+
+	gw2mcr.mesh_enable    = configuration_current.mesh_enable;
+
+	os_memcpy(gw2mcr.mesh_router_ssid, configuration_current.mesh_router_ssid,
+		sizeof(configuration_current.mesh_router_ssid));
+
+	os_memcpy(gw2mcr.mesh_router_password, configuration_current.mesh_router_password,
+		sizeof(configuration_current.mesh_router_password));
+
+	os_memcpy(gw2mcr.mesh_router_ip, configuration_current.mesh_router_ip,
+		sizeof(configuration_current.mesh_router_ip));
+
+	os_memcpy(gw2mcr.mesh_router_subnet_mask, configuration_current.mesh_router_subnet_mask,
+		sizeof(configuration_current.mesh_router_subnet_mask));
+
+	os_memcpy(gw2mcr.mesh_router_gateway, configuration_current.mesh_router_gateway,
+		sizeof(configuration_current.mesh_router_gateway));
+
+	os_memcpy(gw2mcr.mesh_router_bssid, configuration_current.mesh_router_bssid,
+		sizeof(configuration_current.mesh_router_bssid));
+
+	os_memcpy(gw2mcr.mesh_ssid_prefix, configuration_current.mesh_ssid_prefix,
+		sizeof(configuration_current.mesh_ssid_prefix));
+
+	os_memcpy(gw2mcr.mesh_password, configuration_current.mesh_password,
+		sizeof(configuration_current.mesh_password));
+
+	os_memcpy(gw2mcr.mesh_group_id, configuration_current.mesh_group_id,
+		sizeof(configuration_current.mesh_group_id));
+
+	os_memcpy(gw2mcr.mesh_server_ip, configuration_current.mesh_server_ip,
+		sizeof(configuration_current.mesh_server_ip));
+
+	gw2mcr.mesh_server_port = configuration_current.mesh_server_port;
+
+	com_send(&gw2mcr, sizeof(GetWifi2MeshConfigurationReturn), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *data) {

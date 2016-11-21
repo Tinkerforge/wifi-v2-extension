@@ -81,15 +81,16 @@ void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 
 	tfp_open_connection();
 
-	#if(MESH_ENABLED != 1)
+	if(!configuration_current.mesh_enable) {
 		tfpw_open_connection();
 
 		if(configuration_current.general_website_port > 1) {
 			http_open_connection();
 		}
-	#else
+	}
+	else {
 		print_mesh_stat();
-	#endif
+	}
 }
 
 void ICACHE_FLASH_ATTR user_init() {
@@ -106,13 +107,9 @@ void ICACHE_FLASH_ATTR user_init() {
 	// By default GPIO2 as UART1 TX.
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_U1TXD_BK);
 
-	#if(MESH_ENABLED == 1)
-		configuration_use_default();
-	#else
-			i2c_master_init();
-			eeprom_init();
-			configuration_load_from_eeprom();
-	#endif
+	i2c_master_init();
+	eeprom_init();
+	configuration_load_from_eeprom();
 
 	// The documentation says we can not call station_connect and similar
 	// in user_init, so we do it in the callback after it is done!

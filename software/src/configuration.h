@@ -26,11 +26,7 @@
 #include "config.h"
 #include "c_types.h"
 
-#if(MESH_ENABLED != 1)
-	#define CONFIGURATION_EXPECTED_VERSION 1
-#else
-	#define CONFIGURATION_EXPECTED_VERSION 2
-#endif
+#define CONFIGURATION_EXPECTED_VERSION 2
 
 #define CONFIGURATION_ADDRESS 32
 
@@ -39,102 +35,59 @@
 #define CONFIGURATION_PASSWORD_MAX_LENGTH 64
 #define CONFIGURATION_SSID_MAX_LENGTH 32
 
-#if(MESH_ENABLED != 1)
-	typedef struct {
-		// Configuration info
-		uint8_t  conf_checksum;
-		uint8_t  conf_version;
-		uint16_t conf_length;
+typedef struct {
+	// Configuration info
+	uint8_t  conf_checksum;
+	uint8_t  conf_version;
+	uint16_t conf_length;
 
-		// General configuration
-		uint16_t general_port;
-		uint16_t general_websocket_port;
-		uint16_t general_website_port;
-		uint8_t  general_phy_mode;
-		uint8_t  general_sleep_mode;
-		uint8_t  general_website;
-		char     general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH]; // might not be NUL-terminated
+	// General configuration
+	uint16_t general_port;
+	uint16_t general_websocket_port;
+	uint16_t general_website_port;
+	uint8_t  general_phy_mode;
+	uint8_t  general_sleep_mode;
+	uint8_t  general_website;
+	char     general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH]; // might not be NUL-terminated
 
-		// Client configuration
-		bool     client_enable;
-		char     client_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
-		uint8_t  client_ip[4];
-		uint8_t  client_subnet_mask[4];
-		uint8_t  client_gateway[4];
-		uint8_t  client_mac_address[6];
-		uint8_t  client_bssid[6];
-		char     client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH]; // might not be NUL-terminated
-		char     client_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
+	// Client configuration
+	bool     client_enable;
+	char     client_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
+	uint8_t  client_ip[4];
+	uint8_t  client_subnet_mask[4];
+	uint8_t  client_gateway[4];
+	uint8_t  client_mac_address[6];
+	uint8_t  client_bssid[6];
+	char     client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH]; // might not be NUL-terminated
+	char     client_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
 
-		// AP configuration
-		bool     ap_enable;
-		char     ap_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
-		uint8_t  ap_ip[4];
-		uint8_t  ap_subnet_mask[4];
-		uint8_t  ap_gateway[4];
-		uint8_t  ap_encryption;
-		bool     ap_hidden;
-		uint8_t  ap_mac_address[6];
-		uint8_t  ap_channel;
-		char     ap_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH]; // might not be NUL-terminated
-		char     ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
-	} Configuration;
-#else
-	typedef struct {
-		// Configuration info
-		uint8_t  conf_checksum;
-		uint8_t  conf_version;
-		uint16_t conf_length;
+	// AP configuration
+	bool     ap_enable;
+	char     ap_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
+	uint8_t  ap_ip[4];
+	uint8_t  ap_subnet_mask[4];
+	uint8_t  ap_gateway[4];
+	uint8_t  ap_encryption;
+	bool     ap_hidden;
+	uint8_t  ap_mac_address[6];
+	uint8_t  ap_channel;
+	char     ap_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH]; // might not be NUL-terminated
+	char     ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
 
-		// General configuration
-		uint16_t general_port;
-		uint16_t general_websocket_port;
-		uint16_t general_website_port;
-		uint8_t  general_phy_mode;
-		uint8_t  general_sleep_mode;
-		uint8_t  general_website;
-		char     general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH]; // might not be NUL-terminated
-
-		// Client configuration
-		bool     client_enable;
-		char     client_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
-		uint8_t  client_ip[4];
-		uint8_t  client_subnet_mask[4];
-		uint8_t  client_gateway[4];
-		uint8_t  client_mac_address[6];
-		uint8_t  client_bssid[6];
-		char     client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH]; // might not be NUL-terminated
-		char     client_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
-
-		// AP configuration
-		bool     ap_enable;
-		char     ap_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
-		uint8_t  ap_ip[4];
-		uint8_t  ap_subnet_mask[4];
-		uint8_t  ap_gateway[4];
-		uint8_t  ap_encryption;
-		bool     ap_hidden;
-		uint8_t  ap_mac_address[6];
-		uint8_t  ap_channel;
-		char     ap_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH]; // might not be NUL-terminated
-		char     ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
-
-		// Mesh configuration
-		bool     mesh_enable;
-		char     mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
-		char     mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
-		uint8_t  mesh_router_ip[4];
-		uint8_t  mesh_router_subnet_mask[4];
-		uint8_t  mesh_router_gateway[4];
-		uint8_t  mesh_router_bssid[6];
-		char		 mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
-		char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
-		uint8_t  mesh_group_id[6];
-		uint8_t  mesh_server_ip[4];
-		uint16_t mesh_server_port;
-		uint8_t  mesh_node_mac_address[6];
-	} Configuration;
-#endif
+	// Mesh configuration
+	bool     mesh_enable;
+	char     mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NUL-terminated
+	char     mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
+	uint8_t  mesh_router_ip[4];
+	uint8_t  mesh_router_subnet_mask[4];
+	uint8_t  mesh_router_gateway[4];
+	uint8_t  mesh_router_bssid[6];
+	char		 mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
+	char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
+	uint8_t  mesh_group_id[6];
+	uint8_t  mesh_server_ip[4];
+	uint16_t mesh_server_port;
+} Configuration;
 
 void ICACHE_FLASH_ATTR configuration_use_default(void);
 void ICACHE_FLASH_ATTR configuration_load_from_eeprom(void);

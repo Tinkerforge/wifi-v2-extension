@@ -164,7 +164,7 @@ void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock) {
 void cb_tmr_tfp_mesh_stat(void) {
   int8_t status_node = espconn_mesh_get_status();
 
-  os_printf("\n[+]MSH:=== Periodic node status report ===\n\n");
+  os_printf("\n[+]MSH:=== Node Status ===\n\n");
 
   if(espconn_mesh_is_root()) {
     os_printf("R:IS\n");

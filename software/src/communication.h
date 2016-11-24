@@ -71,6 +71,10 @@ void ICACHE_FLASH_ATTR com_return_setter(const int8_t cid, const void *data);
 #define FID_IS_WIFI2_STATUS_LED_ENABLED 101
 #define FID_SET_WIFI2_MESH_CONFIGURATION 102
 #define FID_GET_WIFI2_MESH_CONFIGURATION 103
+#define FID_SET_WIFI2_MESH_ROUTER_SSID 104
+#define FID_GET_WIFI2_MESH_ROUTER_SSID 105
+#define FID_SET_WIFI2_MESH_ROUTER_PASSWORD 106
+#define FID_GET_WIFI2_MESH_ROUTER_PASSWORD 107
 
 typedef struct {
 	MessageHeader header;
@@ -102,26 +106,6 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	bool     mesh_enable;
-	char     mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH];
-	char     mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
-	uint8_t  mesh_router_ip[4];
-	uint8_t  mesh_router_subnet_mask[4];
-	uint8_t  mesh_router_gateway[4];
-	uint8_t  mesh_router_bssid[6];
-	char		 mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
-	char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
-	uint8_t  mesh_group_id[6];
-	uint8_t  mesh_server_ip[4];
-	uint16_t mesh_server_port;
-} __attribute__((__packed__)) SetWifi2MeshConfiguration;
-
-typedef struct {
-	MessageHeader header;
-} __attribute__((__packed__)) GetWifi2MeshConfiguration;
-
-typedef struct {
-	MessageHeader header;
 	uint16_t port;
 	uint16_t websocket_port;
 	uint16_t website_port;
@@ -133,18 +117,60 @@ typedef struct {
 typedef struct {
 	MessageHeader header;
 	bool     mesh_enable;
-	char     mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH];
-	char     mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
 	uint8_t  mesh_router_ip[4];
 	uint8_t  mesh_router_subnet_mask[4];
 	uint8_t  mesh_router_gateway[4];
 	uint8_t  mesh_router_bssid[6];
-	char		 mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
-	char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
 	uint8_t  mesh_group_id[6];
+	char mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
+	uint8_t  mesh_server_ip[4];
+	uint16_t mesh_server_port;
+} __attribute__((__packed__)) SetWifi2MeshConfiguration;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) GetWifi2MeshConfiguration;
+
+typedef struct {
+	MessageHeader header;
+	bool     mesh_enable;
+	uint8_t  mesh_router_ip[4];
+	uint8_t  mesh_router_subnet_mask[4];
+	uint8_t  mesh_router_gateway[4];
+	uint8_t  mesh_router_bssid[6];
+	uint8_t  mesh_group_id[6];
+	char mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
 	uint8_t  mesh_server_ip[4];
 	uint16_t mesh_server_port;
 } __attribute__((__packed__)) GetWifi2MeshConfigurationReturn;
+
+typedef struct {
+	MessageHeader header;
+	char mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH];
+} __attribute__((__packed__)) SetWifi2MeshRouterSSID;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) GetWifi2MeshRouterSSID;
+
+typedef struct {
+	MessageHeader header;
+	char mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH];
+} __attribute__((__packed__)) GetWifi2MeshRouterSSIDReturn;
+
+typedef struct {
+	MessageHeader header;
+	char mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
+} __attribute__((__packed__)) SetWifi2MeshRouterPassword;
+
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) GetWifi2MeshRouterPassword;
+
+typedef struct {
+	MessageHeader header;
+	char mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH];
+} __attribute__((__packed__)) GetWifi2MeshRouterPasswordReturn;
 
 typedef struct {
 	MessageHeader header;
@@ -326,5 +352,9 @@ void ICACHE_FLASH_ATTR disable_wifi2_status_led(const int8_t cid, const DisableW
 void ICACHE_FLASH_ATTR is_wifi2_status_led_enabled(const int8_t cid, const IsWifi2StatusLEDEnabled *data);
 void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid, const SetWifi2MeshConfiguration *data);
 void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid, const GetWifi2MeshConfiguration *data);
+void ICACHE_FLASH_ATTR set_wifi2_mesh_router_ssid(const int8_t cid, const SetWifi2MeshRouterSSID *data);
+void ICACHE_FLASH_ATTR get_wifi2_mesh_router_ssid(const int8_t cid, const GetWifi2MeshRouterSSID *data);
+void ICACHE_FLASH_ATTR set_wifi2_mesh_router_password(const int8_t cid, const SetWifi2MeshRouterPassword *data);
+void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid, const GetWifi2MeshRouterPassword *data);
 
 #endif

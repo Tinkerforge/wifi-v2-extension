@@ -282,7 +282,8 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	os_bzero(&config_st, sizeof(struct station_config));
 	os_bzero(&ip_static_mesh_router, sizeof(struct ip_info));
 
-	os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid,
+		sizeof(configuration_current.mesh_router_ssid));
 
 	if(configuration_check_array_null(configuration_current.mesh_router_bssid,
 		sizeof(configuration_current.mesh_router_bssid))) {
@@ -296,7 +297,7 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	}
 
 	os_memcpy(config_st.password, configuration_current.mesh_router_password,
-		CONFIGURATION_PASSWORD_MAX_LENGTH);
+		sizeof(configuration_current.mesh_router_password));
 
 	// Static IP configuration for mesh router.
 	if(!configuration_check_array_null(configuration_current.mesh_router_ip,
@@ -323,6 +324,25 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 
 			wifi_set_ip_info(STATION_IF, &ip_static_mesh_router);
 	}
+	else {
+		wifi_station_dhcpc_start();
+	}
+
+	/*
+	 * This is required to ensure that the saved configuration are being used for
+	 * configuring the station interface and not previously saved values.
+	 */
+	if(!wifi_station_set_config_current(&config_st)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Set station config failed\n");
+	}
+
+	if(!espconn_mesh_set_router(&config_st)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Set router failed\n");
+	}
 
 	// Setup mesh network parameters.
 	if(!espconn_mesh_set_ssid_prefix(configuration_current.mesh_ssid_prefix,
@@ -347,26 +367,15 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		os_printf("\n[+]MSH:Mesh server init failed\n");
 	}
 
-	if(!espconn_mesh_set_router(&config_st)) {
-		setup_ok = false;
+	/*
+	 * Currently intra-mesh node comunication is encrypted with WPA/WPA2
+	 * automatically which is transparent to the user.
+	 */
+	if(!espconn_mesh_encrypt_init(AUTH_WPA_WPA2_PSK, configuration_current.mesh_password,
+		os_strlen(configuration_current.mesh_password))) {
+			setup_ok = false;
 
-		os_printf("\n[+]MSH:Set router failed\n");
-	}
-
-	if(os_strlen(configuration_current.mesh_password) == 0) {
-		if(!espconn_mesh_encrypt_init(AUTH_OPEN, "\0", 1)) {
-				setup_ok = false;
-
-				os_printf("\n[+]MSH:Encrypt init failed\n");
-		}
-	}
-	else {
-		if(!espconn_mesh_encrypt_init(AUTH_WPA_WPA2_PSK, configuration_current.mesh_password,
-			os_strlen(configuration_current.mesh_password))) {
-				setup_ok = false;
-
-				os_printf("\n[+]MSH:Encrypt init failed\n");
-		}
+			os_printf("\n[+]MSH:Encrypt init failed\n");
 	}
 
 	/*

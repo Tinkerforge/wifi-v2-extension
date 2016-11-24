@@ -27,11 +27,10 @@
 #include "configuration.h"
 #include "mesh.h"
 #include "tfp_mesh_connection.h"
-
-uint32_t count_pkt_s = 0;
-uint32_t count_pkt_r = 0;
+#include "communication.h"
 
 extern Configuration configuration_current;
+extern GetWifi2MeshCommonStatusReturn gw2mcsr;
 
 static espconn tfp_mesh_sock;
 static esp_tcp tfp_mesh_sock_tcp;
@@ -189,12 +188,6 @@ void cb_tmr_tfp_mesh_stat(void) {
     os_printf("S:LOCA\n");
   }
 
-  os_printf("SND=%dPKT/S\n", count_pkt_s/8);
-  os_printf("RCV=%dPKT/S", count_pkt_r/8);
-
-  count_pkt_s = 0;
-  count_pkt_r = 0;
-
   if(espconn_mesh_get_sub_dev_count() > 0) {
     espconn_mesh_disp_route_table();
     os_printf("\n");
@@ -213,7 +206,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
     return;
   }
 
-  count_pkt_s++;
+  gw2mcsr.tx_count++;
 
   tfp_mesh_send_test_pkt(sock);
 }
@@ -308,5 +301,5 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
     return;
   }
 
-  count_pkt_r++;
+  gw2mcsr.rx_count++;
 }

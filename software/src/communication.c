@@ -31,6 +31,7 @@
 #include "espconn.h"
 #include "gpio.h"
 #include "ringbuffer.h"
+#include "mesh.h"
 
 bool wifi2_status_led_enabled = true;
 extern Configuration configuration_current;
@@ -57,6 +58,31 @@ GetWifi2StatusReturn gw2sr = {
 	.ap_rx_count = 0,
 	.ap_tx_count = 0,
 	.ap_connected_count = 0,
+};
+
+GetWifi2MeshCommonStatusReturn gw2mcsr = {
+	.status = 0,
+	.is_root_node = false,
+	.is_root_candidate = false,
+	.connected_nodes = 0,
+	.rx_count = 0,
+	.tx_count = 0,
+};
+
+GetWifi2MeshStationStatusReturn gw2mssr = {
+	.hostname = "\0",
+	.ip = {0, 0, 0, 0},
+	.sub = {0, 0, 0, 0},
+	.gw = {0, 0, 0, 0},
+	.mac = {0, 0, 0, 0, 0, 0},
+};
+
+GetWifi2MeshAPStatusReturn gw2masr = {
+	.ssid = "\0",
+	.ip = {0, 0, 0, 0},
+	.sub = {0, 0, 0, 0},
+	.gw = {0, 0, 0, 0},
+	.mac = {0, 0, 0, 0, 0, 0},
 };
 
 void ICACHE_FLASH_ATTR com_init(void) {
@@ -104,6 +130,9 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		case FID_GET_WIFI2_MESH_ROUTER_SSID:			get_wifi2_mesh_router_ssid(cid, (GetWifi2MeshRouterSSID*)data);						 return true;
 		case FID_SET_WIFI2_MESH_ROUTER_PASSWORD:  set_wifi2_mesh_router_password(cid, (SetWifi2MeshRouterPassword*)data);		 return true;
 		case FID_GET_WIFI2_MESH_ROUTER_PASSWORD:  get_wifi2_mesh_router_password(cid, (GetWifi2MeshRouterPassword*)data);		 return true;
+		case FID_GET_WIFI2_MESH_COMMON_STATUS:    get_wifi2_mesh_common_status(cid, (GetWifi2MeshCommonStatus*)data);    		 return true;
+		case FID_GET_WIFI2_MESH_STATION_STATUS:   get_wifi2_mesh_station_status(cid, (GetWifi2MeshStationStatus*)data);  		 return true;
+		case FID_GET_WIFI2_MESH_AP_STATUS:        get_wifi2_mesh_ap_status(cid, (GetWifi2MeshAPStatus*)data);            		 return true;
 	}
 
 	return false;
@@ -332,6 +361,7 @@ void ICACHE_FLASH_ATTR set_wifi2_mesh_router_password(const int8_t cid,
 
 	com_return_setter(cid, data);
 }
+
 void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
 	const GetWifi2MeshRouterPassword *data) {
 	GetWifi2MeshRouterPasswordReturn gw2mrpr;
@@ -345,6 +375,62 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
 		sizeof(configuration_current.mesh_router_password));
 
 	com_send(&gw2mrpr, sizeof(GetWifi2MeshRouterPasswordReturn), cid);
+}
+
+void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid,
+	const GetWifi2MeshCommonStatus *data) {
+		gw2mcsr.header = data->header;
+		gw2mcsr.header.length = sizeof(GetWifi2MeshCommonStatusReturn);
+		gw2mcsr.status = espconn_mesh_get_status();
+		gw2mcsr.is_root_node = espconn_mesh_is_root();
+		gw2mcsr.is_root_candidate = espconn_mesh_is_root_candidate();
+		gw2mcsr.connected_nodes = espconn_mesh_get_sub_dev_count();
+
+		com_send(&gw2mcsr, sizeof(GetWifi2MeshCommonStatusReturn), cid);
+}
+
+void ICACHE_FLASH_ATTR get_wifi2_mesh_station_status(const int8_t cid,
+	const GetWifi2MeshStationStatus *data) {
+		uint8_t mac[6];
+		char *hostname;
+		struct ip_info info_ipv4;
+		struct station_config *config_st;
+
+		gw2mssr.header = data->header;
+		gw2mssr.header.length = sizeof(GetWifi2MeshStationStatusReturn);
+
+		if((wifi_get_ip_info(STATION_IF, &info_ipv4)) && (wifi_get_macaddr(STATION_IF, mac))) {
+			hostname = wifi_station_get_hostname();
+
+			os_memcpy(gw2mssr.hostname, hostname, sizeof(gw2mssr.hostname));
+			os_memcpy(gw2mssr.ip, (uint8_t *)&info_ipv4.ip.addr, sizeof(info_ipv4.ip.addr));
+			os_memcpy(gw2mssr.sub, (uint8_t *)&info_ipv4.netmask.addr, sizeof(info_ipv4.netmask.addr));
+			os_memcpy(gw2mssr.gw, (uint8_t *)&info_ipv4.gw.addr, sizeof(info_ipv4.gw.addr));
+			os_memcpy(gw2mssr.mac, mac, sizeof(mac));
+		}
+
+		com_send(&gw2mssr, sizeof(GetWifi2MeshStationStatusReturn), cid);
+}
+
+void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid,
+	const GetWifi2MeshAPStatus *data) {
+		uint8_t mac[6];
+		struct ip_info info_ipv4;
+		struct softap_config config_ap;
+
+		gw2masr.header = data->header;
+		gw2masr.header.length = sizeof(GetWifi2MeshAPStatusReturn);
+
+		if((wifi_softap_get_config(&config_ap)) && (wifi_get_ip_info(SOFTAP_IF, &info_ipv4)) \
+		&& (wifi_get_macaddr(SOFTAP_IF, mac))) {
+			os_memcpy(gw2masr.ssid, config_ap.ssid, sizeof(config_ap.ssid));
+			os_memcpy(gw2masr.ip, (uint8_t *)&info_ipv4.ip.addr, sizeof(info_ipv4.ip.addr));
+			os_memcpy(gw2masr.sub, (uint8_t *)&info_ipv4.netmask.addr, sizeof(info_ipv4.ip.addr));
+			os_memcpy(gw2masr.gw, (uint8_t *)&info_ipv4.gw.addr, sizeof(info_ipv4.ip.addr));
+			os_memcpy(gw2masr.mac, mac, sizeof(mac));
+		}
+
+		com_send(&gw2masr, sizeof(GetWifi2MeshAPStatusReturn), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *data) {

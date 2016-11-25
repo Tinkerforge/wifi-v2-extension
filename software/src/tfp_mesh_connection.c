@@ -181,11 +181,23 @@ void cb_tmr_tfp_mesh_stat(void) {
   else if (status_node == MESH_NET_CONN) {
     os_printf("S:GOT IP\n");
   }
+  else if (status_node == MESH_LOCAL_AVAIL) {
+    os_printf("S:LOCAL\n");
+  }
   else if (status_node == MESH_ONLINE_AVAIL) {
     os_printf("S:ONLINE\n");
   }
-  else if (status_node == MESH_LOCAL_AVAIL) {
-    os_printf("S:LOCAL\n");
+  else if (status_node == MESH_SOFTAP_AVAIL) {
+    os_printf("S:SOFTAP AVAILABLE\n");
+  }
+  else if (status_node == MESH_SOFTAP_SETUP) {
+    os_printf("S:SOFTAP SETUP\n");
+  }
+  else if (status_node == MESH_LEAF_AVAIL) {
+    os_printf("S:LEAF AVAILABLE\n");
+  }
+  else {
+    os_printf("S:Unknown\n");
   }
 
   if(espconn_mesh_get_sub_dev_count() > 0) {

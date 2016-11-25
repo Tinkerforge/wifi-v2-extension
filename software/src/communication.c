@@ -615,7 +615,7 @@ void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi
 	SaveWifi2ConfigurationReturn sw2cr;
 
 	/*
-	 * FIXME: When mesh mode is enabled client and AP mode must be disbaled.
+	 * When mesh mode is enabled client and AP mode must be disbaled.
 	 * If a situation is detected where mesh mode is enabled along with client/AP
 	 * mode then disable mesh mode.
 	 *

@@ -173,19 +173,19 @@ void cb_tmr_tfp_mesh_stat(void) {
   }
 
   if(status_node == MESH_DISABLE) {
-    os_printf("S:DISB\n");
+    os_printf("S:DISABLED\n");
   }
   else if (status_node == MESH_WIFI_CONN) {
-    os_printf("S:WIFI\n");
+    os_printf("S:CONNECTING\n");
   }
   else if (status_node == MESH_NET_CONN) {
-    os_printf("S:IP\n");
+    os_printf("S:GOT IP\n");
   }
   else if (status_node == MESH_ONLINE_AVAIL) {
-    os_printf("S:ONLI\n");
+    os_printf("S:ONLINE\n");
   }
   else if (status_node == MESH_LOCAL_AVAIL) {
-    os_printf("S:LOCA\n");
+    os_printf("S:LOCAL\n");
   }
 
   if(espconn_mesh_get_sub_dev_count() > 0) {
@@ -193,7 +193,7 @@ void cb_tmr_tfp_mesh_stat(void) {
     os_printf("\n");
   }
   else {
-    os_printf("\nROUTE=0\n\n");
+    os_printf("ROUTING TABLE EMPTY\n\n");
   }
 }
 

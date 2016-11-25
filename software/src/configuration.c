@@ -272,23 +272,43 @@ void ICACHE_FLASH_ATTR configuration_apply_ap(void) {
 }
 
 void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
+	char hostname[32];
 	bool setup_ok = true;
+	uint8_t mac_sta_if[6];
 	struct station_config config_st;
+	struct softap_config config_ap;
 	struct ip_info ip_static_mesh_router;
 
 	os_printf("\n[+]MSH:Applying mesh configuration\n");
 
+	/*
+	 * For mesh, STATION+AP mode is required.
+	 *
+	 * The APIs used to configure station interface requires proper mode be enabled
+	 * before using them.
+	 */
+	if(!wifi_set_opmode(STATIONAP_MODE)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Setting STATION+AP mode failed\n");
+	}
+
 	// Reset structs.
-	os_bzero(&config_st, sizeof(struct station_config));
-	os_bzero(&ip_static_mesh_router, sizeof(struct ip_info));
+	os_bzero(&config_st, sizeof(config_st));
+	os_bzero(&config_ap, sizeof(config_ap));
+	os_bzero(&ip_static_mesh_router, sizeof(ip_static_mesh_router));
+
+	os_bzero(&hostname, sizeof(hostname));
+	os_bzero(&mac_sta_if, sizeof(mac_sta_if));
 
 	os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid,
 		sizeof(configuration_current.mesh_router_ssid));
 
+	os_bzero(&config_st.bssid, sizeof(config_st.bssid));
+
 	if(configuration_check_array_null(configuration_current.mesh_router_bssid,
 		sizeof(configuration_current.mesh_router_bssid))) {
 			config_st.bssid_set = 0;
-			os_bzero(&config_st.bssid, sizeof(configuration_current.mesh_router_bssid));
 	}
 	else {
 		config_st.bssid_set = 1;
@@ -298,6 +318,25 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 
 	os_memcpy(config_st.password, configuration_current.mesh_router_password,
 		sizeof(configuration_current.mesh_router_password));
+
+	if(!wifi_get_macaddr(STATION_IF, mac_sta_if)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Getting station MAC failed\n");
+	}
+	else {
+		os_sprintf(hostname, "%s_STA_%X%X%X", configuration_current.mesh_ssid_prefix,
+			mac_sta_if[3], mac_sta_if[4], mac_sta_if[5]);
+
+		if(!wifi_station_set_hostname(hostname)) {
+			setup_ok = false;
+
+			os_printf("\n[+]MSH:Setting hostname failed\n");
+		}
+		else {
+			os_printf("\n[+]MSH:Station hostname = %s\n", hostname);
+		}
+	}
 
 	// Static IP configuration for mesh router.
 	if(!configuration_check_array_null(configuration_current.mesh_router_ip,
@@ -338,6 +377,12 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		os_printf("\n[+]MSH:Set station config failed\n");
 	}
 
+	if(!wifi_softap_set_config_current(&config_ap)) {
+		setup_ok = false;
+
+		os_printf("\n[+]MSH:Set AP config failed\n");
+	}
+
 	if(!espconn_mesh_set_router(&config_st)) {
 		setup_ok = false;
 
@@ -376,16 +421,6 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 			setup_ok = false;
 
 			os_printf("\n[+]MSH:Encrypt init failed\n");
-	}
-
-	/*
-	 * Do we need to set this in configuration?
-	 * Max hop and routing table is managed dynamically on the new mesh library.
-	 */
-	if(!espconn_mesh_set_max_hops(4)) {
-		setup_ok = false;
-
-		os_printf("\n[+]MSH:Set max hop failed\n");
 	}
 
 	// Callback for the event when a new child joins a node.

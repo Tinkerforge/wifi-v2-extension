@@ -379,8 +379,11 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid,
 	const GetWifi2MeshCommonStatus *data) {
+		os_bzero(&gw2mcsr.header, sizeof(gw2mcsr.header));
+
 		gw2mcsr.header = data->header;
 		gw2mcsr.header.length = sizeof(GetWifi2MeshCommonStatusReturn);
+
 		gw2mcsr.status = espconn_mesh_get_status();
 		gw2mcsr.is_root_node = espconn_mesh_is_root();
 		gw2mcsr.is_root_candidate = espconn_mesh_is_root_candidate();
@@ -392,20 +395,31 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid,
 void ICACHE_FLASH_ATTR get_wifi2_mesh_station_status(const int8_t cid,
 	const GetWifi2MeshStationStatus *data) {
 		uint8_t mac[6];
-		char *hostname;
+		char *hostname_ptr;
 		struct ip_info info_ipv4;
 		struct station_config *config_st;
+
+		os_bzero(&gw2mssr.header, sizeof(gw2mssr.header));
 
 		gw2mssr.header = data->header;
 		gw2mssr.header.length = sizeof(GetWifi2MeshStationStatusReturn);
 
 		if((wifi_get_ip_info(STATION_IF, &info_ipv4)) && (wifi_get_macaddr(STATION_IF, mac))) {
-			hostname = wifi_station_get_hostname();
+			hostname_ptr = wifi_station_get_hostname();
 
-			os_memcpy(gw2mssr.hostname, hostname, sizeof(gw2mssr.hostname));
+			os_bzero(gw2mssr.hostname, sizeof(gw2mssr.hostname));
+			os_memcpy(gw2mssr.hostname, hostname_ptr, sizeof(gw2mssr.hostname));
+
+			os_bzero(gw2mssr.ip, sizeof(gw2mssr.ip));
 			os_memcpy(gw2mssr.ip, (uint8_t *)&info_ipv4.ip.addr, sizeof(info_ipv4.ip.addr));
+
+			os_bzero(gw2mssr.sub, sizeof(gw2mssr.sub));
 			os_memcpy(gw2mssr.sub, (uint8_t *)&info_ipv4.netmask.addr, sizeof(info_ipv4.netmask.addr));
+
+			os_bzero(gw2mssr.gw, sizeof(gw2mssr.gw));
 			os_memcpy(gw2mssr.gw, (uint8_t *)&info_ipv4.gw.addr, sizeof(info_ipv4.gw.addr));
+
+			os_bzero(gw2mssr.mac, sizeof(gw2mssr.mac));
 			os_memcpy(gw2mssr.mac, mac, sizeof(mac));
 		}
 
@@ -418,15 +432,26 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid,
 		struct ip_info info_ipv4;
 		struct softap_config config_ap;
 
+		os_bzero(&gw2masr.header, sizeof(gw2masr.header));
+
 		gw2masr.header = data->header;
 		gw2masr.header.length = sizeof(GetWifi2MeshAPStatusReturn);
 
 		if((wifi_softap_get_config(&config_ap)) && (wifi_get_ip_info(SOFTAP_IF, &info_ipv4)) \
 		&& (wifi_get_macaddr(SOFTAP_IF, mac))) {
+			os_bzero(gw2masr.ssid, sizeof(gw2masr.ssid));
 			os_memcpy(gw2masr.ssid, config_ap.ssid, sizeof(config_ap.ssid));
+
+			os_bzero(gw2masr.ip, sizeof(gw2masr.ip));
 			os_memcpy(gw2masr.ip, (uint8_t *)&info_ipv4.ip.addr, sizeof(info_ipv4.ip.addr));
+
+			os_bzero(gw2masr.sub, sizeof(gw2masr.sub));
 			os_memcpy(gw2masr.sub, (uint8_t *)&info_ipv4.netmask.addr, sizeof(info_ipv4.ip.addr));
+
+			os_bzero(gw2masr.gw, sizeof(gw2masr.gw));
 			os_memcpy(gw2masr.gw, (uint8_t *)&info_ipv4.gw.addr, sizeof(info_ipv4.ip.addr));
+
+			os_bzero(gw2masr.mac, sizeof(gw2masr.mac));
 			os_memcpy(gw2masr.mac, mac, sizeof(mac));
 		}
 

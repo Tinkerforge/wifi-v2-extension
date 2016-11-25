@@ -49,13 +49,13 @@ void ICACHE_FLASH_ATTR print_mesh_stat() {
 
 	ret = wifi_get_opmode();
 
-	if(ret == 0x01) {
+	if(ret == STATION_MODE) {
 		os_printf("Mode=Station\n");
 	}
-	else if(ret == 0x02) {
+	else if(ret == SOFTAP_MODE) {
 		os_printf("Mode=AP\n");
 	}
-	else if(ret == 0x03) {
+	else if(ret == STATIONAP_MODE) {
 		os_printf("Mode=Station+AP\n");
 	}
 

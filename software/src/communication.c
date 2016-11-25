@@ -614,6 +614,22 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_password(const int8_t cid, const GetWifi2APP
 void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi2Configuration *data) {
 	SaveWifi2ConfigurationReturn sw2cr;
 
+	/*
+	 * FIXME: When mesh mode is enabled client and AP mode must be disbaled.
+	 * If a situation is detected where mesh mode is enabled along with client/AP
+	 * mode then disable mesh mode.
+	 *
+	 * This situation can occur if a brickv older than version 2.3.7 is being used
+	 * to configure a master and WIFI extension 2 with newer firmware which already
+	 * had mesh enabled or if the user is calling these APIs and isn't disabling
+	 * mesh mode and is enabling either or both of client/AP mode.
+	 */
+	if(configuration_current.mesh_enable) {
+		if(configuration_current.client_enable || configuration_current.ap_enable) {
+			configuration_current.mesh_enable = false;
+		}
+	}
+
 	sw2cr.header        = data->header;
 	sw2cr.header.length = sizeof(SaveWifi2ConfigurationReturn);
 	sw2cr.result        = configuration_save_to_eeprom();

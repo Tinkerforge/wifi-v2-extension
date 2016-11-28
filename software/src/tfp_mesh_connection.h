@@ -25,27 +25,17 @@
 #include "c_types.h"
 #include "user_interface.h"
 
-/*
- * 1. Connect to server IP:PORT and maintain the socket. Also register the
- * callbacks for the socket.
- *
- * 2. Put received data on the ring buffer.
- *
- * 3. Put outgoing data (going up the stack from master brick) to the send
- * function.
- *
- * 4. Dont forget to do packet counting.
- */
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
-void ICACHE_FLASH_ATTR tfp_mesh_send_test_pkt(espconn *sock);
+int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length);
 
 // Callbacks.
 void cb_tmr_tfp_mesh_stat(void);
 void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg);
-void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void* arg);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg);
 void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_disconnect(void *arg);
 void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status);
-void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata,
-  unsigned short len);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_reconnect(void *arg, sint8 error);
+void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, uint16_t len);
 
 #endif

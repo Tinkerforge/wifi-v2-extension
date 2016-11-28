@@ -66,6 +66,7 @@ typedef struct {
 
 void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short len);
 void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error);
+void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg);
 void ICACHE_FLASH_ATTR tfp_disconnect_callback(void *arg);
 void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg);
 void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid);

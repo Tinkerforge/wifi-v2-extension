@@ -39,57 +39,27 @@
 
 extern Configuration configuration_current;
 
-void ICACHE_FLASH_ATTR print_mesh_stat() {
-	uint8_t ret = 0;
-
-	os_printf("\n[+]MSH:=== Node initial status ===\n\n");
-
-	os_printf("DHCP(C)=%d\n", wifi_station_dhcpc_status());
-	os_printf("DHCP(S)=%d\n", wifi_softap_dhcps_status());
-
-	ret = wifi_get_opmode();
-
-	if(ret == STATION_MODE) {
-		os_printf("Mode=Station\n");
-	}
-	else if(ret == SOFTAP_MODE) {
-		os_printf("Mode=AP\n");
-	}
-	else if(ret == STATIONAP_MODE) {
-		os_printf("Mode=Station+AP\n");
-	}
-
-	ret = wifi_get_phy_mode();
-
-	if(ret == PHY_MODE_11B) {
-		os_printf("PHY mode=B\n");
-	}
-	else if(ret == PHY_MODE_11G) {
-		os_printf("PHY mode=G\n");
-	}
-	else if(ret == PHY_MODE_11N) {
-		os_printf("PHY mode=N\n");
-	}
-
-	os_printf("TCP maximum connection=%d\n\n", espconn_tcp_get_max_con());
-}
-
 void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 	configuration_apply_post_init();
 
-	uart_con_init();
-
-	tfp_open_connection();
-
 	if(!configuration_current.mesh_enable) {
+		/*
+		 * When mesh mode is enabled the following two functions are already called
+		 * just before enabling mesh after applying mesh configuration.
+		 */
+		uart_con_init();
+		tfp_open_connection();
+
+		// TODO: Mesh support for websocket.
 		tfpw_open_connection();
 
+		/*
+		 * TODO: Use previously unused field inthe configuration for web
+		 * interface state ?
+		 */
 		if(configuration_current.general_website_port > 1) {
 			http_open_connection();
 		}
-	}
-	else {
-		print_mesh_stat();
 	}
 }
 
@@ -100,7 +70,7 @@ void ICACHE_FLASH_ATTR user_init() {
 		system_set_os_print(0);
 	#endif
 
-	logd("user_init\n");
+	logd("user_init()\n");
 	gpio_init();
 	wifi_status_led_install(12, PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
 

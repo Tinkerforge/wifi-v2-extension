@@ -34,10 +34,11 @@
 #include "user_interface.h"
 #include "pearson_hash.h"
 #include "communication.h"
-
-// Mesh related.
+#include "logging.h"
 #include "mesh.h"
 #include "tfp_mesh_connection.h"
+#include "tfp_connection.h"
+#include "uart_connection.h"
 
 const Configuration configuration_default = {
 	// Configuration info
@@ -279,7 +280,7 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	struct softap_config config_ap;
 	struct ip_info ip_static_mesh_router;
 
-	os_printf("\n[+]MSH:Applying mesh configuration\n");
+	logi("MSH:Applying mesh configuration\n");
 
 	/*
 	 * For mesh, STATION+AP mode is required.
@@ -290,14 +291,13 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	if(!wifi_set_opmode(STATIONAP_MODE)) {
 		setup_ok = false;
 
-		os_printf("\n[+]MSH:Setting STATION+AP mode failed\n");
+		loge("MSH:Setting STATION+AP mode failed\n");
 	}
 
 	// Reset structs.
 	os_bzero(&config_st, sizeof(config_st));
 	os_bzero(&config_ap, sizeof(config_ap));
 	os_bzero(&ip_static_mesh_router, sizeof(ip_static_mesh_router));
-
 	os_bzero(&hostname, sizeof(hostname));
 	os_bzero(&mac_sta_if, sizeof(mac_sta_if));
 
@@ -319,10 +319,11 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	os_memcpy(config_st.password, configuration_current.mesh_router_password,
 		sizeof(configuration_current.mesh_router_password));
 
+	// Set hostname.
 	if(!wifi_get_macaddr(STATION_IF, mac_sta_if)) {
 		setup_ok = false;
 
-		os_printf("\n[+]MSH:Getting station MAC failed\n");
+		loge("MSH:Getting station MAC failed\n");
 	}
 	else {
 		os_sprintf(hostname, "%s_STA_%X%X%X", configuration_current.mesh_ssid_prefix,
@@ -331,10 +332,10 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		if(!wifi_station_set_hostname(hostname)) {
 			setup_ok = false;
 
-			os_printf("\n[+]MSH:Setting hostname failed\n");
+			loge("MSH:Setting hostname failed\n");
 		}
 		else {
-			os_printf("\n[+]MSH:Station hostname = %s\n", hostname);
+			logi("MSH:Station hostname = %s\n", hostname);
 		}
 	}
 
@@ -374,19 +375,19 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	if(!wifi_station_set_config_current(&config_st)) {
 		setup_ok = false;
 
-		os_printf("\n[+]MSH:Set station config failed\n");
+		loge("MSH:Set station config failed\n");
 	}
 
 	if(!wifi_softap_set_config_current(&config_ap)) {
 		setup_ok = false;
 
-		os_printf("\n[+]MSH:Set AP config failed\n");
+		loge("MSH:Set AP config failed\n");
 	}
 
 	if(!espconn_mesh_set_router(&config_st)) {
 		setup_ok = false;
 
-		os_printf("\n[+]MSH:Set router failed\n");
+		loge("MSH:Set router failed\n");
 	}
 
 	// Setup mesh network parameters.
@@ -394,14 +395,14 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		os_strlen(configuration_current.mesh_ssid_prefix))) {
 			setup_ok = false;
 
-			os_printf("\n[+]MSH:Set SSID prefix failed\n");
+			loge("MSH:Set SSID prefix failed\n");
 	}
 
 	if(!espconn_mesh_group_id_init((uint8_t *)configuration_current.mesh_group_id,
 	sizeof(configuration_current.mesh_group_id))) {
 		setup_ok = false;
 
-		os_printf("\n[+]MSH:Set group ID failed\n");
+		loge("MSH:Set group ID failed\n");
 	}
 
 	// Used in MESH_ONLINE mode.
@@ -409,35 +410,38 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	configuration_current.mesh_server_port)) {
 		setup_ok = false;
 
-		os_printf("\n[+]MSH:Mesh server init failed\n");
+		loge("MSH:Mesh server init failed\n");
 	}
 
 	/*
 	 * Currently intra-mesh node comunication is encrypted with WPA/WPA2
-	 * automatically which is transparent to the user.
+	 * by default with password 1234567890 which is transparent to the user.
 	 */
 	if(!espconn_mesh_encrypt_init(AUTH_WPA_WPA2_PSK, configuration_current.mesh_password,
 		os_strlen(configuration_current.mesh_password))) {
 			setup_ok = false;
 
-			os_printf("\n[+]MSH:Encrypt init failed\n");
+			loge("MSH:Encrypt init failed\n");
 	}
 
 	// Callback for the event when a new child joins a node.
 	if(!espconn_mesh_regist_usr_cb(cb_tfp_mesh_new_node)) {
 		setup_ok = false;
 
-		os_printf("\n[+]MSH:CB register new child failed\n");
+		loge("MSH:CB register new child failed\n");
 	}
 
 	if(!setup_ok) {
-		os_printf("\n[+]MSH:Configuring mesh parameters failed\n");
+		loge("MSH:Configuring mesh parameters failed\n");
 
 		return;
 	}
 	else {
-		os_printf("\n[+]MSH:Configuring mesh parameters OK\n");
+		logi("MSH:Configuring mesh parameters OK\n");
 	}
+
+	uart_con_init();
+	tfp_open_connection();
 
 	espconn_mesh_print_ver();
 
@@ -457,7 +461,7 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	 */
 	espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
 
-	os_printf("\n[+]MSH:Enabled, wait for CB\n");
+	logi("MSH:Enabled, wait for CB\n");
 }
 
 void ICACHE_FLASH_ATTR configuration_apply_during_init(void) {
@@ -505,7 +509,7 @@ void ICACHE_FLASH_ATTR configuration_apply_post_init(void) {
 	 * No need to explicitly connect station when in mesh mode as it is handled
 	 * by the mesh library.
 	 */
-	if(configuration_current.mesh_enable == 0) {
+	if(!configuration_current.mesh_enable) {
 		wifi_station_connect();
 	}
 }

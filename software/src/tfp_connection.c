@@ -33,8 +33,6 @@
 #include "configuration.h"
 #include "user_interface.h"
 #include "logging.h"
-
-// Mesh related.
 #include "tfp_mesh_connection.h"
 
 Ringbuffer tfp_rb;
@@ -207,11 +205,18 @@ void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 
 //	espconn_set_opt(arg, ESPCONN_COPY);
 
-	espconn_set_opt(arg, ESPCONN_NODELAY);
+	/*
+	 * If mesh is enabled then don't register the following callbacks but call the
+	 * following callback functions from the mesh implementation equivalent of these
+	 * functions.
+	 */
+	if(!configuration_current.mesh_enable) {
+		espconn_set_opt(arg, ESPCONN_NODELAY);
 
-	espconn_regist_recvcb(arg, tfp_recv_callback);
-	espconn_regist_disconcb(arg, tfp_disconnect_callback);
-	espconn_regist_sentcb(arg, tfp_sent_callback);
+		espconn_regist_recvcb(arg, tfp_recv_callback);
+		espconn_regist_disconcb(arg, tfp_disconnect_callback);
+		espconn_regist_sentcb(arg, tfp_sent_callback);
+	}
 }
 
 static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const int8_t cid) {
@@ -236,7 +241,14 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length,
 	if(tfp_cons[cid].state == TFP_CON_STATE_OPEN) {
 		tfp_cons[cid].state = TFP_CON_STATE_SENDING;
 		os_memcpy(tfp_cons[cid].send_buffer, data, length);
-		espconn_send(tfp_cons[cid].con, (uint8_t*)data, length);
+
+		if(configuration_current.mesh_enable) {
+			tfp_mesh_send(tfp_cons[cid].con, (uint8_t*)data, length);
+		}
+		else {
+			espconn_send(tfp_cons[cid].con, (uint8_t*)data, length);
+		}
+
 		return true;
 	}
 
@@ -296,7 +308,13 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 					os_memcpy(tfp_cons[i].send_buffer, data_with_websocket_header, length_with_websocket_header);
 					length_to_send = length_with_websocket_header;
 				}
-				espconn_send(tfp_cons[i].con, tfp_cons[i].send_buffer, length_to_send);
+
+				 if(configuration_current.mesh_enable) {
+					 tfp_mesh_send(tfp_cons[i].con, tfp_cons[i].send_buffer, length_to_send);
+				 }
+				 else {
+					 espconn_send(tfp_cons[i].con, tfp_cons[i].send_buffer, length_to_send);
+				 }
 			}
 		}
 	} else {
@@ -309,7 +327,13 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 			os_memcpy(tfp_cons[cid].send_buffer, data_with_websocket_header, length_with_websocket_header);
 			length_to_send = length_with_websocket_header;
 		}
-		espconn_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
+
+		if(configuration_current.mesh_enable) {
+			tfp_mesh_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
+		}
+		else {
+			espconn_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
+		}
 	}
 
 	if(ringbuffer_get_free(&tfp_rb) > (6*MTU_LENGTH + 2)) {
@@ -334,6 +358,11 @@ void ICACHE_FLASH_ATTR tfp_open_connection(void) {
 		tfp_init_con(i);
 	}
 
+	/*
+	 * When mesh mode is enabled all the socket setup is done from mesh specific
+	 * callbacks. Existing TFP socket callbacks and implementation are used but as
+	 * a layer underneath the mesh layer.
+	 */
 	if(!configuration_current.mesh_enable) {
 		ets_memset(&tfp_con_listen, 0, sizeof(struct espconn));
 
@@ -356,7 +385,7 @@ void ICACHE_FLASH_ATTR tfp_open_connection(void) {
 		espconn_regist_time(&tfp_con_listen, 7200, 0);
 	}
 	else {
-		os_printf("\n[+]MSH:TFP init\n");
+		logi("MSH:TFP init\n");
 	}
 }
 

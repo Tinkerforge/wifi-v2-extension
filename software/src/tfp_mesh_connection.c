@@ -75,25 +75,22 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
   ret = espconn_mesh_connect(&tfp_mesh_sock);
 
   if(ret == ESPCONN_RTE) {
-    loge("MSH:Mesh server connect failed, routing problem\n");
+    loge("MSH:tfp_mesh_open_connection(), ESPCONN_RTE)\n");
   }
   else if(ret == ESPCONN_MEM) {
-    loge("MSH:Mesh server connect failed, out of memory\n");
+    loge("MSH:tfp_mesh_open_connection(), ESPCONN_MEM\n");
   }
   else if(ret == ESPCONN_ISCONN) {
-    loge("MSH:Mesh server connect failed, already connected\n");
+    loge("MSH:tfp_mesh_open_connection(), ESPCONN_ISCONN\n");
   }
   else if(ret == ESPCONN_ARG) {
-    loge("MSH:Mesh server connect failed, illegal argument\n");
-  }
-  else if(ret == ESPCONN_ARG) {
-    loge("MSH:Mesh server connect failed, routing problem\n");
+    loge("MSH:tfp_mesh_open_connection(), ESPCONN_ARG\n");
   }
   else if(ret == 0) {
     logi("MSH:Mesh opened connection\n");
   }
   else {
-    logi("MSH:Mesh connect in unknown state\n");
+    logw("MSH:tfp_mesh_open_connection(), UNKNOWN\n");
   }
 }
 
@@ -107,7 +104,7 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
   espconn *sock = (espconn *)arg;
 
   if(sock != &tfp_mesh_sock) {
-    loge("MSH:Wrong socket\n");
+    loge("MSH:tfp_mesh_send(), wrong socket\n");
 
     return ESPCONN_ARG;
   }
@@ -139,7 +136,7 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
   );
 
   if (!m_header) {
-    loge("MSH:Mesh packet creation failed\n");
+    loge("MSH:tfp_mesh_send(), mesh packet creation failed\n");
 
     return ESPCONN_ARG;
   }
@@ -147,7 +144,7 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
   m_header->proto.d = 1; // Upwards packet, going out of the mesh to the server.
 
   if (!espconn_mesh_set_usr_data(m_header, data, length_u16)) {
-    loge("MSH:Set user data failed\n");
+    loge("MSH:tfp_mesh_send(), set user data failed\n");
 
     os_free(m_header);
 
@@ -161,16 +158,16 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
   ret = espconn_mesh_sent(sock, (uint8_t *)m_header, m_header->len);
 
   if(ret == ESPCONN_MEM) {
-    loge("MSH:Send fail, out of memory\n");
+    loge("MSH:tfp_mesh_send(), ESPCONN_MEM\n");
   }
   else if(ret == ESPCONN_ARG) {
-    loge("MSH:Send fail, invalid argument\n");
+    loge("MSH:tfp_mesh_send(), ESPCONN_ARG\n");
   }
   else if(ret == ESPCONN_MAXNUM) {
-    loge("MSH:Send fail, buffer overflow\n");
+    loge("MSH:tfp_mesh_send(), ESPCONN_MAXNUM\n");
   }
   else if(ret == ESPCONN_IF) {
-    loge("MSH:Send fail, UDP data fail\n");
+    loge("MSH:tfp_mesh_send(), ESPCONN_IF\n");
   }
 
   os_free(m_header);
@@ -231,7 +228,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
   espconn * sock = (espconn*)arg;
 
   if(sock != &tfp_mesh_sock) {
-    loge("MSH:Wrong socket\n");
+    loge("MSH:cb_tfp_mesh_sent(), wrong socket\n");
 
     return;
   }
@@ -252,7 +249,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   espconn *sock = (espconn *)arg;
 
   if (sock != &tfp_mesh_sock) {
-    loge("MSH:Wrong socket\n");
+    loge("MSH:cb_tfp_mesh_connect(), wrong socket\n");
 
     espconn_mesh_disable(NULL);
 
@@ -260,7 +257,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   }
 
   if(!espconn_set_opt(sock, ESPCONN_NODELAY)) {
-    loge("MSH:Error setting socket option ESPCONN_NODELAY\n");
+    loge("MSH:cb_tfp_mesh_connect(), error setting ESPCONN_NODELAY\n");
 
     espconn_mesh_disable(NULL);
 
@@ -268,7 +265,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   }
 
   if(espconn_regist_recvcb(sock, cb_tfp_mesh_receive) != 0) {
-    loge("MSH:Error registering receive callback");
+    loge("MSH:cb_tfp_mesh_connect(), error registering receive callback");
 
     espconn_mesh_disable(NULL);
 
@@ -276,7 +273,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   }
 
   if(espconn_regist_sentcb(sock, cb_tfp_mesh_sent) != 0) {
-    loge("MSH:Error registering sent callback");
+    loge("MSH:cb_tfp_mesh_connect(), error registering sent callback");
 
     espconn_mesh_disable(NULL);
 
@@ -284,7 +281,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   }
 
   if(espconn_regist_disconcb(sock, cb_tfp_mesh_disconnect) != 0) {
-    loge("MSH:Error registering disconnect callback");
+    loge("MSH:cb_tfp_mesh_connect(), error registering disconnect callback");
 
     espconn_mesh_disable(NULL);
 
@@ -307,11 +304,13 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac) {
 
   uint8_t *_mac = (uint8_t *)mac;
 
-  logi("MSH:CB new node joined,MAC=[%x:%x:%x:%x:%x:%x]\n", _mac[0],
-  _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
+  logi("MSH:cb_tfp_mesh_new_node(), MAC=[%x:%x:%x:%x:%x:%x]\n", _mac[0], _mac[1],
+    _mac[2], _mac[3], _mac[4], _mac[5]);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_disconnect(void *arg) {
+  logi("MSH:cb_tfp_mesh_disconnect()\n");
+
   tfp_disconnect_callback(arg);
 }
 
@@ -341,6 +340,8 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status) {
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_reconnect(void *arg, sint8 error) {
+  logi("MSH:cb_tfp_mesh_reconnect()\n");
+
   tfp_reconnect_callback(arg, error);
 }
 
@@ -356,14 +357,14 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, uint16_t len)
   struct mesh_header_format *m_header = (struct mesh_header_format *)pdata;
 
   if(sock != &tfp_mesh_sock) {
-    loge("MSH:Wrong socket\n");
+    loge("MSH:cb_tfp_mesh_receive(), wrong socket\n");
 
     return;
   }
 
   // Payload of a mesh packet is a TFP packet.
   if(!espconn_mesh_get_usr_data(m_header, &pkt_tfp, &pkt_tfp_len)) {
-    loge("MSH:Error getting user data\n");
+    loge("MSH:cb_tfp_mesh_receive(), error getting user data\n");
 
     return;
   }

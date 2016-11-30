@@ -52,7 +52,7 @@ const Configuration configuration_default = {
 	.general_website_port = 80,
 	.general_phy_mode = 1,
 	.general_sleep_mode = 0, // Currently unused
-	.general_website = 0,
+	.general_website = 1,
 	.general_authentication_secret = "",
 
 	// Client configuration

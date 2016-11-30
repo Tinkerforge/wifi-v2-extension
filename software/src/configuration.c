@@ -52,11 +52,6 @@ const Configuration configuration_default = {
 	.general_website_port = 80,
 	.general_phy_mode = 1,
 	.general_sleep_mode = 0, // Currently unused
-	/*
-	 * The field "general_website" is currently unused.
-	 * The web interface is currently enabled/disabled
-	 * based on the port specified for it.
-	 */
 	.general_website = 0,
 	.general_authentication_secret = "",
 
@@ -326,7 +321,7 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		loge("MSH:Getting station MAC failed\n");
 	}
 	else {
-		os_sprintf(hostname, "%s_STA_%X%X%X", configuration_current.mesh_ssid_prefix,
+		os_sprintf(hostname, FMT_MESH_STATION_HOSTNAME, configuration_current.mesh_ssid_prefix,
 			mac_sta_if[3], mac_sta_if[4], mac_sta_if[5]);
 
 		if(!wifi_station_set_hostname(hostname)) {

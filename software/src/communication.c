@@ -32,6 +32,8 @@
 #include "gpio.h"
 #include "ringbuffer.h"
 #include "mesh.h"
+#include <string.h>
+#include <esp8266.h>
 
 bool wifi2_status_led_enabled = true;
 extern Configuration configuration_current;
@@ -231,12 +233,24 @@ void ICACHE_FLASH_ATTR get_wifi2_authentication_secret(const int8_t cid, const G
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_configuration(const int8_t cid, const SetWifi2Configuration *data) {
+	char str_fw_version[4];
+
+	os_bzero(str_fw_version, sizeof(str_fw_version));
+	os_sprintf(str_fw_version, "%d%d%d", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR,
+		FIRMWARE_VERSION_REVISION);
+
 	configuration_current.general_port           = data->port;
 	configuration_current.general_websocket_port = data->websocket_port;
 	configuration_current.general_website_port   = data->website_port;
 	configuration_current.general_phy_mode       = data->phy_mode;
 	configuration_current.general_sleep_mode     = data->sleep_mode;
 	configuration_current.general_website        = data->website;
+
+	if(strtoul(str_fw_version, NULL, 10) >= 204) {
+		if(data->website != 1) {
+			configuration_current.general_website_port = 1;
+		}
+	}
 
 	com_return_setter(cid, data);
 }

@@ -34,12 +34,16 @@
 #include "eeprom.h"
 #include "logging.h"
 #include "configuration.h"
-#include <spi_flash.h>
 #include "espconn.h"
+#include <string.h>
+#include <esp8266.h>
 
 extern Configuration configuration_current;
 
 void ICACHE_FLASH_ATTR user_init_done_cb(void) {
+	char str_fw_version[4];
+
+	os_bzero(str_fw_version, sizeof(str_fw_version));
 	configuration_apply_post_init();
 
 	if(!configuration_current.mesh_enable) {
@@ -53,12 +57,18 @@ void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 		// TODO: Mesh support for websocket.
 		tfpw_open_connection();
 
-		/*
-		 * TODO: Use previously unused field inthe configuration for web
-		 * interface state ?
-		 */
-		if(configuration_current.general_website_port > 1) {
-			http_open_connection();
+		os_sprintf(str_fw_version, "%d%d%d", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR,
+			FIRMWARE_VERSION_REVISION);
+
+		if(strtoul(str_fw_version, NULL, 10) >= 204) {
+			if(configuration_current.general_website == 1) {
+				http_open_connection();
+			}
+		}
+		else {
+			if(configuration_current.general_website_port > 1) {
+				http_open_connection();
+			}
 		}
 	}
 }

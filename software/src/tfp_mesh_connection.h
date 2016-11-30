@@ -25,6 +25,8 @@
 #include "c_types.h"
 #include "user_interface.h"
 
+#define FMT_MESH_STATION_HOSTNAME "%s_C_%X%X%X"
+
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
 int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length);
 

@@ -90,8 +90,9 @@ const Configuration configuration_default = {
 	.mesh_ssid_prefix = "TF_MESH",
 	.mesh_password = "password",
 	.mesh_group_id = {0x1A, 0xFE, 0x34, 0x00, 0x00, 0x00},
-	.mesh_server_ip = {192, 168, 178, 67}, // IP of the brickd to connect the mesh network to.
-	.mesh_server_port = 4240, // Port of the brickd to connect the mesh network to.
+	.mesh_gateway_hostname = "\0", // Currently unused.
+	.mesh_gateway_ip = {192, 168, 178, 67}, // IP of the brickd to connect the mesh network to.
+	.mesh_gateway_port = 4240, // Port of the brickd to connect the mesh network to.
 };
 
 Configuration configuration_current;
@@ -401,8 +402,8 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	}
 
 	// Used in MESH_ONLINE mode.
-	if(!espconn_mesh_server_init((struct ip_addr *)configuration_current.mesh_server_ip,
-	configuration_current.mesh_server_port)) {
+	if(!espconn_mesh_server_init((struct ip_addr *)configuration_current.mesh_gateway_ip,
+	configuration_current.mesh_gateway_port)) {
 		setup_ok = false;
 
 		loge("MSH:Mesh server init failed\n");
@@ -448,9 +449,8 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	 * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
 	 * 								within the mesh network.
 	 *
-	 * 2. MESH_ONLINE: Has connection to server specified by TF_MESH_SERVER_IP and
-	 * 								 TF_MESH_SERVER_PORT which is initialised by,
-	 *								 espconn_mesh_server_init().
+	 * 2. MESH_ONLINE: Has connection to server specified by gateway IP and
+	 * 								 gateway port which is initialised by, espconn_mesh_server_init().
 	 *
 	 * This function must be called in user_init();
 	 */

@@ -126,8 +126,8 @@ typedef struct {
 	uint8_t  mesh_router_bssid[6];
 	uint8_t  mesh_group_id[6];
 	char mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
-	uint8_t  mesh_server_ip[4];
-	uint16_t mesh_server_port;
+	uint8_t  mesh_gateway_ip[4];
+	uint16_t mesh_gateway_port;
 } __attribute__((__packed__)) SetWifi2MeshConfiguration;
 
 typedef struct {
@@ -143,8 +143,8 @@ typedef struct {
 	uint8_t  mesh_router_bssid[6];
 	uint8_t  mesh_group_id[6];
 	char mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
-	uint8_t  mesh_server_ip[4];
-	uint16_t mesh_server_port;
+	uint8_t  mesh_gateway_ip[4];
+	uint16_t mesh_gateway_port;
 } __attribute__((__packed__)) GetWifi2MeshConfigurationReturn;
 
 typedef struct {

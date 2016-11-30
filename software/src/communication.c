@@ -296,10 +296,10 @@ void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid,
 	os_memcpy(configuration_current.mesh_ssid_prefix, data->mesh_ssid_prefix,
 		sizeof(data->mesh_ssid_prefix));
 
-	os_memcpy(configuration_current.mesh_server_ip, data->mesh_server_ip,
-		sizeof(data->mesh_server_ip));
+	os_memcpy(configuration_current.mesh_gateway_ip, data->mesh_gateway_ip,
+		sizeof(data->mesh_gateway_ip));
 
-	configuration_current.mesh_server_port = data->mesh_server_port;
+	configuration_current.mesh_gateway_port = data->mesh_gateway_port;
 
 	com_return_setter(cid, data);
 }
@@ -333,10 +333,10 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
 	os_memcpy(gw2mcr.mesh_ssid_prefix, configuration_current.mesh_ssid_prefix,
 		sizeof(configuration_current.mesh_ssid_prefix));
 
-	os_memcpy(gw2mcr.mesh_server_ip, configuration_current.mesh_server_ip,
-		sizeof(configuration_current.mesh_server_ip));
+	os_memcpy(gw2mcr.mesh_gateway_ip, configuration_current.mesh_gateway_ip,
+		sizeof(configuration_current.mesh_gateway_ip));
 
-	gw2mcr.mesh_server_port = configuration_current.mesh_server_port;
+	gw2mcr.mesh_gateway_port = configuration_current.mesh_gateway_port;
 
 	com_send(&gw2mcr, sizeof(GetWifi2MeshConfigurationReturn), cid);
 }

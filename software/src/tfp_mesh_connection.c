@@ -53,9 +53,9 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
 
   // TCP parameters of the socket.
   tfp_mesh_sock_tcp.local_port = espconn_port();
-  tfp_mesh_sock_tcp.remote_port = configuration_current.mesh_server_port;
-  os_memcpy(tfp_mesh_sock_tcp.remote_ip, configuration_current.mesh_server_ip,
-    sizeof(configuration_current.mesh_server_ip));
+  tfp_mesh_sock_tcp.remote_port = configuration_current.mesh_gateway_port;
+  os_memcpy(tfp_mesh_sock_tcp.remote_ip, configuration_current.mesh_gateway_ip,
+    sizeof(configuration_current.mesh_gateway_ip));
 
   tfp_mesh_sock.proto.tcp = &tfp_mesh_sock_tcp;
 
@@ -113,10 +113,10 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
   os_bzero(src_mac_addr, sizeof(src_mac_addr));
 
   wifi_get_macaddr(STATION_IF, src_mac_addr);
-  os_memcpy(dst_mac_addr, configuration_current.mesh_server_ip,
-    sizeof(configuration_current.mesh_server_ip));
-  os_memcpy(&dst_mac_addr[4], &configuration_current.mesh_server_port,
-    sizeof(configuration_current.mesh_server_port));
+  os_memcpy(dst_mac_addr, configuration_current.mesh_gateway_ip,
+    sizeof(configuration_current.mesh_gateway_ip));
+  os_memcpy(&dst_mac_addr[4], &configuration_current.mesh_gateway_port,
+    sizeof(configuration_current.mesh_gateway_port));
 
   m_header = (struct mesh_header_format*)espconn_mesh_create_packet
   (

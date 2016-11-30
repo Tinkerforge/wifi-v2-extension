@@ -85,8 +85,9 @@ typedef struct {
 	char		 mesh_ssid_prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
 	char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NUL-terminated
 	uint8_t  mesh_group_id[6];
-	uint8_t  mesh_server_ip[4];
-	uint16_t mesh_server_port;
+	char 		 mesh_gateway_hostname[32]; // Currently unused.
+	uint8_t  mesh_gateway_ip[4];
+	uint16_t mesh_gateway_port;
 } Configuration;
 
 void ICACHE_FLASH_ATTR configuration_use_default(void);

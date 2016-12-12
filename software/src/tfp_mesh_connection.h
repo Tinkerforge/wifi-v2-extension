@@ -23,11 +23,19 @@
 #define TFP_MESH_CONNECTION_H
 
 #include "c_types.h"
+#include "ringbuffer.h"
+#include "tfp_connection.h"
 #include "user_interface.h"
 
+#define TFP_MESH_SEND_RING_BUFFER_SIZE 10240 // 128 full size (80 bytes) TFP packets.
 #define FMT_MESH_STATION_HOSTNAME "%s_C_%X%X%X"
 
+extern Ringbuffer tfp_mesh_send_rb;
+extern uint8_t tfp_mesh_send_rb_buffer[TFP_MESH_SEND_RING_BUFFER_SIZE];
+
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
+void ICACHE_FLASH_ATTR tfp_mesh_send_clear_buffer(void);
+bool ICACHE_FLASH_ATTR tfp_mesh_send_check_buffer(uint8_t len);
 int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length);
 
 // Callbacks.

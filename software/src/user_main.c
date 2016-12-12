@@ -49,7 +49,8 @@ void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 	if(!configuration_current.mesh_enable) {
 		/*
 		 * When mesh mode is enabled the following two functions are already called
-		 * just before enabling mesh after applying mesh configuration.
+		 * just before enabling mesh after applying mesh configuration. This is to ensure
+		 * that these functions are called before mesh is enabled in mesh mode.
 		 */
 		uart_con_init();
 		tfp_open_connection();

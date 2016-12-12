@@ -27,7 +27,6 @@
 #include "websocket.h"
 #include "tfp_websocket_connection.h"
 
-
 #define TFP_SEND_BUFFER_SIZE 80
 #define TFP_RECV_BUFFER_SIZE 80
 #define TFP_MAX_CONNECTIONS 10

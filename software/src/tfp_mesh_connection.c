@@ -28,9 +28,11 @@
 #include "mesh.h"
 #include "tfp_mesh_connection.h"
 #include "communication.h"
-#include "tfp_connection.h"
 #include "uart_connection.h"
 #include "logging.h"
+
+Ringbuffer tfp_mesh_send_rb;
+uint8_t tfp_mesh_send_rb_buffer[TFP_MESH_SEND_RING_BUFFER_SIZE];
 
 extern Configuration configuration_current;
 extern GetWifi2MeshCommonStatusReturn gw2mcsr;
@@ -94,10 +96,28 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
   }
 }
 
+void ICACHE_FLASH_ATTR tfp_mesh_send_clear_buffer(void) {
+  if(ringbuffer_is_empty(&tfp_mesh_send_rb)) {
+    return;
+  }
+
+  tfp_mesh_send_rb.start = tfp_mesh_send_rb.end;
+}
+
+bool ICACHE_FLASH_ATTR tfp_mesh_send_check_buffer(uint8_t len) {
+  if(ringbuffer_get_free(&tfp_mesh_send_rb) < len) {
+    return false;
+  }
+  else {
+    return true;
+  }
+}
+
 int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length) {
   int8_t ret = 0;
-  uint8_t dst_mac_addr[6];
-  uint8_t src_mac_addr[6];
+  TFPConnection *tfp_con = NULL;
+  uint8_t dst_mac_addr[ESP_MESH_ADDR_LEN];
+  uint8_t src_mac_addr[ESP_MESH_ADDR_LEN];
   struct mesh_header_format *m_header = NULL;
 
   uint16_t length_u16 = length;
@@ -108,6 +128,17 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
 
     return ESPCONN_ARG;
   }
+
+  tfp_con = (TFPConnection *)sock->reverse;
+
+  if(tfp_con == NULL) {
+    loge("MSH:tfp_mesh_send(), failed to get TFPConnection\n");
+
+    return ESPCONN_ARG;
+  }
+
+  // Update state of the socket.
+  tfp_con->state = TFP_CON_STATE_SENDING;
 
   os_bzero(dst_mac_addr, sizeof(dst_mac_addr));
   os_bzero(src_mac_addr, sizeof(src_mac_addr));
@@ -141,7 +172,8 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
     return ESPCONN_ARG;
   }
 
-  m_header->proto.d = 1; // Upwards packet, going out of the mesh to the server.
+  // Upwards packet, going out of the mesh to the mesh gateway.
+  m_header->proto.d = MESH_ROUTE_UPWARDS;
 
   if (!espconn_mesh_set_usr_data(m_header, data, length_u16)) {
     loge("MSH:tfp_mesh_send(), set user data failed\n");
@@ -225,7 +257,7 @@ void cb_tmr_tfp_mesh_stat(void) {
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
-  espconn * sock = (espconn*)arg;
+  espconn *sock = (espconn *)arg;
 
   if(sock != &tfp_mesh_sock) {
     loge("MSH:cb_tfp_mesh_sent(), wrong socket\n");
@@ -234,17 +266,17 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
   }
 
   /*
-   * FIXME: Since the mesh implementation is more like a layer on top of the
-   * existing TFP implementation maybe it is better to use the existing packet
-   * count mechanism of the TFP implementation ?
+   * When mesh mode is enabled we count packets this way and the packet counting
+   * mechanism in the layer below is not invoked.
    */
   gw2mcsr.tx_count++;
 
+  // Call the equivalent function on the TFP layer.
   tfp_sent_callback(arg);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
-  logi("MSH:Server connected\n");
+  logi("MSH:Gateway connected\n");
 
   espconn *sock = (espconn *)arg;
 
@@ -288,12 +320,14 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
     return;
   }
 
+  ringbuffer_init(&tfp_mesh_send_rb, tfp_mesh_send_rb_buffer, sizeof(tfp_mesh_send_rb_buffer));
+
   // Setup timer to periodically print node status.
   os_timer_disarm(&tmr_tfp_mesh_stat);
   os_timer_setfn(&tmr_tfp_mesh_stat, (os_timer_func_t *)cb_tmr_tfp_mesh_stat, NULL);
   os_timer_arm(&tmr_tfp_mesh_stat, 8000, true);
 
-  // Call connect callback of TFP layer.
+  // Call the equivalent function on the TFP layer.
   tfp_connect_callback(arg);
 }
 
@@ -311,6 +345,9 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac) {
 void ICACHE_FLASH_ATTR cb_tfp_mesh_disconnect(void *arg) {
   logi("MSH:cb_tfp_mesh_disconnect()\n");
 
+  tfp_mesh_send_clear_buffer();
+
+  // Call the equivalent function on the TFP layer.
   tfp_disconnect_callback(arg);
 }
 
@@ -335,13 +372,14 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status) {
     return;
   }
 
-  // Create and connect the socket to the server.
+  // Create and connect the socket to the mesh gateway.
   tfp_mesh_open_connection();
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_reconnect(void *arg, sint8 error) {
   logi("MSH:cb_tfp_mesh_reconnect()\n");
 
+  tfp_mesh_send_clear_buffer();
   tfp_reconnect_callback(arg, error);
 }
 
@@ -370,22 +408,11 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, uint16_t len)
   }
 
   /*
-   * FIXME: Since the mesh implementation is more like a layer on top of the
-   * existing TFP implementation maybe it is better to use the existing packet
-   * count mechanism of the TFP implementation ?
+   * When mesh mode is enabled we count packets this way and the packet counting
+   * mechanism in the layer below is not invoked.
    */
   gw2mcsr.rx_count++;
 
-  /*
-   * TODO: For test try putting a TFP packet to he receive callback of
-   * the TFP implementation.
-   */
-  // UID:6CRh52, Master Status LED Enable.
-  //uint8_t s_led_on[8] = {0x31, 0x17, 0x77, 0xDC, 0x08, 0xEE, 0x18/*0x10*/, 0x00};
-  // UID:6CRh52, Master Status LED Disable.
-  //uint8_t s_led_off[8] = {0x31, 0x17, 0x77, 0xDC, 0x08, 0xEF, 0x18/*0x10*/, 0x00};
-  //tfp_recv_callback(arg, (char *)s_led_on, 8);
-  //tfp_recv_callback(arg, (char *)s_led_off, 8);
-
+  // Call the equivalent function on the TFP layer.
   tfp_recv_callback(arg, (char *)pkt_tfp, (unsigned short)pkt_tfp_len);
 }

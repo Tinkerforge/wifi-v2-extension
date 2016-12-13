@@ -87,7 +87,13 @@ void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
 		// If TFP mesh send buffer is empty then nothing to do.
 		if(ringbuffer_is_empty(&tfp_mesh_send_rb)) {
 			// Change the state of the socket to be ready to send.
-			tfp_con->state = TFP_CON_STATE_OPEN;
+
+			/*
+			 * FIXME: Technically tfp_con->state should be same as tfp_cons[0].state
+			 * but this seem to be not the case. Maybe because the Mesh SDK does
+			 * something ?
+			 */
+			tfp_cons[0].state = TFP_CON_STATE_OPEN;
 
 			return;
 		}
@@ -117,7 +123,7 @@ void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
 		}
 
 		ringbuffer_remove(&tfp_mesh_send_rb, tfp_mesh_send_packet_len);
-		tfp_mesh_send(con, tfp_mesh_send_packet, tfp_mesh_send_packet_len);
+		tfp_mesh_send(tfp_cons[0].con, tfp_mesh_send_packet, tfp_mesh_send_packet_len);
 	}
 }
 
@@ -335,9 +341,6 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length,
 bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 	uint8_t i = 0;
 
-	// Will be used if mesh mode is enabled.
-	TFPConnection *tfp_con = NULL;
-
 	// TODO: Sanity check length again?
 
 	// TODO: Are we sure that data is always a full TFP packet?
@@ -367,15 +370,6 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 			return false;
 		}
 	}
-	else {
-		tfp_con = (TFPConnection *)tfp_cons[0].con->reverse;
-
-		if(tfp_con == NULL) {
-			loge("MSH:Error getting TFPConnection for send\n");
-
-			return false;
-		}
-	}
 
 	// Add websocket header if necessary
 	uint8_t data_with_websocket_header[TFP_SEND_BUFFER_SIZE + sizeof(WebsocketFrameClientToServer)];
@@ -392,6 +386,12 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		match->sequence_number = 0;
 		match->cid = -1;
 	}
+
+	/*
+	 * FIXME: Shouldn't the buffering while sending mechanism be also used for
+	 * non-mesh case? As it is documented that packets should be sent from the
+	 * sent callback of the previous packet.
+	 */
 
 	// Broadcast.
 	if(cid == -1) {
@@ -418,11 +418,11 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 			}
 		}
 		else {
-			os_memcpy(tfp_con->send_buffer, data, length);
+			os_memcpy(tfp_cons[0].send_buffer, data, length);
 
 			// Check if the socket is in a state to be able to send.
-			if(tfp_con->state == TFP_CON_STATE_OPEN) {
-				tfp_mesh_send(tfp_con->con, tfp_cons->send_buffer, length);
+			if(tfp_cons[0].state == TFP_CON_STATE_OPEN) {
+				tfp_mesh_send(tfp_cons[0].con, tfp_cons[0].send_buffer, length);
 			}
 			/*
 			 * If the socket can't send at the moment buffer the packet in TFP mesh
@@ -461,8 +461,8 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 
 		if(configuration_current.mesh_enable) {
 			// Check if the socket is in a state to be able to send.
-			if(tfp_con->state == TFP_CON_STATE_OPEN) {
-				tfp_mesh_send(tfp_con->con, tfp_con->send_buffer, length_to_send);
+			if(tfp_cons[0].state == TFP_CON_STATE_OPEN) {
+				tfp_mesh_send(tfp_cons[0].con, tfp_cons[0].send_buffer, length_to_send);
 			}
 			/*
 			 * If the socket can't send at the moment buffer the packet in TFP mesh

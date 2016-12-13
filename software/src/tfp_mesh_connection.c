@@ -372,6 +372,9 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status) {
     return;
   }
 
+  // Call the equivalent function on the TFP layer.
+  tfp_open_connection();
+
   // Create and connect the socket to the mesh gateway.
   tfp_mesh_open_connection();
 }

@@ -35,21 +35,14 @@
 #include "logging.h"
 #include "tfp_mesh_connection.h"
 
-Ringbuffer tfp_rb;
-uint8_t tfp_rb_buffer[TFP_RING_BUFFER_SIZE];
-TFPConnection tfp_cons[TFP_MAX_CONNECTIONS];
-
-/*
- * Used as buffer for packets that need to be sent and to enforce the policy of
- * sending a packet from the sent callback of the previous packet. Which is the
- * documented way of sending packets.
- */
-Ringbuffer tfp_mesh_send_rb;
-
-bool tfp_is_hold = false;
-
+extern TFPConnection tfp_con_mesh;
 extern GetWifi2StatusReturn gw2sr;
 extern Configuration configuration_current;
+
+Ringbuffer tfp_rb;
+bool tfp_is_hold = false;
+uint8_t tfp_rb_buffer[TFP_RING_BUFFER_SIZE];
+TFPConnection tfp_cons[TFP_MAX_CONNECTIONS];
 
 void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid) {
 	tfp_cons[cid].recv_buffer_index = 0;
@@ -58,80 +51,36 @@ void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid) {
 	tfp_cons[cid].cid   = cid;
 	tfp_cons[cid].con   = NULL;
 	tfp_cons[cid].websocket_state = WEBSOCKET_STATE_NO_WEBSOCKET;
+
 	if(configuration_current.general_authentication_secret[0] != '\0') {
-		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
-	} else {
-		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_DISABLED;
+		tfp_cons[cid].brickd_authentication_state = \
+			BRICKD_AUTHENTICATION_STATE_ENABLED;
+	}
+	else {
+		tfp_cons[cid].brickd_authentication_state = \
+			BRICKD_AUTHENTICATION_STATE_DISABLED;
 	}
 }
 
 void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
-	espconn *con = (espconn *)arg;
-	uint8_t tfp_mesh_send_packet_len = 0;
-	uint8_t tfp_mesh_send_packet[TFP_MAX_LENGTH];
+	struct espconn *con = (struct espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
-	os_bzero(tfp_mesh_send_packet, sizeof(tfp_mesh_send_packet));
+	packet_counter(con, PACKET_COUNT_TX);
 
-	if(!configuration_current.mesh_enable) {
-		packet_counter(con, PACKET_COUNT_TX);
-
-		if(tfp_con->state == TFP_CON_STATE_CLOSED_AFTER_SEND) {
-			espconn_disconnect(tfp_con->con);
-		}
-		else {
-			tfp_con->state = TFP_CON_STATE_OPEN;
-		}
+	if(tfp_con->state == TFP_CON_STATE_CLOSED_AFTER_SEND) {
+		espconn_disconnect(tfp_con->con);
 	}
 	else {
-		// If TFP mesh send buffer is empty then nothing to do.
-		if(ringbuffer_is_empty(&tfp_mesh_send_rb)) {
-			// Change the state of the socket to be ready to send.
-
-			/*
-			 * FIXME: Technically tfp_con->state should be same as tfp_cons[0].state
-			 * but this seem to be not the case. Maybe because the Mesh SDK does
-			 * something ?
-			 */
-			tfp_cons[0].state = TFP_CON_STATE_OPEN;
-
-			return;
-		}
-
-		// Send packet from the TFP send buffer and remove the packet from the buffer.
-
-		// Read 5 bytes of the packet present in the buffer.
-		if(ringbuffer_peak(&tfp_mesh_send_rb, tfp_mesh_send_packet, 5) != 5) {
-			loge("MSH:Error peaking for packet length on send buffer\n");
-
-			return;
-		}
-
-		// Get the length field of the packet.
-		tfp_mesh_send_packet_len = tfp_mesh_send_packet[4];
-
-		/*
-		 * Now that the length of the packet is known try to get the whole packet
-		 * from the TFP mesh send buffer for sending.
-		 */
-		if(ringbuffer_peak(&tfp_mesh_send_rb,
-											 tfp_mesh_send_packet,
-											 tfp_mesh_send_packet_len) != tfp_mesh_send_packet_len) {
-		  loge("MSH:Error peaking for packet from send buffer\n");
-
-			return;
-		}
-
-		ringbuffer_remove(&tfp_mesh_send_rb, tfp_mesh_send_packet_len);
-		tfp_mesh_send(tfp_cons[0].con, tfp_mesh_send_packet, tfp_mesh_send_packet_len);
+		tfp_con->state = TFP_CON_STATE_OPEN;
 	}
 }
 
-void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t length) {
+void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data,
+																				 const uint8_t length) {
 	// If ringbuffer not empty we add data to ringbuffer (we want to keep order)
 	// Else if we can't immediately send to master brick we also add to ringbuffer
 	if(!ringbuffer_is_empty(&tfp_rb) || uart_con_send(data, length) == 0) {
-
 		if(ringbuffer_get_free(&tfp_rb) > (length + 2)) {
 			for(uint8_t i = 0; i < length; i++) {
 				if(!ringbuffer_add(&tfp_rb, data[i])) {
@@ -140,7 +89,9 @@ void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t leng
 				}
 			}
 		} else {
-			logw("Message does not fit in Buffer: %d < %d\n", ringbuffer_get_free(&tfp_rb), length + 2);
+			logw("Message does not fit in Buffer: %d < %d\n",
+					 ringbuffer_get_free(&tfp_rb),
+					 length + 2);
 		}
 	}
 }
@@ -148,7 +99,8 @@ void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t leng
 void ICACHE_FLASH_ATTR tfp_recv_hold(void) {
 	if(!tfp_is_hold) {
 		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
-			if(tfp_cons[i].state == TFP_CON_STATE_OPEN || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
+			if(tfp_cons[i].state == TFP_CON_STATE_OPEN \
+				 || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
 				espconn_recv_hold(tfp_cons[i].con);
 			}
 		}
@@ -161,7 +113,8 @@ void ICACHE_FLASH_ATTR tfp_recv_hold(void) {
 void ICACHE_FLASH_ATTR tfp_recv_unhold(void) {
 	if(tfp_is_hold) {
 		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
-			if(tfp_cons[i].state == TFP_CON_STATE_OPEN || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
+			if(tfp_cons[i].state == TFP_CON_STATE_OPEN \
+				 || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
 				espconn_recv_unhold(tfp_cons[i].con);
 			}
 		}
@@ -171,26 +124,30 @@ void ICACHE_FLASH_ATTR tfp_recv_unhold(void) {
 	}
 }
 
-void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short len) {
-	espconn *con = (espconn *)arg;
+void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg,
+																				 char *pdata,
+																				 unsigned short len) {
+	struct espconn *con = (struct espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
-	if(!configuration_current.mesh_enable) {
-		packet_counter(con, PACKET_COUNT_RX);
-	}
+	packet_counter(con, PACKET_COUNT_RX);
 
 	for(uint32_t i = 0; i < len; i++) {
 		tfp_con->recv_buffer[tfp_con->recv_buffer_index] = pdata[i];
 		if(tfp_con->recv_buffer_index == TFP_RECV_INDEX_LENGTH) {
 			// TODO: Sanity-check length
-			tfp_con->recv_buffer_expected_length = tfp_con->recv_buffer[TFP_RECV_INDEX_LENGTH];
+			tfp_con->recv_buffer_expected_length = \
+				tfp_con->recv_buffer[TFP_RECV_INDEX_LENGTH];
 		}
 
 		tfp_con->recv_buffer_index++;
 		if(tfp_con->recv_buffer_index == tfp_con->recv_buffer_expected_length) {
-			if(!com_handle_message(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length, tfp_con->cid)) {
+			if(!com_handle_message(tfp_con->recv_buffer,
+														 tfp_con->recv_buffer_expected_length,
+														 tfp_con->cid)) {
 				brickd_route_from(tfp_con->recv_buffer, tfp_con->cid);
-				tfp_handle_packet(tfp_con->recv_buffer, tfp_con->recv_buffer_expected_length);
+				tfp_handle_packet(tfp_con->recv_buffer,
+													tfp_con->recv_buffer_expected_length);
 			}
 
 			tfp_con->recv_buffer_index = 0;
@@ -204,22 +161,20 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short 
 }
 
 void ICACHE_FLASH_ATTR tfp_disconnect_callback(void *arg) {
-	espconn *con = (espconn *)arg;
+	struct espconn *con = (struct espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
 	brickd_disconnect(tfp_con->cid);
-
 	tfp_init_con(tfp_con->cid);
 
 	logd("tfp_disconnect_callback: cid %d\n", tfp_con->cid);
 }
 
 void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error) {
-	espconn *con = (espconn *)arg;
+	struct espconn *con = (struct espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
 	brickd_disconnect(tfp_con->cid);
-
 	tfp_init_con(tfp_con->cid);
 
 	if(error == ESPCONN_TIMEOUT) {
@@ -232,48 +187,45 @@ void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error) {
 void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 	uint8_t i = 0;
 
-	if(!configuration_current.mesh_enable) {
-		for(; i < TFP_MAX_CONNECTIONS; i++) {
-			if(tfp_cons[i].state == TFP_CON_STATE_CLOSED) {
-				tfp_cons[i].con = arg;
-				tfp_cons[i].con->reverse = &tfp_cons[i];
-				tfp_cons[i].state = TFP_CON_STATE_OPEN;
-				logd("tfp_connect_callback: cid %d\n", tfp_cons[i].cid);
-				break;
-			}
+	for(; i < TFP_MAX_CONNECTIONS; i++) {
+		if(tfp_cons[i].state == TFP_CON_STATE_CLOSED) {
+			tfp_cons[i].con = arg;
+			tfp_cons[i].con->reverse = &tfp_cons[i];
+			tfp_cons[i].state = TFP_CON_STATE_OPEN;
+			logd("tfp_connect_callback: cid %d\n", tfp_cons[i].cid);
+			break;
 		}
+	}
 
-		if(i == TFP_MAX_CONNECTIONS) {
-			logw("Too many open connections, can't handle more\n");
-			// TODO: according to the documentation we can not call espconn_disconnect in callback
-			// espconn_disconnect(arg);
-			return;
-		}
-
+	if(i == TFP_MAX_CONNECTIONS) {
+		logw("Too many open connections, can't handle more\n");
 		/*
-			uint8_t param = 10;
-			espconn_set_keepalive(arg, ESPCONN_KEEPIDLE, &param);
-			param = 2;
-			espconn_set_keepalive(arg, ESPCONN_KEEPINTVL, &param);
-			param = 10;
-			espconn_set_keepalive(arg, ESPCONN_KEEPCNT, &param);
+		 * TODO: according to the documentation we can not call espconn_disconnect
+		 * in callback.
+		 */
 
-			espconn_set_opt(arg, ESPCONN_KEEPALIVE);
-			espconn_set_opt(arg, ESPCONN_REUSEADDR);
-			espconn_set_opt(arg, ESPCONN_COPY);
-			espconn_set_opt(arg, ESPCONN_NODELAY);
-		*/
+		// espconn_disconnect(arg);
+		return;
+	}
 
+	/*
+		uint8_t param = 10;
+		espconn_set_keepalive(arg, ESPCONN_KEEPIDLE, &param);
+		param = 2;
+		espconn_set_keepalive(arg, ESPCONN_KEEPINTVL, &param);
+		param = 10;
+		espconn_set_keepalive(arg, ESPCONN_KEEPCNT, &param);
+
+		espconn_set_opt(arg, ESPCONN_KEEPALIVE);
+		espconn_set_opt(arg, ESPCONN_REUSEADDR);
+		espconn_set_opt(arg, ESPCONN_COPY);
 		espconn_set_opt(arg, ESPCONN_NODELAY);
-		espconn_regist_recvcb(arg, tfp_recv_callback);
-		espconn_regist_disconcb(arg, tfp_disconnect_callback);
-		espconn_regist_sentcb(arg, tfp_sent_callback);
-	}
-	else {
-		tfp_cons[0].con = arg;
-		tfp_cons[0].con->reverse = &tfp_cons[0];
-		tfp_cons[0].state = TFP_CON_STATE_OPEN;
-	}
+	*/
+
+	espconn_set_opt(arg, ESPCONN_NODELAY);
+	espconn_regist_recvcb((struct espconn *)arg, tfp_recv_callback);
+	espconn_regist_disconcb((struct espconn *)arg, tfp_disconnect_callback);
+	espconn_regist_sentcb((struct espconn *)arg, tfp_sent_callback);
 }
 
 static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const int8_t cid) {
@@ -294,14 +246,14 @@ static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const int8_t cid) {
 	return true;
 }
 
-bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length, const uint8_t cid) {
-	uint8_t i = 0;
-
+bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data,
+																			const uint8_t length,
+																			const uint8_t cid) {
 	if(!configuration_current.mesh_enable) {
 		/*
-		 * FIXME: Shouldn't the buffering while sending mechanism be also used for
-		 * non-mesh case? As it is documented that packets should be sent from the
-		 * sent callback of the previous packet.
+		 * FIXME: Shouldn't the buffering mechanism used for sending mesh mode packets
+		 * also be used for non-mesh send? As it is documented that packets should be
+		 * sent from the sent callback of the previous packet.
 		 */
 		if(tfp_cons[cid].state == TFP_CON_STATE_OPEN) {
 			tfp_cons[cid].state = TFP_CON_STATE_SENDING;
@@ -314,35 +266,14 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length,
 		return false;
 	}
 	else {
-		if(tfp_cons[cid].state == TFP_CON_STATE_OPEN) {
-			os_memcpy(tfp_cons[cid].send_buffer, data, length);
-			tfp_mesh_send(tfp_cons[cid].con, (uint8_t*)data, length);
+		logd("MSH:Sending with CID\n");
 
-			return true;
-		}
-		else {
-			// Check if there is enough space in the send buffer.
-			if(tfp_mesh_send_check_buffer(length)) {
-				// Store the packet in the TFP mesh send buffer.
-				for(i = 0; i < length; i++) {
-					if(!ringbuffer_add(&tfp_mesh_send_rb, data[i])) {
-						return false;
-					}
-				}
-				return true;
-			}
-			else {
-				return false;
-			}
-		}
+		return tfp_mesh_send_handler(data, length);
 	}
 }
 
 bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
-	uint8_t i = 0;
-
 	// TODO: Sanity check length again?
-
 	// TODO: Are we sure that data is always a full TFP packet?
 
 	// cid == -2 => send back via UART
@@ -360,21 +291,14 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		return true;
 	}
 
-	/*
-	 * First let's check if everything fits in the buffers. This is only done if
-	 * mesh isn't enabled. When mesh is enabled, dedicated buffer is used for
-	 * sending.
-	 */
-	if(!configuration_current.mesh_enable) {
-		if(!tfp_send_check_buffer(cid)) {
-			return false;
-		}
-	}
-
 	// Add websocket header if necessary
-	uint8_t data_with_websocket_header[TFP_SEND_BUFFER_SIZE + sizeof(WebsocketFrameClientToServer)];
-	int16_t length_with_websocket_header = tfpw_insert_websocket_header(cid, data_with_websocket_header, data, length);
-	if(length_with_websocket_header == -1) { // -1 = We use websocket but state is not OK for sending
+	uint8_t data_with_websocket_header[TFP_SEND_BUFFER_SIZE + \
+																		 sizeof(WebsocketFrameClientToServer)];
+	int16_t length_with_websocket_header = \
+		tfpw_insert_websocket_header(cid, data_with_websocket_header, data, length);
+
+	// -1 = We use websocket but state is not OK for sending
+	if(length_with_websocket_header == -1) {
 		return false;
 	}
 
@@ -388,18 +312,26 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 	}
 
 	/*
-	 * FIXME: Shouldn't the buffering while sending mechanism be also used for
-	 * non-mesh case? As it is documented that packets should be sent from the
-	 * sent callback of the previous packet.
+	 * FIXME: Shouldn't the buffering mechanism used for sending mesh mode packets
+	 * also be used for non-mesh send? As it is documented that packets should be
+	 * sent from the sent callback of the previous packet.
 	 */
-
-	// Broadcast.
-	if(cid == -1) {
+	if (!configuration_current.mesh_enable) {
 		/*
-		 * Broadcast is handled differently when mesh is enabled as then there is
-		 * only one socket connection invovled.
+		 * First let's check if everything fits in the buffers. This is only done if
+		 * mesh isn't enabled. When mesh is enabled, dedicated buffer is used for
+		 * sending.
 		 */
-		if (!configuration_current.mesh_enable) {
+		if(!tfp_send_check_buffer(cid)) {
+			return false;
+		}
+
+		// Broadcast.
+		if(cid == -1) {
+			/*
+			 * Broadcast is handled differently when mesh is enabled as then there is
+			 * only one socket connection invovled.
+			 */
 			for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
 				if(tfp_cons[i].state == TFP_CON_STATE_OPEN) {
 					// TODO: sent data (return value)
@@ -409,7 +341,9 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 						os_memcpy(tfp_cons[i].send_buffer, data, length);
 					}
 					else {
-						os_memcpy(tfp_cons[i].send_buffer, data_with_websocket_header, length_with_websocket_header);
+						os_memcpy(tfp_cons[i].send_buffer,
+											data_with_websocket_header,
+											length_with_websocket_header);
 						length_to_send = length_with_websocket_header;
 					}
 
@@ -417,126 +351,68 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 				}
 			}
 		}
+		// Unicast.
 		else {
-			os_memcpy(tfp_cons[0].send_buffer, data, length);
-
-			// Check if the socket is in a state to be able to send.
-			if(tfp_cons[0].state == TFP_CON_STATE_OPEN) {
-				tfp_mesh_send(tfp_cons[0].con, tfp_cons[0].send_buffer, length);
-			}
-			/*
-			 * If the socket can't send at the moment buffer the packet in TFP mesh
-			 * send buffer for sending in future.
-			 */
-			else {
-				if(tfp_mesh_send_check_buffer(length)) {
-					for(i = 0; i < length; i++) {
-						if(!ringbuffer_add(&tfp_mesh_send_rb, data[i])) {
-							return false;
-						}
-					}
-				}
-				else {
-					return false;
-				}
-			}
-		}
-	}
-	// Unicast.
-	else {
-		uint8_t length_to_send = length;
-
-		if(!configuration_current.mesh_enable) {
-			// When mesh mode is enabled this socket state is updated from tfp_mesh_send().
+			uint8_t length_to_send = length;
 			tfp_cons[cid].state = TFP_CON_STATE_SENDING;
-		}
 
-		if(tfp_cons[cid].websocket_state == WEBSOCKET_STATE_NO_WEBSOCKET) {
-			os_memcpy(tfp_cons[cid].send_buffer, data, length);
-		}
-		else {
-			os_memcpy(tfp_cons[cid].send_buffer, data_with_websocket_header, length_with_websocket_header);
-			length_to_send = length_with_websocket_header;
-		}
-
-		if(configuration_current.mesh_enable) {
-			// Check if the socket is in a state to be able to send.
-			if(tfp_cons[0].state == TFP_CON_STATE_OPEN) {
-				tfp_mesh_send(tfp_cons[0].con, tfp_cons[0].send_buffer, length_to_send);
+			if(tfp_cons[cid].websocket_state == WEBSOCKET_STATE_NO_WEBSOCKET) {
+				os_memcpy(tfp_cons[cid].send_buffer, data, length);
 			}
-			/*
-			 * If the socket can't send at the moment buffer the packet in TFP mesh
-			 * send buffer for sending in future.
-			 */
 			else {
-				if(tfp_mesh_send_check_buffer(length_to_send)) {
-					for(i = 0; i < length_to_send; i++) {
-						if(!ringbuffer_add(&tfp_mesh_send_rb, data[i])) {
-							return false;
-						}
-					}
-				}
-				else {
-					return false;
-				}
+				os_memcpy(tfp_cons[cid].send_buffer,
+								  data_with_websocket_header,
+									length_with_websocket_header);
+
+				length_to_send = length_with_websocket_header;
 			}
-		}
-		else {
+
 			espconn_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
 		}
-	}
 
-	if(ringbuffer_get_free(&tfp_rb) > (6*MTU_LENGTH + 2)) {
-		tfp_recv_unhold();
-	}
+		if(ringbuffer_get_free(&tfp_rb) > (6*MTU_LENGTH + 2)) {
+			tfp_recv_unhold();
+		}
 
-	return true;
+		return true;
+	}
+	else {
+		logd("MSH:Sending\n");
+
+		return tfp_mesh_send_handler(data, length);
+	}
 }
 
 // TODO: Does this have to be available after espconn_regist_time call?
 //       I.e. can we just have it locally in the function?
-static espconn tfp_con_listen;
+static struct espconn tfp_con_listen;
 static esp_tcp tfp_con_listen_tcp;
 
 void ICACHE_FLASH_ATTR tfp_open_connection(void) {
-	// Common initialisations.
-	ringbuffer_init(&tfp_rb, tfp_rb_buffer, TFP_RING_BUFFER_SIZE);
-	brickd_init();
-	com_init();
-
 	for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
 		tfp_init_con(i);
 	}
 
-	/*
-	 * When mesh mode is enabled all the socket setup is done from mesh specific
-	 * callbacks. Existing TFP socket callbacks and implementation are used but as
-	 * a layer underneath the mesh layer.
-	 */
-	if(!configuration_current.mesh_enable) {
-		ets_memset(&tfp_con_listen, 0, sizeof(struct espconn));
+	ets_memset(&tfp_con_listen, 0, sizeof(struct espconn));
 
-		// Initialize the ESPConn
-		espconn_create(&tfp_con_listen);
-		tfp_con_listen.type = ESPCONN_TCP;
-		tfp_con_listen.state = ESPCONN_NONE;
+	// Initialize the ESPConn
+	espconn_create(&tfp_con_listen);
+	tfp_con_listen.type = ESPCONN_TCP;
+	tfp_con_listen.state = ESPCONN_NONE;
 
-		// Make it a TCP connection
-		tfp_con_listen.proto.tcp = &tfp_con_listen_tcp;
-		tfp_con_listen.proto.tcp->local_port = configuration_current.general_port;
+	// Make it a TCP connection
+	tfp_con_listen.proto.tcp = &tfp_con_listen_tcp;
+	tfp_con_listen.proto.tcp->local_port = configuration_current.general_port;
 
-		espconn_regist_reconcb(&tfp_con_listen, tfp_reconnect_callback);
-		espconn_regist_connectcb(&tfp_con_listen, tfp_connect_callback);
+	espconn_regist_reconcb(&tfp_con_listen, tfp_reconnect_callback);
+	espconn_regist_connectcb(&tfp_con_listen, tfp_connect_callback);
 
-		// Start listening
-		espconn_accept(&tfp_con_listen);
+	// Start listening
+	espconn_accept(&tfp_con_listen);
 
-		// Set server timeout (in seconds)
-		espconn_regist_time(&tfp_con_listen, 7200, 0);
-	}
-	else {
-		logi("MSH:TFP init\n");
-	}
+	// Set server timeout (in seconds)
+	espconn_regist_time(&tfp_con_listen, 7200, 0);
+
 }
 
 void ICACHE_FLASH_ATTR tfp_poll(void) {
@@ -566,7 +442,7 @@ void ICACHE_FLASH_ATTR tfp_poll(void) {
 	}
 }
 
-void ICACHE_FLASH_ATTR packet_counter(espconn *con, uint8_t direction) {
+void ICACHE_FLASH_ATTR packet_counter(struct espconn *con, uint8_t direction) {
 	uint8 ap_ip[4];
 	uint8 ap_netmask[4];
 	uint8 station_ip[4];

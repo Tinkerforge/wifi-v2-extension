@@ -35,10 +35,13 @@
 #include "logging.h"
 #include "configuration.h"
 #include "espconn.h"
+#include "ringbuffer.h"
 #include <string.h>
 #include <esp8266.h>
 
+extern Ringbuffer tfp_rb;
 extern Configuration configuration_current;
+extern uint8_t tfp_rb_buffer[TFP_RING_BUFFER_SIZE];
 
 void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 	char str_fw_version[4];
@@ -47,15 +50,7 @@ void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 	configuration_apply_post_init();
 
 	if(!configuration_current.mesh_enable) {
-		/*
-		 * When mesh mode is enabled the following two functions are already called
-		 * just before enabling mesh after applying mesh configuration. This is to ensure
-		 * that these functions are called before mesh is enabled in mesh mode.
-		 */
-		uart_con_init();
 		tfp_open_connection();
-
-		// TODO: Mesh support for websocket.
 		tfpw_open_connection();
 
 		os_sprintf(str_fw_version, "%d%d%d", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR,
@@ -75,18 +70,19 @@ void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 }
 
 void ICACHE_FLASH_ATTR user_init() {
+	logd("user_init()\n");
+
 	#ifdef DEBUG_ENABLED
 		debug_enable(UART_DEBUG);
 	#else
 		system_set_os_print(0);
 	#endif
 
-	logd("user_init()\n");
-	gpio_init();
-	wifi_status_led_install(12, PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
-
 	// By default GPIO2 as UART1 TX.
 	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_U1TXD_BK);
+
+	gpio_init();
+	wifi_status_led_install(12, PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
 
 	i2c_master_init();
 	eeprom_init();
@@ -95,5 +91,12 @@ void ICACHE_FLASH_ATTR user_init() {
 	// The documentation says we can not call station_connect and similar
 	// in user_init, so we do it in the callback after it is done!
 	configuration_apply_during_init();
+
+	// We want to make UART communication to the master of the stack ready ASAP.
+	ringbuffer_init(&tfp_rb, tfp_rb_buffer, TFP_RING_BUFFER_SIZE);
+	uart_con_init();
+	brickd_init();
+	com_init();
+
 	system_init_done_cb(user_init_done_cb);
 }

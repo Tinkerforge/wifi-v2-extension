@@ -46,11 +46,16 @@
 #define TFP_CON_STATE_CLOSED_AFTER_SEND 3
 
 typedef struct {
-	uint8_t recv_buffer[TFP_RECV_BUFFER_SIZE];
+	uint8_t recv_buffer[TFP_RECV_BUFFER_SIZE\
+											+ sizeof(struct mesh_header_format)\
+											+ 1];
 	uint8_t recv_buffer_index;
 	uint8_t recv_buffer_expected_length;
 
-	uint8_t send_buffer[TFP_SEND_BUFFER_SIZE + sizeof(WebsocketFrameClientToServer)];
+	uint8_t send_buffer[TFP_SEND_BUFFER_SIZE\
+											+ sizeof(WebsocketFrameClientToServer)\
+											+ sizeof(struct mesh_header_format)\
+											+ 1];
 	uint8_t state;
 	BrickdAuthenticationState brickd_authentication_state;
 
@@ -60,7 +65,7 @@ typedef struct {
 	uint8_t websocket_mask_mod;
 
 	int8_t cid;
-	espconn *con;
+	struct espconn *con;
 } TFPConnection;
 
 void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short len);
@@ -74,6 +79,6 @@ void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t leng
 void ICACHE_FLASH_ATTR tfp_open_connection(void);
 bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length);
 void ICACHE_FLASH_ATTR tfp_poll(void);
-void ICACHE_FLASH_ATTR packet_counter(espconn *con, uint8_t direction);
+void ICACHE_FLASH_ATTR packet_counter(struct espconn *con, uint8_t direction);
 
 #endif

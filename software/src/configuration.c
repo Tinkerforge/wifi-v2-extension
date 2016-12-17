@@ -38,7 +38,6 @@
 #include "mesh.h"
 #include "tfp_mesh_connection.h"
 #include "tfp_connection.h"
-#include "uart_connection.h"
 
 const Configuration configuration_default = {
 	// Configuration info
@@ -435,9 +434,6 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	else {
 		logi("MSH:Configuring mesh parameters OK\n");
 	}
-
-	uart_con_init();
-	tfp_open_connection();
 
 	espconn_mesh_print_ver();
 

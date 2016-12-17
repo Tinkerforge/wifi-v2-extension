@@ -19,6 +19,7 @@
  * Boston, MA 02111-1307, USA.
  */
 #include <mem.h>
+
 #include "c_types.h"
 #include "ip_addr.h"
 #include "espconn.h"
@@ -27,49 +28,65 @@
 #include "configuration.h"
 #include "mesh.h"
 #include "tfp_mesh_connection.h"
-#include "communication.h"
-#include "uart_connection.h"
 #include "logging.h"
-
-Ringbuffer tfp_mesh_send_rb;
-uint8_t tfp_mesh_send_rb_buffer[TFP_MESH_SEND_RING_BUFFER_SIZE];
 
 extern Configuration configuration_current;
 extern GetWifi2MeshCommonStatusReturn gw2mcsr;
 
-static espconn tfp_mesh_sock;
 static esp_tcp tfp_mesh_sock_tcp;
+static TFPConnection tfp_con_mesh;
+static Ringbuffer tfp_mesh_send_rb;
+static struct espconn tfp_mesh_sock;
+static bool sent_mesh_hello = false;
+static uint8_t tfp_mesh_send_rb_buffer[TFP_MESH_SEND_RING_BUFFER_SIZE];
 
-os_timer_t tmr_tfp_mesh_stat;
+void ICACHE_FLASH_ATTR init_tfp_con_mesh(void) {
+  os_bzero(&tfp_con_mesh, sizeof(TFPConnection));
+
+  tfp_con_mesh.recv_buffer_index           = 0;
+  tfp_con_mesh.recv_buffer_expected_length = TFP_MESH_MIN_LENGTH;
+  tfp_con_mesh.state                       = TFP_CON_STATE_CLOSED;
+  tfp_con_mesh.brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_DISABLED;
+  tfp_con_mesh.websocket_state             = WEBSOCKET_STATE_NO_WEBSOCKET;
+  tfp_con_mesh.cid                         = 0;
+  tfp_con_mesh.con                         = NULL;
+}
 
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
   int8_t ret = 0;
 
-  // Clear out socket data structure storage.
   os_bzero(&tfp_mesh_sock, sizeof(tfp_mesh_sock));
   os_bzero(&tfp_mesh_sock_tcp, sizeof(tfp_mesh_sock_tcp));
 
-  // Prepare the socket.
+  // Initialise socket parameters.
   tfp_mesh_sock.type = ESPCONN_TCP;
   tfp_mesh_sock.state = ESPCONN_NONE;
+  tfp_mesh_sock.reverse = NULL;
 
   // TCP parameters of the socket.
   tfp_mesh_sock_tcp.local_port = espconn_port();
   tfp_mesh_sock_tcp.remote_port = configuration_current.mesh_gateway_port;
-  os_memcpy(tfp_mesh_sock_tcp.remote_ip, configuration_current.mesh_gateway_ip,
-    sizeof(configuration_current.mesh_gateway_ip));
+
+  os_memcpy(tfp_mesh_sock_tcp.remote_ip,
+            configuration_current.mesh_gateway_ip,
+            sizeof(configuration_current.mesh_gateway_ip));
 
   tfp_mesh_sock.proto.tcp = &tfp_mesh_sock_tcp;
 
-  // Register connect and reconnect callback.
+  /*
+   * FIXME: struct espconn's reverse field can't be retrived in callbacks.
+   * The reason for this is uncertain but a guess is that it is because the mesh
+   * layer does something as the callbacks in mesh mode are called from the mesh
+   * layer.
+   */
+
+  /*
+   * Register connect callback. All the other callbacks are registered from the
+   * connect callback as connect callback will provide the final socket for
+   * communication.
+   */
   if(espconn_regist_connectcb(&tfp_mesh_sock, cb_tfp_mesh_connect) != 0) {
     loge("MSH:Error registering connect callback");
-
-    return;
-  }
-
-  if(espconn_regist_reconcb(&tfp_mesh_sock, cb_tfp_mesh_reconnect) != 0) {
-    loge("MSH:Error registering reconnect callback");
 
     return;
   }
@@ -77,26 +94,26 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
   ret = espconn_mesh_connect(&tfp_mesh_sock);
 
   if(ret == ESPCONN_RTE) {
-    loge("MSH:tfp_mesh_open_connection(), ESPCONN_RTE)\n");
+    loge("MSH:Connect failed, ESPCONN_RTE\n");
   }
   else if(ret == ESPCONN_MEM) {
-    loge("MSH:tfp_mesh_open_connection(), ESPCONN_MEM\n");
+    loge("MSH:Connect failed, ESPCONN_MEM\n");
   }
   else if(ret == ESPCONN_ISCONN) {
-    loge("MSH:tfp_mesh_open_connection(), ESPCONN_ISCONN\n");
+    loge("MSH:Connect failed, ESPCONN_ISCONN\n");
   }
   else if(ret == ESPCONN_ARG) {
-    loge("MSH:tfp_mesh_open_connection(), ESPCONN_ARG\n");
+    loge("MSH:Connect failed, ESPCONN_ARG\n");
   }
   else if(ret == 0) {
-    logi("MSH:Mesh opened connection\n");
+    logi("MSH:Opened connection\n");
   }
   else {
-    logw("MSH:tfp_mesh_open_connection(), UNKNOWN\n");
+    logw("MSH:Connect failed, UNKNOWN\n");
   }
 }
 
-void ICACHE_FLASH_ATTR tfp_mesh_send_clear_buffer(void) {
+void ICACHE_FLASH_ATTR tfp_mesh_send_buffer_clear(void) {
   if(ringbuffer_is_empty(&tfp_mesh_send_rb)) {
     return;
   }
@@ -104,7 +121,7 @@ void ICACHE_FLASH_ATTR tfp_mesh_send_clear_buffer(void) {
   tfp_mesh_send_rb.start = tfp_mesh_send_rb.end;
 }
 
-bool ICACHE_FLASH_ATTR tfp_mesh_send_check_buffer(uint8_t len) {
+bool ICACHE_FLASH_ATTR tfp_mesh_send_buffer_check(uint8_t len) {
   if(ringbuffer_get_free(&tfp_mesh_send_rb) < len) {
     return false;
   }
@@ -113,37 +130,36 @@ bool ICACHE_FLASH_ATTR tfp_mesh_send_check_buffer(uint8_t len) {
   }
 }
 
-int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length) {
+int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg,
+                                       uint8_t *data,
+                                       uint16_t length,
+                                       uint8_t packet_type) {
   int8_t ret = 0;
-  TFPConnection *tfp_con = NULL;
   uint8_t dst_mac_addr[ESP_MESH_ADDR_LEN];
   uint8_t src_mac_addr[ESP_MESH_ADDR_LEN];
   struct mesh_header_format *m_header = NULL;
+  uint8_t data_with_type[TFP_MAX_LENGTH + sizeof(struct mesh_header_format) + 1];
 
-  uint16_t length_u16 = length;
-  espconn *sock = (espconn *)arg;
-
-  if(sock != &tfp_mesh_sock) {
-    loge("MSH:tfp_mesh_send(), wrong socket\n");
+  if(packet_type < 1) {
+    loge("MSH:Unknown packet type to send\n");
 
     return ESPCONN_ARG;
   }
 
-  tfp_con = (TFPConnection *)sock->reverse;
+  os_bzero(&data_with_type, sizeof(data_with_type));
+  data_with_type[0] = packet_type;
+  os_memcpy(&data_with_type[1], data, length);
 
-  if(tfp_con == NULL) {
-    loge("MSH:tfp_mesh_send(), failed to get TFPConnection\n");
-
-    return ESPCONN_ARG;
-  }
+  length++;
 
   // Update state of the socket.
-  tfp_con->state = TFP_CON_STATE_SENDING;
+  tfp_con_mesh.state = TFP_CON_STATE_SENDING;
 
   os_bzero(dst_mac_addr, sizeof(dst_mac_addr));
   os_bzero(src_mac_addr, sizeof(src_mac_addr));
 
   wifi_get_macaddr(STATION_IF, src_mac_addr);
+
   os_memcpy(dst_mac_addr, configuration_current.mesh_gateway_ip,
     sizeof(configuration_current.mesh_gateway_ip));
   os_memcpy(&dst_mac_addr[4], &configuration_current.mesh_gateway_port,
@@ -156,7 +172,7 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
     false, // Node-to-node packet (P2P).
     true, // Piggyback flow request.
     M_PROTO_BIN, // Protocol used for the payload.
-    length_u16, // Length of the payload.
+    length, // Length of payload.
     false, // Option flag.
     0, // Optional total length.
     false, // Fragmentation flag.
@@ -167,7 +183,7 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
   );
 
   if (!m_header) {
-    loge("MSH:tfp_mesh_send(), mesh packet creation failed\n");
+    loge("MSH:Packet creation failed\n");
 
     return ESPCONN_ARG;
   }
@@ -175,8 +191,8 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
   // Upwards packet, going out of the mesh to the mesh gateway.
   m_header->proto.d = MESH_ROUTE_UPWARDS;
 
-  if (!espconn_mesh_set_usr_data(m_header, data, length_u16)) {
-    loge("MSH:tfp_mesh_send(), set user data failed\n");
+  if (!espconn_mesh_set_usr_data(m_header, data_with_type, length)) {
+    loge("MSH:Setting user data failed while sending\n");
 
     os_free(m_header);
 
@@ -187,19 +203,22 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
    * Just like mesh receive, the mesh send function will not send unless there is
    * a packet with valid mesh header and non-zero payload.
    */
-  ret = espconn_mesh_sent(sock, (uint8_t *)m_header, m_header->len);
+  ret = espconn_mesh_sent(tfp_con_mesh.con, (uint8_t *)m_header, m_header->len);
 
   if(ret == ESPCONN_MEM) {
-    loge("MSH:tfp_mesh_send(), ESPCONN_MEM\n");
+    loge("MSH:Send error, ESPCONN_MEM\n");
   }
   else if(ret == ESPCONN_ARG) {
-    loge("MSH:tfp_mesh_send(), ESPCONN_ARG\n");
+    loge("MSH:Send error, ESPCONN_ARG\n");
   }
   else if(ret == ESPCONN_MAXNUM) {
-    loge("MSH:tfp_mesh_send(), ESPCONN_MAXNUM\n");
+    loge("MSH:Send error, ESPCONN_MAXNUM\n");
   }
   else if(ret == ESPCONN_IF) {
-    loge("MSH:tfp_mesh_send(), ESPCONN_IF\n");
+    loge("MSH:Send error, ESPCONN_IF\n");
+  }
+  else {
+    logd("MSH:Send OK (T: %d)\n", packet_type);
   }
 
   os_free(m_header);
@@ -207,148 +226,169 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint8_t length)
   return ret;
 }
 
-void cb_tmr_tfp_mesh_stat(void) {
-  int8_t status_node = espconn_mesh_get_status();
-
-  logi("MSH:=== Node Status ===\n");
-
-  if(espconn_mesh_is_root()) {
-    os_printf("R:IS\n");
-  }
-  else {
-    os_printf("R:NOT\n");
-  }
-
-  if(status_node == MESH_DISABLE) {
-    os_printf("S:DISABLED\n");
-  }
-  else if (status_node == MESH_WIFI_CONN) {
-    os_printf("S:CONNECTING\n");
-  }
-  else if (status_node == MESH_NET_CONN) {
-    os_printf("S:GOT IP\n");
-  }
-  else if (status_node == MESH_LOCAL_AVAIL) {
-    os_printf("S:LOCAL\n");
-  }
-  else if (status_node == MESH_ONLINE_AVAIL) {
-    os_printf("S:ONLINE\n");
-  }
-  else if (status_node == MESH_SOFTAP_AVAIL) {
-    os_printf("S:SOFTAP AVAILABLE\n");
-  }
-  else if (status_node == MESH_SOFTAP_SETUP) {
-    os_printf("S:SOFTAP SETUP\n");
-  }
-  else if (status_node == MESH_LEAF_AVAIL) {
-    os_printf("S:LEAF AVAILABLE\n");
-  }
-  else {
-    os_printf("S:UNKNOWN\n");
-  }
-
-  if(espconn_mesh_get_sub_dev_count() > 0) {
-    espconn_mesh_disp_route_table();
-    os_printf("\n");
-  }
-  else {
-    os_printf("ROUTING TABLE EMPTY\n\n");
-  }
-}
-
 void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
-  espconn *sock = (espconn *)arg;
+  uint8_t tfp_mesh_send_packet_len = 0;
+  uint8_t tfp_mesh_send_packet[TFP_MAX_LENGTH];
 
-  if(sock != &tfp_mesh_sock) {
-    loge("MSH:cb_tfp_mesh_sent(), wrong socket\n");
+  gw2mcsr.tx_count++;
+
+  os_bzero(tfp_mesh_send_packet, sizeof(tfp_mesh_send_packet));
+
+  /*
+   * If the callback is for recently sent mesh hello packet then don't call the
+   * callback function on TFP layer.
+   */
+  if(sent_mesh_hello) {
+    sent_mesh_hello = false;
+    logi("MSH:Sent mesh hello\n");
 
     return;
   }
 
-  /*
-   * When mesh mode is enabled we count packets this way and the packet counting
-   * mechanism in the layer below is not invoked.
-   */
-  gw2mcsr.tx_count++;
+  // If TFP mesh send buffer is empty then nothing to do.
+  if(ringbuffer_is_empty(&tfp_mesh_send_rb)) {
+    // Change the state of the socket to be ready to send.
+    tfp_con_mesh.state = TFP_CON_STATE_OPEN;
 
-  // Call the equivalent function on the TFP layer.
-  tfp_sent_callback(arg);
+    return;
+  }
+
+  // Send packet from the TFP send buffer and remove the packet from the buffer.
+
+  // Read 5 bytes of the packet present in the buffer.
+  if(ringbuffer_peak(&tfp_mesh_send_rb, tfp_mesh_send_packet, 5) != 5) {
+    loge("MSH:Failed to peak for packet length on send buffer\n");
+
+    return;
+  }
+
+  // Get the length field of the packet.
+  tfp_mesh_send_packet_len = tfp_mesh_send_packet[4];
+
+  /*
+   * Now that the length of the packet is known try to get the whole packet
+   * from the TFP mesh send buffer for sending.
+   */
+  if(ringbuffer_peak(&tfp_mesh_send_rb,
+                     tfp_mesh_send_packet,
+                     tfp_mesh_send_packet_len) != tfp_mesh_send_packet_len) {
+    loge("MSH:Failed to peak for packet from send buffer\n");
+
+    return;
+  }
+
+  logi("MSH:Sending from buffer...\n");
+
+  tfp_mesh_send(tfp_con_mesh.con,
+                tfp_mesh_send_packet,
+                tfp_mesh_send_packet_len,
+                MESH_PACKET_TFP);
+
+  ringbuffer_remove(&tfp_mesh_send_rb, tfp_mesh_send_packet_len);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   logi("MSH:Gateway connected\n");
 
-  espconn *sock = (espconn *)arg;
-
-  if (sock != &tfp_mesh_sock) {
-    loge("MSH:cb_tfp_mesh_connect(), wrong socket\n");
-
-    espconn_mesh_disable(NULL);
-
-    return;
-  }
+  uint32_t i = 0;
+  pkt_mesh_hello_t mesh_hello_pkt;
+  struct espconn *sock = (struct espconn *)arg;
 
   if(!espconn_set_opt(sock, ESPCONN_NODELAY)) {
-    loge("MSH:cb_tfp_mesh_connect(), error setting ESPCONN_NODELAY\n");
-
+    loge("MSH:Error setting socket parameter, ESPCONN_NODELAY\n");
     espconn_mesh_disable(NULL);
 
     return;
   }
 
-  if(espconn_regist_recvcb(sock, cb_tfp_mesh_receive) != 0) {
-    loge("MSH:cb_tfp_mesh_connect(), error registering receive callback");
-
-    espconn_mesh_disable(NULL);
-
-    return;
-  }
-
-  if(espconn_regist_sentcb(sock, cb_tfp_mesh_sent) != 0) {
-    loge("MSH:cb_tfp_mesh_connect(), error registering sent callback");
-
+  // Register callbacks of the socket.
+  if(espconn_regist_reconcb(sock, cb_tfp_mesh_reconnect) != 0) {
+    loge("MSH:Failed to register reconnect callback");
     espconn_mesh_disable(NULL);
 
     return;
   }
 
   if(espconn_regist_disconcb(sock, cb_tfp_mesh_disconnect) != 0) {
-    loge("MSH:cb_tfp_mesh_connect(), error registering disconnect callback");
-
+    loge("MSH:Failed to register disconnect callback");
     espconn_mesh_disable(NULL);
 
     return;
   }
 
-  ringbuffer_init(&tfp_mesh_send_rb, tfp_mesh_send_rb_buffer, sizeof(tfp_mesh_send_rb_buffer));
+  if(espconn_regist_recvcb(sock, cb_tfp_mesh_receive) != 0) {
+    loge("MSH:Failed to register receive callback\n");
+    espconn_mesh_disable(NULL);
 
-  // Setup timer to periodically print node status.
-  os_timer_disarm(&tmr_tfp_mesh_stat);
-  os_timer_setfn(&tmr_tfp_mesh_stat, (os_timer_func_t *)cb_tmr_tfp_mesh_stat, NULL);
-  os_timer_arm(&tmr_tfp_mesh_stat, 8000, true);
+    return;
+  }
 
-  // Call the equivalent function on the TFP layer.
-  tfp_connect_callback(arg);
+  if(espconn_regist_sentcb(sock, cb_tfp_mesh_sent) != 0) {
+    loge("MSH:Failed to register sent callback");
+    espconn_mesh_disable(NULL);
+
+    return;
+  }
+
+  init_tfp_con_mesh();
+  tfp_mesh_send_buffer_clear();
+
+  tfp_con_mesh.con = sock;
+
+  ringbuffer_init(&tfp_mesh_send_rb,
+                  tfp_mesh_send_rb_buffer,
+                  sizeof(tfp_mesh_send_rb_buffer));
+
+  // TODO: Should this root or not check be delayed ?
+  if(espconn_mesh_is_root()) {
+    logi("MSH:Sending mesh hello to gateway\n");
+
+    os_bzero(&mesh_hello_pkt, sizeof(mesh_hello_pkt));
+
+    mesh_hello_pkt.firmware_version[0] = FIRMWARE_VERSION_MAJOR;
+    mesh_hello_pkt.firmware_version[1] = FIRMWARE_VERSION_MINOR;
+    mesh_hello_pkt.firmware_version[2] = FIRMWARE_VERSION_REVISION;
+
+    os_memcpy(&mesh_hello_pkt.prefix,
+              configuration_current.mesh_ssid_prefix,
+              sizeof(configuration_current.mesh_ssid_prefix));
+
+    os_memcpy(&mesh_hello_pkt.group_id,
+              configuration_current.mesh_group_id,
+              sizeof(configuration_current.mesh_group_id));
+
+    tfp_mesh_send(tfp_con_mesh.con,
+                  (uint8_t *)&mesh_hello_pkt,
+                  sizeof(pkt_mesh_hello_t),
+                  MESH_PACKET_HELLO);
+
+    sent_mesh_hello = true;
+  }
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac) {
+  /*
+   * TODO: Cache connected child's stack for generating enumerate disconnect
+   * callbacks when it is detected that the child is not connected anymore.
+   */
   if (!mac) {
     return;
   }
 
   uint8_t *_mac = (uint8_t *)mac;
 
-  logi("MSH:cb_tfp_mesh_new_node(), MAC=[%x:%x:%x:%x:%x:%x]\n", _mac[0], _mac[1],
-    _mac[2], _mac[3], _mac[4], _mac[5]);
+  logi("MSH:New node joined (M: %02X-%02X-%02X-%02X-%02X-%02X)\n",
+       _mac[0], _mac[1], _mac[2],
+       _mac[3], _mac[4], _mac[5]);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_disconnect(void *arg) {
-  logi("MSH:cb_tfp_mesh_disconnect()\n");
+  logi("MSH:Connection to parent disconnected\n");
 
-  tfp_mesh_send_clear_buffer();
-
-  // Call the equivalent function on the TFP layer.
-  tfp_disconnect_callback(arg);
+  brickd_disconnect(tfp_con_mesh.cid);
+  tfp_mesh_send_buffer_clear();
+  init_tfp_con_mesh();
+  espconn_mesh_disable(cb_tfp_mesh_disable);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status) {
@@ -366,56 +406,147 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status) {
   }
   else {
     loge("MSH:Mesh enable failed, re-enabling...\n");
-
     espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
 
     return;
   }
 
-  // Call the equivalent function on the TFP layer.
-  tfp_open_connection();
-
   // Create and connect the socket to the mesh gateway.
   tfp_mesh_open_connection();
 }
 
-void ICACHE_FLASH_ATTR cb_tfp_mesh_reconnect(void *arg, sint8 error) {
-  logi("MSH:cb_tfp_mesh_reconnect()\n");
+void ICACHE_FLASH_ATTR cb_tfp_mesh_disable(int8_t status) {
+  logi("MSH:Mesh re-enabling...\n");
 
-  tfp_mesh_send_clear_buffer();
-  tfp_reconnect_callback(arg, error);
+  espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
 }
 
 /*
  * Callback only called if there is payload. Not called if the received packet
  * has only a mesh header but no payload.
  */
-void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, uint16_t len) {
-  int i = 0;
+void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg,
+                                           char *pdata,
+                                           unsigned short len) {
+  uint32_t i = 0;
   uint8_t *pkt_tfp = NULL;
   uint16_t pkt_tfp_len = 0;
-  espconn *sock = (espconn *)arg;
-  struct mesh_header_format *m_header = (struct mesh_header_format *)pdata;
+  struct mesh_header_format *m_header = NULL;
 
-  if(sock != &tfp_mesh_sock) {
-    loge("MSH:cb_tfp_mesh_receive(), wrong socket\n");
-
-    return;
-  }
-
-  // Payload of a mesh packet is a TFP packet.
-  if(!espconn_mesh_get_usr_data(m_header, &pkt_tfp, &pkt_tfp_len)) {
-    loge("MSH:cb_tfp_mesh_receive(), error getting user data\n");
-
-    return;
-  }
-
-  /*
-   * When mesh mode is enabled we count packets this way and the packet counting
-   * mechanism in the layer below is not invoked.
-   */
   gw2mcsr.rx_count++;
 
-  // Call the equivalent function on the TFP layer.
-  tfp_recv_callback(arg, (char *)pkt_tfp, (unsigned short)pkt_tfp_len);
+  for(i = 0; i < len; i++) {
+		tfp_con_mesh.recv_buffer[tfp_con_mesh.recv_buffer_index] = pdata[i];
+
+		if(tfp_con_mesh.recv_buffer_index == TFP_MESH_HEADER_LENGTH_INDEX) {
+			tfp_con_mesh.recv_buffer_expected_length =
+        (uint16_t)tfp_con_mesh.recv_buffer[TFP_MESH_HEADER_LENGTH_INDEX - 1];
+		}
+
+		tfp_con_mesh.recv_buffer_index++;
+
+		if(tfp_con_mesh.recv_buffer_index == tfp_con_mesh.recv_buffer_expected_length) {
+      m_header = (struct mesh_header_format *)tfp_con_mesh.recv_buffer;
+
+      if(m_header == NULL) {
+        loge("MSH:Receive failed, could not get mesh packet\n");
+
+        goto ERROR_GETTING_PACKET;
+      }
+
+      if(m_header->proto.protocol != M_PROTO_BIN) {
+        loge("MSH:Receive failed, packet protocol type is not binary");
+
+        goto ERROR_GETTING_PACKET;
+      }
+      else {
+        // Payload of a mesh packet is a TFP packet.
+        pkt_tfp = NULL;
+
+        if(!espconn_mesh_get_usr_data(m_header, &pkt_tfp, &pkt_tfp_len)) {
+          loge("MSH:Receive failed, could not get user data\n");
+
+          goto ERROR_GETTING_PACKET;
+        }
+
+        if(pkt_tfp == NULL) {
+          loge("MSH:Receive failed, could not get TFP packet\n");
+
+          goto ERROR_GETTING_PACKET;
+        }
+      }
+
+      if(pkt_tfp[0] == MESH_PACKET_HELLO) {
+        logi("MSH:Received hello packet\n");
+      }
+      else if(pkt_tfp[0] == MESH_PACKET_OLLEH) {
+        logi("MSH:Received olleh packet\n");
+
+        tfp_con_mesh.state = TFP_CON_STATE_OPEN;
+      }
+      else if(pkt_tfp[0] == MESH_PACKET_HB_RES) {
+        logi("MSH:Received heartbeat response packet\n");
+      }
+      else if(pkt_tfp[0] == MESH_PACKET_HB_REQ) {
+        logi("MSH:Received heartbeat request packet\n");
+      }
+      else if(pkt_tfp[0] == MESH_PACKET_TFP) {
+        logi("MSH:Received TFP packet\n");
+
+        if(!com_handle_message(pkt_tfp + 1, pkt_tfp_len - 1, tfp_con_mesh.cid)) {
+    			brickd_route_from(pkt_tfp + 1, tfp_con_mesh.cid);
+    			tfp_handle_packet(pkt_tfp + 1, pkt_tfp_len - 1);
+    		}
+      }
+      else {
+        logi("MSH:Received unknown packet\n");
+      }
+
+ERROR_GETTING_PACKET:
+			tfp_con_mesh.recv_buffer_index = 0;
+			tfp_con_mesh.recv_buffer_expected_length = TFP_MESH_MIN_LENGTH;
+		}
+	}
+}
+
+void ICACHE_FLASH_ATTR cb_tfp_mesh_reconnect(void *arg, sint8 error) {
+  logi("MSH:Connection reconnect (E: %d)\n", error);
+
+  cb_tfp_mesh_disconnect(arg);
+}
+
+bool ICACHE_FLASH_ATTR tfp_mesh_send_handler(const uint8_t *data,
+                                             uint8_t length) {
+  if(tfp_con_mesh.state == TFP_CON_STATE_OPEN) {
+    os_memcpy(tfp_con_mesh.send_buffer, data, length);
+    tfp_mesh_send(tfp_con_mesh.con, (uint8_t*)data, length, MESH_PACKET_TFP);
+
+    return true;
+  }
+  else if(tfp_con_mesh.state == TFP_CON_STATE_SENDING){
+    // Check if there is enough space in the send buffer.
+    logd("MSH:Can't send now, buffering...\n");
+
+    if(tfp_mesh_send_buffer_check(length)) {
+      // Store the packet in the TFP mesh send buffer.
+      for(uint32_t i = 0; i < length; i++) {
+        if(!ringbuffer_add(&tfp_mesh_send_rb, data[i])) {
+          loge("MSH:Buffering failed, could not add byte\n");
+
+          return false;
+        }
+      }
+      return true;
+    }
+    else {
+      loge("MSH:Buffering failed, buffer full\n");
+
+      return false;
+    }
+  }
+  else {
+    loge("MSH:Send failed, socket state\n");
+
+    return false;
+  }
 }

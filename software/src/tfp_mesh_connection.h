@@ -22,16 +22,7 @@
 #ifndef TFP_MESH_CONNECTION_H
 #define TFP_MESH_CONNECTION_H
 
-#include "c_types.h"
-#include "ringbuffer.h"
 #include "tfp_connection.h"
-#include "user_interface.h"
-
-#define MESH_PACKET_HELLO  1
-#define MESH_PACKET_OLLEH  2
-#define MESH_PACKET_HB_REQ 3
-#define MESH_PACKET_HB_RES 4
-#define MESH_PACKET_TFP    5
 
 #define TFP_MESH_MIN_LENGTH 16
 #define TFP_MESH_HEADER_LENGTH_INDEX 3
@@ -39,21 +30,58 @@
 #define TFP_MESH_SEND_RING_BUFFER_SIZE 10240
 #define FMT_MESH_STATION_HOSTNAME "%s_C_%X%X%X"
 
+typedef enum {
+  MESH_PACKET_HELLO = 1,
+  MESH_PACKET_OLLEH,
+  MESH_PACKET_TFP
+} mesh_packet_type_t;
+
+// TFP packet header.
 typedef struct {
+	uint32_t uid; // Always little-endian.
+	uint8_t length;
+	uint8_t function_id;
+	uint8_t sequence_number_and_options;
+	uint8_t error_code_and_future_use;
+} __attribute__((packed)) tfp_packet_header_t;
+
+// TFP packet with header.
+typedef struct {
+	tfp_packet_header_t header;
+	uint8_t payload[64];
+	uint8_t optional_data[8];
+} __attribute__((packed)) tfp_packet_t;
+
+// Mesh packet types.
+typedef struct {
+  struct mesh_header_format mesh_header;
+  mesh_packet_type_t type;
   uint8_t firmware_version[3];
   char prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
   uint8_t group_id[6];
+  bool is_root_node;
 } __attribute__((packed)) pkt_mesh_hello_t;
 
+typedef struct {
+	struct mesh_header_format header;
+  mesh_packet_type_t type;
+} __attribute__((packed)) pkt_mesh_olleh_t;
+
+typedef struct {
+	struct mesh_header_format header;
+  mesh_packet_type_t type;
+  tfp_packet_t pkt_tfp;
+} __attribute__((packed)) pkt_mesh_tfp_t;
+
+// Function prototypes.
 void ICACHE_FLASH_ATTR init_tfp_con_mesh(void);
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
 void ICACHE_FLASH_ATTR tfp_mesh_send_buffer_clear(void);
+bool ICACHE_FLASH_ATTR tfp_mesh_olleh_recv_handler(void);
 bool ICACHE_FLASH_ATTR tfp_mesh_send_buffer_check(uint8_t len);
-int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg,
-                                       uint8_t *data,
-                                       uint16_t length,
-                                       uint8_t packet_type);
-bool ICACHE_FLASH_ATTR tfp_mesh_send_handler(const uint8_t *data, uint8_t length);
+bool ICACHE_FLASH_ATTR tfp_mesh_tfp_recv_handler(tfp_packet_t *tfp_pkt);
+int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint16_t length);
+int8_t ICACHE_FLASH_ATTR tfp_mesh_send_handler(const uint8_t *data, uint8_t length);
 
 // Callbacks.
 void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg);

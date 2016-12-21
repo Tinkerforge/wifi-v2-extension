@@ -40,10 +40,11 @@
 
 #define MTU_LENGTH 1460
 
-#define TFP_CON_STATE_CLOSED            0
-#define TFP_CON_STATE_OPEN              1
-#define TFP_CON_STATE_SENDING           2
-#define TFP_CON_STATE_CLOSED_AFTER_SEND 3
+#define TFP_CON_STATE_CLOSED              0
+#define TFP_CON_STATE_OPEN                1
+#define TFP_CON_STATE_SENDING             2
+#define TFP_CON_STATE_CLOSED_AFTER_SEND   3
+#define TFP_CON_STATE_MESH_SENT_HELLO     4
 
 typedef struct {
 	uint8_t recv_buffer[TFP_RECV_BUFFER_SIZE\

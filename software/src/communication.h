@@ -78,6 +78,7 @@ void ICACHE_FLASH_ATTR com_return_setter(const int8_t cid, const void *data);
 #define FID_GET_WIFI2_MESH_COMMON_STATUS 108
 #define FID_GET_WIFI2_MESH_STATION_STATUS 109
 #define FID_GET_WIFI2_MESH_AP_STATUS 110
+#define FID_STACK_ENUMERATE 252 // Used in mesh mode.
 
 typedef struct {
 	MessageHeader header;
@@ -373,6 +374,10 @@ typedef struct {
 	bool enabled;
 } __attribute__((__packed__)) IsWifi2StatusLEDEnabledReturn;
 
+typedef struct {
+	MessageHeader header;
+} __attribute__((__packed__)) Wifi2DoStackEnumerate;
+
 void ICACHE_FLASH_ATTR set_wifi2_authentication_secret(const int8_t cid, const SetWifi2AuthenticationSecret *data);
 void ICACHE_FLASH_ATTR get_wifi2_authentication_secret(const int8_t cid, const GetWifi2AuthenticationSecret *data);
 void ICACHE_FLASH_ATTR set_wifi2_configuration(const int8_t cid, const SetWifi2Configuration *data);
@@ -402,5 +407,6 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid, const Ge
 void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid, const GetWifi2MeshCommonStatus *data);
 void ICACHE_FLASH_ATTR get_wifi2_mesh_station_status(const int8_t cid, const GetWifi2MeshStationStatus *data);
 void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid, const GetWifi2MeshAPStatus *data);
+void ICACHE_FLASH_ATTR wifi2_do_stack_enumerate(const int8_t cid, const Wifi2DoStackEnumerate *data);
 
 #endif

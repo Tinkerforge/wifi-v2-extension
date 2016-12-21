@@ -266,9 +266,9 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data,
 		return false;
 	}
 	else {
-		logd("MSH:Sending with CID\n");
+		tfp_mesh_send_handler(data, length);
 
-		return tfp_mesh_send_handler(data, length);
+		return true;
 	}
 }
 
@@ -377,9 +377,9 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		return true;
 	}
 	else {
-		logd("MSH:Sending\n");
+		tfp_mesh_send_handler(data, length);
 
-		return tfp_mesh_send_handler(data, length);
+		return true;
 	}
 }
 

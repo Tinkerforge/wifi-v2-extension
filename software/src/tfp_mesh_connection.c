@@ -81,12 +81,20 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
   tfp_mesh_sock.proto.tcp = &tfp_mesh_sock_tcp;
 
   /*
-   * Register connect callback. All the other callbacks are registered from the
-   * connect callback, as the connect callback will provide the final socket for
-   * communication.
+   * Register connect and disconnect callbacks.
+   *
+   * All the other callbacks are registered from the connect callback, as the
+   * connect callback will provide the final socket for communication.
    */
   if(espconn_regist_connectcb(&tfp_mesh_sock, cb_tfp_mesh_connect) != 0) {
-    loge("MSH:Error registering connect callback");
+    loge("MSH:Failed to register connect callback");
+
+    return;
+  }
+
+  if(espconn_regist_disconcb(&tfp_mesh_sock, cb_tfp_mesh_disconnect) != 0) {
+    loge("MSH:Failed to register disconnect callback");
+    espconn_mesh_disable(NULL);
 
     return;
   }
@@ -347,13 +355,6 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   // Register callbacks of the socket.
   if(espconn_regist_reconcb(sock, cb_tfp_mesh_reconnect) != 0) {
     loge("MSH:Failed to register reconnect callback");
-    espconn_mesh_disable(NULL);
-
-    return;
-  }
-
-  if(espconn_regist_disconcb(sock, cb_tfp_mesh_disconnect) != 0) {
-    loge("MSH:Failed to register disconnect callback");
     espconn_mesh_disable(NULL);
 
     return;

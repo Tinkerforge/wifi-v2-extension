@@ -30,11 +30,11 @@
 #define TFP_MESH_SEND_RING_BUFFER_SIZE 10240
 #define FMT_MESH_STATION_HOSTNAME "%s_C_%X%X%X"
 
-typedef enum {
+enum {
   MESH_PACKET_HELLO = 1,
   MESH_PACKET_OLLEH,
   MESH_PACKET_TFP
-} mesh_packet_type_t;
+};
 
 // TFP packet header.
 typedef struct {
@@ -55,21 +55,21 @@ typedef struct {
 // Mesh packet types.
 typedef struct {
   struct mesh_header_format mesh_header;
-  mesh_packet_type_t type;
-  uint8_t firmware_version[3];
-  char prefix[CONFIGURATION_SSID_MAX_LENGTH / 2];
-  uint8_t group_id[6];
+  uint8_t type;
   bool is_root_node;
+  uint8_t group_id[6];
+  char prefix[16];
+  uint8_t firmware_version[3];
 } __attribute__((packed)) pkt_mesh_hello_t;
 
 typedef struct {
 	struct mesh_header_format header;
-  mesh_packet_type_t type;
+  uint8_t type;
 } __attribute__((packed)) pkt_mesh_olleh_t;
 
 typedef struct {
 	struct mesh_header_format header;
-  mesh_packet_type_t type;
+  uint8_t type;
   tfp_packet_t pkt_tfp;
 } __attribute__((packed)) pkt_mesh_tfp_t;
 

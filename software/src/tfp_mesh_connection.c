@@ -87,13 +87,13 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
    * connect callback will provide the final socket for communication.
    */
   if(espconn_regist_connectcb(&tfp_mesh_sock, cb_tfp_mesh_connect) != 0) {
-    loge("MSH:Failed to register connect callback");
+    loge("MSH:Failed to register connect callback\n");
 
     return;
   }
 
   if(espconn_regist_disconcb(&tfp_mesh_sock, cb_tfp_mesh_disconnect) != 0) {
-    loge("MSH:Failed to register disconnect callback");
+    loge("MSH:Failed to register disconnect callback\n");
     espconn_mesh_disable(NULL);
 
     return;
@@ -354,7 +354,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
 
   // Register callbacks of the socket.
   if(espconn_regist_reconcb(sock, cb_tfp_mesh_reconnect) != 0) {
-    loge("MSH:Failed to register reconnect callback");
+    loge("MSH:Failed to register reconnect callback\n");
     espconn_mesh_disable(NULL);
 
     return;
@@ -368,7 +368,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   }
 
   if(espconn_regist_sentcb(sock, cb_tfp_mesh_sent) != 0) {
-    loge("MSH:Failed to register sent callback");
+    loge("MSH:Failed to register sent callback\n");
     espconn_mesh_disable(NULL);
 
     return;
@@ -526,8 +526,9 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_reconnect(void *arg, sint8 error) {
  * has only a mesh header but no payload.
  */
 void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned short len) {
-  uint8_t *tfp_pkt = NULL;
-  uint16_t tfp_pkt_len = 0;
+  uint8_t *payload = NULL;
+  uint16_t payload_len = 0;
+  uint8_t payload_type = 0;
   struct mesh_header_format *m_header = NULL;
 
   // Update mesh receive packet count.
@@ -544,6 +545,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
 		tfp_con_mesh.recv_buffer_index++;
 
 		if(tfp_con_mesh.recv_buffer_index == tfp_con_mesh.recv_buffer_expected_length) {
+      // Now we have the complete mesh packet in the receive buffer.
       m_header = (struct mesh_header_format *)tfp_con_mesh.recv_buffer;
 
       if(m_header == NULL) {
@@ -553,45 +555,48 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
       }
 
       if(m_header->proto.protocol != M_PROTO_BIN) {
-        loge("MSH:Receive failed, packet protocol type is not binary");
+        loge("MSH:Receive failed, packet protocol type is not binary\n");
 
         goto MOVE_ON;
       }
       else {
         // Payload of a mesh packet is a TFP packet.
-        tfp_pkt = NULL;
+        payload = NULL;
+        payload_len = 0;
 
-        if(!espconn_mesh_get_usr_data(m_header, &tfp_pkt, &tfp_pkt_len)) {
+        if(!espconn_mesh_get_usr_data(m_header, &payload, &payload_len)) {
           loge("MSH:Receive failed, could not get user data\n");
 
           goto MOVE_ON;
         }
 
-        if(tfp_pkt == NULL) {
+        if(payload == NULL || payload_len == 0) {
           loge("MSH:Receive failed, could not get TFP packet\n");
 
           goto MOVE_ON;
         }
       }
 
+      payload_type = payload[0];
+
       // Handling the packet based on the packet type.
-      if(tfp_pkt[0] == MESH_PACKET_OLLEH) {
+      if(payload_type == MESH_PACKET_OLLEH) {
         logi("MSH:Received olleh packet\n");
 
         tfp_mesh_olleh_recv_handler();
       }
-      else if(tfp_pkt[0] == MESH_PACKET_TFP) {
+      else if(payload_type == MESH_PACKET_TFP) {
         logi("MSH:Received TFP packet\n");
 
-        tfp_mesh_tfp_recv_handler((tfp_packet_t *)(tfp_pkt + 1));
+        tfp_mesh_tfp_recv_handler((tfp_packet_t *)(payload + 1));
       }
       else {
         logi("MSH:Received unknown packet\n");
       }
 
-MOVE_ON:
-			tfp_con_mesh.recv_buffer_index = 0;
-			tfp_con_mesh.recv_buffer_expected_length = TFP_MESH_MIN_LENGTH;
+      MOVE_ON:
+        tfp_con_mesh.recv_buffer_index = 0;
+        tfp_con_mesh.recv_buffer_expected_length = TFP_MESH_MIN_LENGTH;
 		}
 	}
 }

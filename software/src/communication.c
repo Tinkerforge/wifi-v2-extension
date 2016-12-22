@@ -135,7 +135,6 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		case FID_GET_WIFI2_MESH_COMMON_STATUS:    get_wifi2_mesh_common_status(cid, (GetWifi2MeshCommonStatus*)data);    		 return true;
 		case FID_GET_WIFI2_MESH_STATION_STATUS:   get_wifi2_mesh_station_status(cid, (GetWifi2MeshStationStatus*)data);  		 return true;
 		case FID_GET_WIFI2_MESH_AP_STATUS:        get_wifi2_mesh_ap_status(cid, (GetWifi2MeshAPStatus*)data);            		 return true;
-		case FID_STACK_ENUMERATE:       					wifi2_do_stack_enumerate(cid, (Wifi2DoStackEnumerate*)data);            		 return true;
 	}
 
 	return false;
@@ -471,11 +470,6 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid,
 		}
 
 		com_send(&gw2masr, sizeof(GetWifi2MeshAPStatusReturn), cid);
-}
-
-void ICACHE_FLASH_ATTR wifi2_do_stack_enumerate(const int8_t cid,
-																								const Wifi2DoStackEnumerate *data) {
-	com_send(data, sizeof(Wifi2DoStackEnumerate), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *data) {

@@ -24,6 +24,8 @@
 
 #include "tfp_connection.h"
 
+#define FID_STACK_ENUMERATE 252
+
 #define TFP_MESH_MIN_LENGTH 16
 #define TFP_MESH_HEADER_LENGTH_INDEX 3
 // 128 full size (80 bytes) TFP packets.

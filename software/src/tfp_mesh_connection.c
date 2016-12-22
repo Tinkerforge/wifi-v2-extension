@@ -270,7 +270,8 @@ bool ICACHE_FLASH_ATTR tfp_mesh_olleh_recv_handler(void) {
 
   logi("MSH:Sending stack enumerate packet to the stack master\n");
 
-  com_send((void *)&stack_enum_pkt, 8, tfp_con_mesh.cid);
+  // CID = -2 is for UART.
+  com_send((void *)&stack_enum_pkt, 8, -2);
 
   return true;
 }

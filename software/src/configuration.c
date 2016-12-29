@@ -39,6 +39,8 @@
 #include "tfp_mesh_connection.h"
 #include "tfp_connection.h"
 
+extern os_timer_t tmr_tfp_mesh_enable;
+
 const Configuration configuration_default = {
 	// Configuration info
 	.conf_checksum = 0,
@@ -272,10 +274,14 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	bool setup_ok = true;
 	uint8_t mac_sta_if[6];
 	struct station_config config_st;
-	struct softap_config config_ap;
 	struct ip_info ip_static_mesh_router;
 
 	logi("MSH:Applying mesh configuration\n");
+
+	os_bzero(&hostname, sizeof(hostname));
+	os_bzero(&config_st, sizeof(config_st));
+	os_bzero(&mac_sta_if, sizeof(mac_sta_if));
+	os_bzero(&ip_static_mesh_router, sizeof(ip_static_mesh_router));
 
 	/*
 	 * For mesh, STATION+AP mode is required.
@@ -288,13 +294,6 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 
 		loge("MSH:Setting STATION+AP mode failed\n");
 	}
-
-	// Reset structs.
-	os_bzero(&config_st, sizeof(config_st));
-	os_bzero(&config_ap, sizeof(config_ap));
-	os_bzero(&ip_static_mesh_router, sizeof(ip_static_mesh_router));
-	os_bzero(&hostname, sizeof(hostname));
-	os_bzero(&mac_sta_if, sizeof(mac_sta_if));
 
 	os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid,
 		sizeof(configuration_current.mesh_router_ssid));
@@ -363,29 +362,13 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		wifi_station_dhcpc_start();
 	}
 
-	/*
-	 * This is required to ensure that the saved configuration are being used for
-	 * configuring the station interface and not previously saved values.
-	 */
-	if(!wifi_station_set_config_current(&config_st)) {
-		setup_ok = false;
-
-		loge("MSH:Set station config failed\n");
-	}
-
-	if(!wifi_softap_set_config_current(&config_ap)) {
-		setup_ok = false;
-
-		loge("MSH:Set AP config failed\n");
-	}
-
+	// Setup mesh network parameters.
 	if(!espconn_mesh_set_router(&config_st)) {
 		setup_ok = false;
 
 		loge("MSH:Set router failed\n");
 	}
 
-	// Setup mesh network parameters.
 	if(!espconn_mesh_set_ssid_prefix(configuration_current.mesh_ssid_prefix,
 		os_strlen(configuration_current.mesh_ssid_prefix))) {
 			setup_ok = false;
@@ -400,7 +383,11 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		loge("MSH:Set group ID failed\n");
 	}
 
-	// Used in MESH_ONLINE mode.
+	/*
+	 * Even though we call espconn_mesh_connect() in tfp_mesh_open_connection()
+	 * with configured mesh gateway IP and socket, espconn_mesh_server_init() must
+	 * be still be called here.
+	 */
 	if(!espconn_mesh_server_init((struct ip_addr *)configuration_current.mesh_gateway_ip,
 	configuration_current.mesh_gateway_port)) {
 		setup_ok = false;
@@ -437,22 +424,40 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 
 	espconn_mesh_print_ver();
 
+	#ifdef MESH_SINGLE_ROOT_NODE
+		#if(MESH_SINGLE_ROOT_NODE)
+			unsigned char random_number = 0;
+
+			do {
+				if(os_get_random((unsigned char *)&random_number, 1) != 0) {
+					loge("MSH:Failed to get random duration to enable mesh\n");
+
+					return;
+				}
+			}
+			while(random_number > TIME_RANDOM_WAIT_MAX ||
+						random_number < TIME_RANDOM_WAIT_MIN);
+
+			logi("MSH:Enabling in %d seconds\n", random_number);
+
+			tfp_mesh_disarm_all_timers();
+
+			tfp_mesh_arm_timer(&tmr_tfp_mesh_enable,
+												 random_number * 1000,
+												 false,
+												 cb_tmr_tfp_mesh_enable,
+												 NULL);
+
+			return;
+		#endif
+	#endif
+
 	/*
 	 * Enable mesh (drum roll...)
 	 *
-	 * Two possible modes of operation are,
-	 *
-	 * 1. MESH_LOCAL: Doesn't connect to a socket for service. All traffic stays
-	 * 								within the mesh network.
-	 *
-	 * 2. MESH_ONLINE: Has connection to server specified by gateway IP and
-	 * 								 gateway port which is initialised by, espconn_mesh_server_init().
-	 *
-	 * This function must be called in user_init();
+	 * This function must be called from within user_init() function.
 	 */
 	espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
-
-	logi("MSH:Enabled, wait for CB\n");
 }
 
 void ICACHE_FLASH_ATTR configuration_apply_during_init(void) {

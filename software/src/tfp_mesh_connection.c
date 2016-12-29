@@ -34,6 +34,12 @@
 extern Configuration configuration_current;
 extern GetWifi2MeshCommonStatusReturn gw2mcsr;
 
+// Timers.
+os_timer_t tmr_tfp_mesh_enable;
+static os_timer_t tmr_tfp_mesh_hb_ping;
+static os_timer_t tmr_tfp_mesh_wait_pong;
+static os_timer_t tmr_tfp_mesh_wait_olleh;
+
 static esp_tcp tfp_mesh_sock_tcp;
 static TFPConnection tfp_con_mesh;
 static Ringbuffer tfp_mesh_send_rb;
@@ -41,6 +47,18 @@ static struct espconn tfp_mesh_sock;
 static uint8_t dst_mac_addr_to_gw[ESP_MESH_ADDR_LEN];
 static uint8_t src_mac_addr_to_gw[ESP_MESH_ADDR_LEN];
 static uint8_t tfp_mesh_send_rb_buffer[TFP_MESH_SEND_RING_BUFFER_SIZE];
+
+void tfp_mesh_pong_recv_handler(void) {
+  os_timer_disarm(&tmr_tfp_mesh_hb_ping);
+  os_timer_disarm(&tmr_tfp_mesh_wait_pong);
+
+  // Arm the ping timer.
+  tfp_mesh_arm_timer(&tmr_tfp_mesh_hb_ping,
+                     TIME_HB_PING,
+                     false,
+                     cb_tmr_tfp_mesh_hb_ping,
+                     NULL);
+}
 
 void ICACHE_FLASH_ATTR init_tfp_con_mesh(void) {
   os_bzero(&tfp_con_mesh, sizeof(TFPConnection));
@@ -56,6 +74,8 @@ void ICACHE_FLASH_ATTR init_tfp_con_mesh(void) {
 
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
   int8_t ret = 0;
+
+  logi("MSH:Opening connection...\n");
 
   os_bzero(&tfp_mesh_sock, sizeof(tfp_mesh_sock));
   os_bzero(&tfp_mesh_sock_tcp, sizeof(tfp_mesh_sock_tcp));
@@ -87,14 +107,17 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
    * connect callback will provide the final socket for communication.
    */
   if(espconn_regist_connectcb(&tfp_mesh_sock, cb_tfp_mesh_connect) != 0) {
-    loge("MSH:Failed to register connect callback\n");
+    loge("MSH:Failed to register connect callback, resetting...\n");
+
+    tfp_mesh_reset_recv_handler();
 
     return;
   }
 
   if(espconn_regist_disconcb(&tfp_mesh_sock, cb_tfp_mesh_disconnect) != 0) {
-    loge("MSH:Failed to register disconnect callback\n");
-    espconn_mesh_disable(NULL);
+    loge("MSH:Failed to register disconnect callback, resetting...\n");
+
+    tfp_mesh_reset_recv_handler();
 
     return;
   }
@@ -129,6 +152,53 @@ void ICACHE_FLASH_ATTR tfp_mesh_send_buffer_clear(void) {
   tfp_mesh_send_rb.start = tfp_mesh_send_rb.end;
 }
 
+void ICACHE_FLASH_ATTR tfp_mesh_disarm_all_timers(void) {
+  os_timer_disarm(&tmr_tfp_mesh_enable);
+  os_timer_disarm(&tmr_tfp_mesh_hb_ping);
+  os_timer_disarm(&tmr_tfp_mesh_wait_pong);
+  os_timer_disarm(&tmr_tfp_mesh_wait_olleh);
+}
+
+bool ICACHE_FLASH_ATTR tfp_mesh_olleh_recv_handler(void) {
+  tfp_packet_header_t stack_enum_pkt;
+  os_bzero(&stack_enum_pkt, sizeof(stack_enum_pkt));
+
+  tfp_mesh_disarm_all_timers();
+
+  tfp_con_mesh.state = TFP_CON_STATE_OPEN;
+
+  // FIXME: UID of the master must be set properly.
+
+  // Send stack enumerate packet to the master.
+  stack_enum_pkt.function_id = FID_MASTER_STACK_ENUMERATE;
+  stack_enum_pkt.length = 8;
+  stack_enum_pkt.sequence_number_and_options = 16; // Sequence number = 1.
+
+  logi("MSH:Sending stack enumerate packet to the stack master\n");
+
+  // CID = -2 is for UART.
+  com_send((void *)&stack_enum_pkt, 8, -2);
+
+  // Arm the ping timer.
+  tfp_mesh_arm_timer(&tmr_tfp_mesh_hb_ping,
+                     TIME_HB_PING,
+                     false,
+                     cb_tmr_tfp_mesh_hb_ping,
+                     NULL);
+
+  return true;
+}
+
+void ICACHE_FLASH_ATTR tfp_mesh_arm_timer(os_timer_t *timer,
+                                          uint32_t time_ms,
+                                          bool repeat,
+                                          os_timer_func_t *cb_func,
+                                          void *arg_cb_func) {
+  os_timer_disarm(timer);
+  os_timer_setfn(timer, (os_timer_func_t *)cb_func, arg_cb_func);
+  os_timer_arm(timer, time_ms, repeat);
+}
+
 bool ICACHE_FLASH_ATTR tfp_mesh_send_buffer_check(uint8_t len) {
   if(ringbuffer_get_free(&tfp_mesh_send_rb) < len) {
     return false;
@@ -138,11 +208,33 @@ bool ICACHE_FLASH_ATTR tfp_mesh_send_buffer_check(uint8_t len) {
   }
 }
 
+bool ICACHE_FLASH_ATTR tfp_mesh_reset_recv_handler(void) {
+  tfp_packet_header_t stack_reset_pkt;
+  os_bzero(&stack_reset_pkt, sizeof(stack_reset_pkt));
+
+  // FIXME: UID of the master must be set properly.
+
+  // Send stack enumerate packet to the master.
+  stack_reset_pkt.function_id = FID_MASTER_RESET;
+  stack_reset_pkt.length = 8;
+  stack_reset_pkt.sequence_number_and_options = 16; // Sequence number = 1.
+
+  logi("MSH:Sending stack reset packet to the stack master\n");
+
+  // CID = -2 is for UART.
+  com_send((void *)&stack_reset_pkt, 8, -2);
+
+  return true;
+}
+
 // Handler when the received packet is a TFP packet.
-bool ICACHE_FLASH_ATTR tfp_mesh_tfp_recv_handler(tfp_packet_t *tfp_pkt) {
-  if(!com_handle_message((uint8_t *)tfp_pkt, tfp_pkt->header.length, tfp_con_mesh.cid)) {
-    brickd_route_from((void *)tfp_pkt, tfp_con_mesh.cid);
-    tfp_handle_packet((uint8_t *)tfp_pkt, tfp_pkt->header.length);
+bool ICACHE_FLASH_ATTR tfp_mesh_tfp_recv_handler(pkt_mesh_tfp_t *pkt_mesh_tfp) {
+  if(!com_handle_message((uint8_t *)&pkt_mesh_tfp->pkt_tfp,
+                         pkt_mesh_tfp->pkt_tfp.header.length,
+                         tfp_con_mesh.cid)) {
+    brickd_route_from((void *)&pkt_mesh_tfp->pkt_tfp, tfp_con_mesh.cid);
+    tfp_handle_packet((uint8_t *)&pkt_mesh_tfp->pkt_tfp,
+                      pkt_mesh_tfp->pkt_tfp.header.length);
   }
 
   logd("MSH:Handled TFP packet\n");
@@ -198,7 +290,7 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint16_t length
        if(!ringbuffer_add(&tfp_mesh_send_rb, data[i])) {
          loge("MSH:Buffering failed, could not add byte\n");
 
-         return ESPCONN_ARG;
+         tfp_mesh_reset_recv_handler();
        }
      }
      return 0;
@@ -206,13 +298,13 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint16_t length
    else {
      loge("MSH:Buffering failed, buffer full\n");
 
-     return ESPCONN_ARG;
+     tfp_mesh_reset_recv_handler();
    }
   }
   else {
    loge("MSH:Send failed, socket state\n");
 
-   return ESPCONN_ARG;
+   tfp_mesh_reset_recv_handler();
   }
 }
 
@@ -255,25 +347,6 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send_handler(const uint8_t *data, uint8_t leng
   ret = tfp_mesh_send(tfp_con_mesh.con, (uint8_t*)&tfp_mesh_pkt, tfp_mesh_pkt.header.len);
 
   return ret;
-}
-
-bool ICACHE_FLASH_ATTR tfp_mesh_olleh_recv_handler(void) {
-  tfp_packet_header_t stack_enum_pkt;
-  os_bzero(&stack_enum_pkt, sizeof(stack_enum_pkt));
-
-  tfp_con_mesh.state = TFP_CON_STATE_OPEN;
-
-  // Send stack enumerate packet to the master.
-  stack_enum_pkt.function_id = FID_STACK_ENUMERATE;
-  stack_enum_pkt.length = 8;
-  stack_enum_pkt.sequence_number_and_options = 16; // Sequence number = 1.
-
-  logi("MSH:Sending stack enumerate packet to the stack master\n");
-
-  // CID = -2 is for UART.
-  com_send((void *)&stack_enum_pkt, 8, -2);
-
-  return true;
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_sent(void *arg) {
@@ -347,30 +420,34 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   struct espconn *sock = (struct espconn *)arg;
 
   if(!espconn_set_opt(sock, ESPCONN_NODELAY)) {
-    loge("MSH:Error setting socket parameter, ESPCONN_NODELAY\n");
-    espconn_mesh_disable(NULL);
+    loge("MSH:Failed to set socket parameter, ESPCONN_NODELAY, resetting...\n");
+
+    tfp_mesh_reset_recv_handler();
 
     return;
   }
 
   // Register callbacks of the socket.
   if(espconn_regist_reconcb(sock, cb_tfp_mesh_reconnect) != 0) {
-    loge("MSH:Failed to register reconnect callback\n");
-    espconn_mesh_disable(NULL);
+    loge("MSH:Failed to register reconnect callback, resetting...\n");
+
+    tfp_mesh_reset_recv_handler();
 
     return;
   }
 
   if(espconn_regist_recvcb(sock, cb_tfp_mesh_receive) != 0) {
-    loge("MSH:Failed to register receive callback\n");
-    espconn_mesh_disable(NULL);
+    loge("MSH:Failed to register receive callback, resetting...\n");
+
+    tfp_mesh_reset_recv_handler();
 
     return;
   }
 
   if(espconn_regist_sentcb(sock, cb_tfp_mesh_sent) != 0) {
-    loge("MSH:Failed to register sent callback\n");
-    espconn_mesh_disable(NULL);
+    loge("MSH:Failed to register sent callback, resetting...\n");
+
+    tfp_mesh_reset_recv_handler();
 
     return;
   }
@@ -443,6 +520,10 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
 
   logi("MSH:Sending mesh hello packet\n");
 
+  /*
+   * tfp_mesh_send() isn't used here because at this stage we want to skip
+   * socket state check while sending.
+   */
   ret = espconn_mesh_sent(tfp_con_mesh.con,
                           (uint8_t *)&mesh_hello_pkt,
                           mesh_hello_pkt.mesh_header.len);
@@ -463,6 +544,13 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
     logd("MSH:Send OK (T: %d, L: %d)\n",
          MESH_PACKET_HELLO,
          mesh_hello_pkt.mesh_header.len);
+
+  // Arm the wait olleh timer.
+  tfp_mesh_arm_timer(&tmr_tfp_mesh_wait_olleh,
+                     TIME_WAIT_OLLEH,
+                     false,
+                     cb_tmr_tfp_mesh_wait_olleh,
+                     NULL);
   }
 }
 
@@ -481,10 +569,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_new_node(void *mac) {
 void ICACHE_FLASH_ATTR cb_tfp_mesh_disconnect(void *arg) {
   logi("MSH:Connection to parent disconnected\n");
 
-  brickd_disconnect(tfp_con_mesh.cid);
-  tfp_mesh_send_buffer_clear();
-  init_tfp_con_mesh();
-  espconn_mesh_disable(cb_tfp_mesh_disable);
+	tfp_mesh_reset_recv_handler();
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status) {
@@ -493,9 +578,6 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status) {
   }
   else if(status == MESH_LOCAL_SUC) {
     logi("MSH:Mesh enabled, LOCAL\n");
-  }
-  else if(status == MESH_DISABLE_SUC) {
-    logi("MSH:Mesh disabled\n");
   }
   else if(status == MESH_SOFTAP_SUC) {
     logi("MSH:Mesh enabled, SOFTAP\n");
@@ -508,12 +590,6 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_enable(int8_t status) {
   }
 
   tfp_mesh_open_connection();
-}
-
-void ICACHE_FLASH_ATTR cb_tfp_mesh_disable(int8_t status) {
-  logi("MSH:Mesh re-enabling...\n");
-
-  espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
 }
 
 void ICACHE_FLASH_ATTR cb_tfp_mesh_reconnect(void *arg, sint8 error) {
@@ -580,17 +656,31 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
 
       payload_type = payload[0];
 
-      // Handling the packet based on the packet type.
+      // Mesh olleh packet.
       if(payload_type == MESH_PACKET_OLLEH) {
         logi("MSH:Received olleh packet\n");
 
         tfp_mesh_olleh_recv_handler();
       }
+      // Reset stack packet.
+			else if(payload_type == MESH_PACKET_RESET) {
+        logi("MSH:Received reset packet\n");
+
+        tfp_mesh_reset_recv_handler();
+      }
+      // MEsh heart beat pong packet.
+      else if(payload_type == MESH_PACKET_HB_PONG) {
+        logi("MSH:Received pong packet\n");
+
+        tfp_mesh_pong_recv_handler();
+      }
+      // Mesh TFP packet.
       else if(payload_type == MESH_PACKET_TFP) {
         logi("MSH:Received TFP packet\n");
 
-        tfp_mesh_tfp_recv_handler((tfp_packet_t *)(payload + 1));
+        tfp_mesh_tfp_recv_handler((pkt_mesh_tfp_t *)tfp_con_mesh.recv_buffer);
       }
+      // Packet type is unknown.
       else {
         logi("MSH:Received unknown packet\n");
       }
@@ -600,4 +690,70 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
         tfp_con_mesh.recv_buffer_expected_length = TFP_MESH_MIN_LENGTH;
 		}
 	}
+}
+
+void cb_tmr_tfp_mesh_enable(void *arg) {
+  /*
+	 * Enable mesh (drum roll...)
+	 *
+	 * This function must be called from within user_init() function.
+	 */
+  espconn_mesh_enable(cb_tfp_mesh_enable, MESH_ONLINE);
+}
+
+void cb_tmr_tfp_mesh_hb_ping(void *arg) {
+	logi("MSH:Pinging the mesh gateway\n");
+
+  pkt_mesh_hb_t pkt_mesh_hb;
+  struct mesh_header_format *m_header = NULL;
+
+  os_bzero(&pkt_mesh_hb, sizeof(pkt_mesh_hb_t));
+
+  m_header = (struct mesh_header_format*)espconn_mesh_create_packet
+  (
+    dst_mac_addr_to_gw, // Destination address.
+    src_mac_addr_to_gw, // Source address.
+    false, // Node-to-node packet (P2P).
+    true, // Piggyback flow request.
+    M_PROTO_BIN, // Protocol used for the payload.
+    sizeof(pkt_mesh_hb) - sizeof(struct mesh_header_format), // Length of payload.
+    false, // Option flag.
+    0, // Optional total length.
+    false, // Fragmentation flag.
+    0, // Fragmentation type.
+    false, // More fragmentation.
+    0, // Fragmentation index.
+    0 // Fragmentation ID.
+  );
+
+  m_header->proto.d = MESH_ROUTE_UPWARDS;
+
+  os_memcpy(&pkt_mesh_hb.header, m_header, sizeof(struct mesh_header_format));
+  os_free(m_header);
+
+  pkt_mesh_hb.type = MESH_PACKET_HB_PING;
+
+  // Send the ping packet to the mesh gateway.
+  tfp_mesh_send(tfp_con_mesh.con, (uint8_t *)&pkt_mesh_hb, pkt_mesh_hb.header.len);
+
+  // Arm the wait pong timer.
+  tfp_mesh_arm_timer(&tmr_tfp_mesh_wait_pong,
+                     TIME_HB_WAIT_PONG,
+                     false,
+                     cb_tmr_tfp_mesh_wait_pong,
+                     NULL);
+}
+
+void cb_tmr_tfp_mesh_wait_pong(void *arg) {
+	logi("MSH:Wait pong timedout, resetting...\n");
+
+  // Reset the stack
+  tfp_mesh_reset_recv_handler();
+}
+
+void cb_tmr_tfp_mesh_wait_olleh(void *arg) {
+  logi("MSH:Wait olleh timedout, resetting...\n");
+
+  // Reset the stack
+  tfp_mesh_reset_recv_handler();
 }

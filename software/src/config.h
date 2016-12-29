@@ -26,10 +26,16 @@
 #define UART_CONNECTION UART0
 #define UART_DEBUG UART1
 
+/*
+ * WARNING: Enabling DEBUG log level in mesh mode will reset the extension
+ * as there will be too much debug prints. Works OK with INFO log level.
+ */
 #define LOGGING_LEVEL LOGGING_NONE
 
 #define FIRMWARE_VERSION_MAJOR    2
 #define FIRMWARE_VERSION_MINOR    0
 #define FIRMWARE_VERSION_REVISION 4
+
+#define MESH_SINGLE_ROOT_NODE     false
 
 #endif

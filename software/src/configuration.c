@@ -275,6 +275,7 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	uint8_t mac_sta_if[6];
 	struct station_config config_st;
 	struct ip_info ip_static_mesh_router;
+	char mesh_ssid_prefix_str[sizeof(configuration_current.mesh_ssid_prefix) + 1];
 
 	logi("MSH:Applying mesh configuration\n");
 
@@ -320,8 +321,17 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		loge("MSH:Getting station MAC failed\n");
 	}
 	else {
-		os_sprintf(hostname, FMT_MESH_STATION_HOSTNAME, configuration_current.mesh_ssid_prefix,
-			mac_sta_if[3], mac_sta_if[4], mac_sta_if[5]);
+		os_bzero(&mesh_ssid_prefix_str, sizeof(mesh_ssid_prefix_str));
+		os_memcpy(&mesh_ssid_prefix_str,
+							configuration_current.mesh_ssid_prefix,
+							sizeof(configuration_current.mesh_ssid_prefix));
+
+		os_sprintf(hostname,
+							 FMT_MESH_STATION_HOSTNAME,
+							 mesh_ssid_prefix_str,
+							 mac_sta_if[3],
+							 mac_sta_if[4],
+							 mac_sta_if[5]);
 
 		if(!wifi_station_set_hostname(hostname)) {
 			setup_ok = false;
@@ -370,7 +380,7 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	}
 
 	if(!espconn_mesh_set_ssid_prefix(configuration_current.mesh_ssid_prefix,
-		os_strlen(configuration_current.mesh_ssid_prefix))) {
+		sizeof(configuration_current.mesh_ssid_prefix))) {
 			setup_ok = false;
 
 			loge("MSH:Set SSID prefix failed\n");

@@ -24,6 +24,8 @@
 
 #include "tfp_connection.h"
 
+#define TFP_MESH_MAX_LENGTH sizeof(struct mesh_header_format) + TFP_MAX_LENGTH + 1
+
 #define FID_MASTER_RESET 243
 #define FID_MASTER_STACK_ENUMERATE 252
 
@@ -36,13 +38,13 @@
 #define TIME_RANDOM_WAIT_MAX 64
 // In milliseconds.
 #define TIME_HB_PING      8000
-#define TIME_WAIT_OLLEH   16000
+#define TIME_WAIT_OLLEH   8000
 #define TIME_HB_WAIT_PONG 8000
 
 #define TFP_MESH_MIN_LENGTH 16
 #define TFP_MESH_HEADER_LENGTH_INDEX 3
-// 128 full size (80 bytes) TFP packets.
-#define TFP_MESH_SEND_RING_BUFFER_SIZE 10240
+// 128 full size (16+80+1=97 bytes) TFP mesh packets.
+#define TFP_MESH_SEND_RING_BUFFER_SIZE 12416
 #define FMT_MESH_STATION_HOSTNAME "%s_C_%X%X%X"
 
 enum {
@@ -102,9 +104,9 @@ typedef struct {
 } __attribute__((packed)) pkt_mesh_tfp_t;
 
 // Function prototypes.
-void tfp_mesh_pong_recv_handler(void);
 void ICACHE_FLASH_ATTR init_tfp_con_mesh(void);
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
+void ICACHE_FLASH_ATTR tfp_mesh_pong_recv_handler(void);
 void ICACHE_FLASH_ATTR tfp_mesh_send_buffer_clear(void);
 void ICACHE_FLASH_ATTR tfp_mesh_disarm_all_timers(void);
 bool ICACHE_FLASH_ATTR tfp_mesh_olleh_recv_handler(void);
@@ -115,6 +117,7 @@ void ICACHE_FLASH_ATTR tfp_mesh_arm_timer(os_timer_t *timer,
                                           void *arg_cb_func);
 bool ICACHE_FLASH_ATTR tfp_mesh_send_buffer_check(uint8_t len);
 bool ICACHE_FLASH_ATTR tfp_mesh_reset_recv_handler(void);
+void ICACHE_FLASH_ATTR tfp_mesh_ping_recv_handler(pkt_mesh_hb_t *pkt_mesh_hb);
 bool ICACHE_FLASH_ATTR tfp_mesh_tfp_recv_handler(pkt_mesh_tfp_t *tfp_mesh_pkt);
 int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint16_t length);
 int8_t ICACHE_FLASH_ATTR tfp_mesh_send_handler(const uint8_t *data, uint8_t length);

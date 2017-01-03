@@ -274,13 +274,14 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	bool setup_ok = true;
 	uint8_t mac_sta_if[6];
 	struct station_config config_st;
+	struct softap_config config_ap;
 	struct ip_info ip_static_mesh_router;
-	char mesh_ssid_prefix_str[sizeof(configuration_current.mesh_ssid_prefix) + 1];
 
 	logi("MSH:Applying mesh configuration\n");
 
 	os_bzero(&hostname, sizeof(hostname));
 	os_bzero(&config_st, sizeof(config_st));
+	os_bzero(&config_ap, sizeof(config_ap));
 	os_bzero(&mac_sta_if, sizeof(mac_sta_if));
 	os_bzero(&ip_static_mesh_router, sizeof(ip_static_mesh_router));
 
@@ -295,6 +296,12 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 
 		loge("MSH:Setting STATION+AP mode failed\n");
 	}
+
+	/*
+	 * Mesh requires the softap configuration to be cleared so the mesh library
+	 * can configure the softap accordingly.
+	 */
+	wifi_softap_set_config_current(&config_ap);
 
 	os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid,
 		sizeof(configuration_current.mesh_router_ssid));
@@ -321,14 +328,9 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		loge("MSH:Getting station MAC failed\n");
 	}
 	else {
-		os_bzero(&mesh_ssid_prefix_str, sizeof(mesh_ssid_prefix_str));
-		os_memcpy(&mesh_ssid_prefix_str,
-							configuration_current.mesh_ssid_prefix,
-							sizeof(configuration_current.mesh_ssid_prefix));
-
 		os_sprintf(hostname,
 							 FMT_MESH_STATION_HOSTNAME,
-							 mesh_ssid_prefix_str,
+							 configuration_current.mesh_ssid_prefix,
 							 mac_sta_if[3],
 							 mac_sta_if[4],
 							 mac_sta_if[5]);
@@ -380,7 +382,7 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	}
 
 	if(!espconn_mesh_set_ssid_prefix(configuration_current.mesh_ssid_prefix,
-		sizeof(configuration_current.mesh_ssid_prefix))) {
+		os_strlen(configuration_current.mesh_ssid_prefix))) {
 			setup_ok = false;
 
 			loge("MSH:Set SSID prefix failed\n");

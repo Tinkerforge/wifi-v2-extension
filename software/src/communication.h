@@ -149,7 +149,8 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	char mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH];
+	// Espressif mesh library supports router SSID with maximum length of 31 characters.
+	char mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH - 1];
 } __attribute__((__packed__)) SetWifi2MeshRouterSSID;
 
 typedef struct {
@@ -158,7 +159,8 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-	char mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH];
+	// Espressif mesh library supports router SSID with maximum length of 31 characters.
+	char mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH - 1];
 } __attribute__((__packed__)) GetWifi2MeshRouterSSIDReturn;
 
 typedef struct {

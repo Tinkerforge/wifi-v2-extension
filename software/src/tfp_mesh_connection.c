@@ -357,7 +357,7 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint16_t length
    }
   }
   else {
-   loge("MSH:Send failed, socket state\n");
+   loge("MSH:Send failed, socket state (S: %d)\n", tfp_con_mesh.state);
 
    tfp_mesh_reset_recv_handler();
   }

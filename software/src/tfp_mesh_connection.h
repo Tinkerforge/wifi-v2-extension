@@ -105,6 +105,8 @@ typedef struct {
 
 // Function prototypes.
 void ICACHE_FLASH_ATTR init_tfp_con_mesh(void);
+void ICACHE_FLASH_ATTR tfp_mesh_recv_hold(void);
+void ICACHE_FLASH_ATTR tfp_mesh_recv_unhold(void);
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void);
 void ICACHE_FLASH_ATTR tfp_mesh_pong_recv_handler(void);
 void ICACHE_FLASH_ATTR tfp_mesh_send_buffer_clear(void);

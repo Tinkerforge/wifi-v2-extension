@@ -31,8 +31,11 @@
 #include "ringbuffer.h"
 #include "tfp_mesh_connection.h"
 
+extern Ringbuffer tfp_rb;
 extern Configuration configuration_current;
 extern GetWifi2MeshCommonStatusReturn gw2mcsr;
+
+static bool tfp_mesh_is_hold;
 
 // Timers.
 os_timer_t tmr_tfp_mesh_enable;
@@ -60,7 +63,35 @@ void ICACHE_FLASH_ATTR init_tfp_con_mesh(void) {
   tfp_con_mesh.con                         = NULL;
 }
 
+void ICACHE_FLASH_ATTR tfp_mesh_recv_hold(void) {
+  if(!tfp_mesh_is_hold) {
+    if(tfp_con_mesh.state == TFP_CON_STATE_OPEN ||
+       tfp_con_mesh.state == TFP_CON_STATE_SENDING) {
+      espconn_recv_hold(tfp_con_mesh.con);
+    }
+
+    logi("MSH:Receive on hold (F: %d)\n", ringbuffer_get_free(&tfp_rb));
+
+    tfp_mesh_is_hold = true;
+  }
+}
+
+void ICACHE_FLASH_ATTR tfp_mesh_recv_unhold(void) {
+  if(tfp_mesh_is_hold) {
+      if(tfp_con_mesh.state == TFP_CON_STATE_OPEN ||
+         tfp_con_mesh.state == TFP_CON_STATE_SENDING) {
+
+        espconn_recv_unhold(tfp_con_mesh.con);
+      }
+
+    logi("MSH:Receive unhold (F: %d)\n", ringbuffer_get_free(&tfp_rb));
+
+    tfp_mesh_is_hold = false;
+  }
+}
+
 void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
+  tfp_mesh_is_hold = false;
   int8_t ret = 0;
 
   logi("MSH:Opening connection...\n");
@@ -255,6 +286,10 @@ bool ICACHE_FLASH_ATTR tfp_mesh_tfp_recv_handler(pkt_mesh_tfp_t *pkt_mesh_tfp) {
                       pkt_mesh_tfp->pkt_tfp.header.length);
   }
 
+  if(ringbuffer_get_free(&tfp_rb) < (5*MTU_LENGTH + 2)) {
+    tfp_mesh_recv_hold();
+  }
+
   logd("MSH:Handled TFP packet\n");
 
   return true;
@@ -365,6 +400,10 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send_handler(const uint8_t *data, uint8_t leng
   os_memcpy(&tfp_mesh_pkt.pkt_tfp, data, length);
 
   ret = tfp_mesh_send(tfp_con_mesh.con, (uint8_t*)&tfp_mesh_pkt, tfp_mesh_pkt.header.len);
+
+  if(ringbuffer_get_free(&tfp_rb) > (6*MTU_LENGTH + 2)) {
+      tfp_mesh_recv_unhold();
+  }
 
   return ret;
 }
@@ -690,37 +729,37 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
 
       // Mesh olleh packet.
       if(payload_type == MESH_PACKET_OLLEH) {
-        logi("MSH:Received olleh packet\n");
+        logd("MSH:Received olleh packet\n");
 
         tfp_mesh_olleh_recv_handler();
       }
       // Reset stack packet.
 			else if(payload_type == MESH_PACKET_RESET) {
-        logi("MSH:Received reset packet\n");
+        logd("MSH:Received reset packet\n");
 
         tfp_mesh_reset_recv_handler();
       }
       // Mesh heart beat ping packet.
       else if(payload_type == MESH_PACKET_HB_PING) {
-        logi("MSH:Received ping packet\n");
+        logd("MSH:Received ping packet\n");
 
         tfp_mesh_ping_recv_handler((pkt_mesh_hb_t *)tfp_con_mesh.recv_buffer);
       }
       // Mesh heart beat pong packet.
       else if(payload_type == MESH_PACKET_HB_PONG) {
-        logi("MSH:Received pong packet\n");
+        logd("MSH:Received pong packet\n");
 
         tfp_mesh_pong_recv_handler();
       }
       // Mesh TFP packet.
       else if(payload_type == MESH_PACKET_TFP) {
-        logi("MSH:Received TFP packet\n");
+        logd("MSH:Received TFP packet\n");
 
         tfp_mesh_tfp_recv_handler((pkt_mesh_tfp_t *)tfp_con_mesh.recv_buffer);
       }
       // Packet type is unknown.
       else {
-        logi("MSH:Received unknown packet\n");
+        logw("MSH:Received unknown packet\n");
       }
 
       MOVE_ON:

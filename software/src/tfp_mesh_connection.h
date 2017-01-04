@@ -45,6 +45,7 @@
 #define TFP_MESH_HEADER_LENGTH_INDEX 3
 // 128 full size (16+80+1=97 bytes) TFP mesh packets.
 #define TFP_MESH_SEND_RING_BUFFER_SIZE 12416
+#define FMT_MESH_STATION_HOSTNAME "%s_C_%X%X%X"
 
 enum {
   MESH_PACKET_HELLO = 1,

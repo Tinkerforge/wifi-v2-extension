@@ -360,7 +360,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_ssid(const int8_t cid, const GetWif
 	gw2mrsr.header.length  = sizeof(GetWifi2MeshRouterSSIDReturn);
 
 	os_memcpy(gw2mrsr.mesh_router_ssid, configuration_current.mesh_router_ssid,
-		sizeof(configuration_current.mesh_router_ssid));
+		sizeof(gw2mrsr.mesh_router_ssid));
 
 	com_send(&gw2mrsr, sizeof(GetWifi2MeshRouterSSIDReturn), cid);
 }

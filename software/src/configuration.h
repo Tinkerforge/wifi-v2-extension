@@ -83,7 +83,7 @@ typedef struct {
 	uint8_t  mesh_router_subnet_mask[4];
 	uint8_t  mesh_router_gateway[4];
 	uint8_t  mesh_router_bssid[6];
-	char		 mesh_ssid_prefix[(CONFIGURATION_SSID_MAX_LENGTH / 2) + 1];
+	char		 mesh_ssid_prefix[(CONFIGURATION_SSID_MAX_LENGTH / 2)]; // might not be NULL-terminated
 	char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NULL-terminated
 	uint8_t  mesh_group_id[ESP_MESH_GROUP_ID_LEN];
 	char 		 mesh_gateway_hostname[32]; // Currently unused.

@@ -276,14 +276,9 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	struct station_config config_st;
 	struct softap_config config_ap;
 	struct ip_info ip_static_mesh_router;
+	char mesh_ssid_prefix_str[sizeof(configuration_current.mesh_ssid_prefix) + 1];
 
 	logi("MSH:Applying mesh configuration\n");
-
-	os_bzero(&hostname, sizeof(hostname));
-	os_bzero(&config_st, sizeof(config_st));
-	os_bzero(&config_ap, sizeof(config_ap));
-	os_bzero(&mac_sta_if, sizeof(mac_sta_if));
-	os_bzero(&ip_static_mesh_router, sizeof(ip_static_mesh_router));
 
 	/*
 	 * For mesh, STATION+AP mode is required.
@@ -301,7 +296,11 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	 * Mesh requires the softap configuration to be cleared so the mesh library
 	 * can configure the softap accordingly.
 	 */
+	os_bzero(&config_ap, sizeof(config_ap));
+
 	wifi_softap_set_config_current(&config_ap);
+
+	os_bzero(&config_st, sizeof(config_st));
 
 	os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid,
 		sizeof(configuration_current.mesh_router_ssid));
@@ -322,15 +321,24 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		sizeof(configuration_current.mesh_router_password));
 
 	// Set hostname.
+	os_bzero(&mac_sta_if, sizeof(mac_sta_if));
+
 	if(!wifi_get_macaddr(STATION_IF, mac_sta_if)) {
 		setup_ok = false;
 
 		loge("MSH:Getting station MAC failed\n");
 	}
 	else {
+		os_bzero(&mesh_ssid_prefix_str, sizeof(mesh_ssid_prefix_str));
+		os_memcpy(&mesh_ssid_prefix_str,
+							configuration_current.mesh_ssid_prefix,
+							sizeof(configuration_current.mesh_ssid_prefix));
+
+		os_bzero(&hostname, sizeof(hostname));
+
 		os_sprintf(hostname,
 							 FMT_MESH_STATION_HOSTNAME,
-							 configuration_current.mesh_ssid_prefix,
+							 mesh_ssid_prefix_str,
 							 mac_sta_if[3],
 							 mac_sta_if[4],
 							 mac_sta_if[5]);
@@ -349,6 +357,8 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 	if(!configuration_check_array_null(configuration_current.mesh_router_ip,
 		sizeof(configuration_current.mesh_router_ip))) {
 			wifi_station_dhcpc_stop();
+
+			os_bzero(&ip_static_mesh_router, sizeof(ip_static_mesh_router));
 
 			IP4_ADDR(&ip_static_mesh_router.ip,
 				configuration_current.mesh_router_ip[0],
@@ -381,8 +391,13 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 		loge("MSH:Set router failed\n");
 	}
 
-	if(!espconn_mesh_set_ssid_prefix(configuration_current.mesh_ssid_prefix,
-		os_strlen(configuration_current.mesh_ssid_prefix))) {
+	os_bzero(&mesh_ssid_prefix_str, sizeof(mesh_ssid_prefix_str));
+	os_memcpy(&mesh_ssid_prefix_str,
+						configuration_current.mesh_ssid_prefix,
+						sizeof(configuration_current.mesh_ssid_prefix));
+
+	if(!espconn_mesh_set_ssid_prefix(mesh_ssid_prefix_str,
+		os_strlen(mesh_ssid_prefix_str))) {
 			setup_ok = false;
 
 			loge("MSH:Set SSID prefix failed\n");

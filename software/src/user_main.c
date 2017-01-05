@@ -70,23 +70,25 @@ void ICACHE_FLASH_ATTR user_init_done_cb(void) {
 }
 
 void ICACHE_FLASH_ATTR user_init() {
-	logd("user_init()\n");
-
 	#ifdef DEBUG_ENABLED
 		debug_enable(UART_DEBUG);
 	#else
 		system_set_os_print(0);
 	#endif
 
-	// By default GPIO2 as UART1 TX.
-	PIN_FUNC_SELECT(PERIPHS_IO_MUX_GPIO2_U, FUNC_U1TXD_BK);
+	logd("user_init()\n");
 
 	gpio_init();
+
 	wifi_status_led_install(12, PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
 
-	i2c_master_init();
-	eeprom_init();
-	configuration_load_from_eeprom();
+	#ifdef DEBUG_ENABLED
+		configuration_use_default();
+	#else
+		i2c_master_init();
+		eeprom_init();
+		configuration_load_from_eeprom();
+	#endif
 
 	// The documentation says we can not call station_connect and similar
 	// in user_init, so we do it in the callback after it is done!

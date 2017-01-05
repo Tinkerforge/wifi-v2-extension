@@ -27,8 +27,13 @@
 #define UART_DEBUG UART1
 
 /*
- * WARNING: Enabling DEBUG log level in mesh mode will reset the extension
+ * WARNING:
+ * Enabling DEBUG log level in mesh mode will reset the extension
  * as there will be too much debug prints. Works OK with INFO log level.
+ *
+ * Also note that when debugging of any level is enabled then the extension
+ * will not use the configuration saved in the EEPROM but will use the default
+ * configuration. Debugging is meant solely for development purpose.
  */
 #define LOGGING_LEVEL LOGGING_NONE
 

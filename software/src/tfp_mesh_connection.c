@@ -164,15 +164,7 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
 }
 
 void ICACHE_FLASH_ATTR tfp_mesh_pong_recv_handler(void) {
-  os_timer_disarm(&tmr_tfp_mesh_hb_ping);
   os_timer_disarm(&tmr_tfp_mesh_wait_pong);
-
-  // Arm the ping timer.
-  tfp_mesh_arm_timer(&tmr_tfp_mesh_hb_ping,
-                     TIME_HB_PING,
-                     false,
-                     cb_tmr_tfp_mesh_hb_ping,
-                     NULL);
 }
 
 void ICACHE_FLASH_ATTR tfp_mesh_send_buffer_clear(void) {
@@ -213,7 +205,7 @@ bool ICACHE_FLASH_ATTR tfp_mesh_olleh_recv_handler(void) {
   // Arm the ping timer.
   tfp_mesh_arm_timer(&tmr_tfp_mesh_hb_ping,
                      TIME_HB_PING,
-                     false,
+                     true,
                      cb_tmr_tfp_mesh_hb_ping,
                      NULL);
 

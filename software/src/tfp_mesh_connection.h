@@ -39,7 +39,7 @@
 // In milliseconds.
 #define TIME_HB_PING      8000
 #define TIME_WAIT_OLLEH   8000
-#define TIME_HB_WAIT_PONG 8000
+#define TIME_HB_WAIT_PONG (TIME_HB_PING/2)
 
 #define TFP_MESH_MIN_LENGTH 16
 #define TFP_MESH_HEADER_LENGTH_INDEX 3

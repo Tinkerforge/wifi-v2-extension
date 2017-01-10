@@ -302,6 +302,13 @@ void ICACHE_FLASH_ATTR configuration_apply_tf_mesh(void) {
 
 	os_bzero(&config_st, sizeof(config_st));
 
+	/*
+	 * FIXME: Because of a bug in the mesh library the mesh router SSID must be
+	 * NULL terminated, effectively making maximum 31 characters long mesh router
+	 * SSID.
+	 */
+	configuration_current.mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH - 1] = '\0';
+
 	os_memcpy(config_st.ssid, configuration_current.mesh_router_ssid,
 		sizeof(configuration_current.mesh_router_ssid));
 

@@ -563,8 +563,8 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_connect(void *arg) {
   mesh_hello_pkt.firmware_version[2] = FIRMWARE_VERSION_REVISION;
 
   os_memcpy(&mesh_hello_pkt.prefix,
-            configuration_current.mesh_ssid_prefix,
-            sizeof(configuration_current.mesh_ssid_prefix));
+            configuration_current.mesh_group_ssid_prefix,
+            sizeof(configuration_current.mesh_group_ssid_prefix));
 
   os_memcpy(&mesh_hello_pkt.group_id,
             configuration_current.mesh_group_id,

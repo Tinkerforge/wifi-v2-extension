@@ -79,14 +79,14 @@ typedef struct {
 	bool     mesh_enable;
 	char     mesh_router_ssid[CONFIGURATION_SSID_MAX_LENGTH]; // might not be NULL-terminated
 	char     mesh_router_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NULL-terminated
-	uint8_t  mesh_router_ip[4];
-	uint8_t  mesh_router_subnet_mask[4];
-	uint8_t  mesh_router_gateway[4];
+	uint8_t  mesh_root_ip[4];
+	uint8_t  mesh_root_subnet_mask[4];
+	uint8_t  mesh_root_gateway[4];
 	uint8_t  mesh_router_bssid[6];
-	char		 mesh_ssid_prefix[(CONFIGURATION_SSID_MAX_LENGTH / 2)]; // might not be NULL-terminated
+	char     mesh_group_ssid_prefix[(CONFIGURATION_SSID_MAX_LENGTH / 2)]; // might not be NULL-terminated
 	char     mesh_password[CONFIGURATION_PASSWORD_MAX_LENGTH]; // might not be NULL-terminated
 	uint8_t  mesh_group_id[ESP_MESH_GROUP_ID_LEN];
-	char 		 mesh_gateway_hostname[32]; // Currently unused.
+	char     mesh_gateway_hostname[32]; // Currently unused.
 	uint8_t  mesh_gateway_ip[4];
 	uint16_t mesh_gateway_port;
 } Configuration;

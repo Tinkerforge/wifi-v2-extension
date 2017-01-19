@@ -278,14 +278,14 @@ void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid,
 
 	configuration_current.mesh_enable = data->mesh_enable;
 
-	os_memcpy(configuration_current.mesh_router_ip, data->mesh_router_ip,
-		sizeof(data->mesh_router_ip));
+	os_memcpy(configuration_current.mesh_root_ip, data->mesh_root_ip,
+		sizeof(data->mesh_root_ip));
 
-	os_memcpy(configuration_current.mesh_router_subnet_mask, data->mesh_router_subnet_mask,
-		sizeof(data->mesh_router_subnet_mask));
+	os_memcpy(configuration_current.mesh_root_subnet_mask, data->mesh_root_subnet_mask,
+		sizeof(data->mesh_root_subnet_mask));
 
-	os_memcpy(configuration_current.mesh_router_gateway, data->mesh_router_gateway,
-		sizeof(data->mesh_router_gateway));
+	os_memcpy(configuration_current.mesh_root_gateway, data->mesh_root_gateway,
+		sizeof(data->mesh_root_gateway));
 
 	os_memcpy(configuration_current.mesh_router_bssid, data->mesh_router_bssid,
 		sizeof(data->mesh_router_bssid));
@@ -293,11 +293,11 @@ void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid,
 	os_memcpy(configuration_current.mesh_group_id, data->mesh_group_id,
 		sizeof(data->mesh_group_id));
 
-	os_bzero(configuration_current.mesh_ssid_prefix,
-		sizeof(configuration_current.mesh_ssid_prefix));
+	os_bzero(configuration_current.mesh_group_ssid_prefix,
+		sizeof(configuration_current.mesh_group_ssid_prefix));
 
-	os_memcpy(configuration_current.mesh_ssid_prefix, data->mesh_ssid_prefix,
-		sizeof(data->mesh_ssid_prefix));
+	os_memcpy(configuration_current.mesh_group_ssid_prefix, data->mesh_group_ssid_prefix,
+		sizeof(data->mesh_group_ssid_prefix));
 
 	os_memcpy(configuration_current.mesh_gateway_ip, data->mesh_gateway_ip,
 		sizeof(data->mesh_gateway_ip));
@@ -318,14 +318,14 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
 
 	gw2mcr.mesh_enable    = configuration_current.mesh_enable;
 
-	os_memcpy(gw2mcr.mesh_router_ip, configuration_current.mesh_router_ip,
-		sizeof(configuration_current.mesh_router_ip));
+	os_memcpy(gw2mcr.mesh_root_ip, configuration_current.mesh_root_ip,
+		sizeof(configuration_current.mesh_root_ip));
 
-	os_memcpy(gw2mcr.mesh_router_subnet_mask, configuration_current.mesh_router_subnet_mask,
-		sizeof(configuration_current.mesh_router_subnet_mask));
+	os_memcpy(gw2mcr.mesh_root_subnet_mask, configuration_current.mesh_root_subnet_mask,
+		sizeof(configuration_current.mesh_root_subnet_mask));
 
-	os_memcpy(gw2mcr.mesh_router_gateway, configuration_current.mesh_router_gateway,
-		sizeof(configuration_current.mesh_router_gateway));
+	os_memcpy(gw2mcr.mesh_root_gateway, configuration_current.mesh_root_gateway,
+		sizeof(configuration_current.mesh_root_gateway));
 
 	os_memcpy(gw2mcr.mesh_router_bssid, configuration_current.mesh_router_bssid,
 		sizeof(configuration_current.mesh_router_bssid));
@@ -333,8 +333,8 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
 	os_memcpy(gw2mcr.mesh_group_id, configuration_current.mesh_group_id,
 		sizeof(configuration_current.mesh_group_id));
 
-	os_memcpy(gw2mcr.mesh_ssid_prefix, configuration_current.mesh_ssid_prefix,
-		sizeof(configuration_current.mesh_ssid_prefix));
+	os_memcpy(gw2mcr.mesh_group_ssid_prefix, configuration_current.mesh_group_ssid_prefix,
+		sizeof(configuration_current.mesh_group_ssid_prefix));
 
 	os_memcpy(gw2mcr.mesh_gateway_ip, configuration_current.mesh_gateway_ip,
 		sizeof(configuration_current.mesh_gateway_ip));

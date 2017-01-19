@@ -128,8 +128,8 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		case FID_IS_WIFI2_STATUS_LED_ENABLED:     is_wifi2_status_led_enabled(cid, (IsWifi2StatusLEDEnabled*)data);          return true;
 		case FID_SET_WIFI2_MESH_CONFIGURATION:    set_wifi2_mesh_configuration(cid, (SetWifi2MeshConfiguration*)data);       return true;
 		case FID_GET_WIFI2_MESH_CONFIGURATION:    get_wifi2_mesh_configuration(cid, (GetWifi2MeshConfiguration*)data);       return true;
-		case FID_SET_WIFI2_MESH_ROUTER_SSID:			set_wifi2_mesh_router_ssid(cid, (SetWifi2MeshRouterSSID*)data);						 return true;
-		case FID_GET_WIFI2_MESH_ROUTER_SSID:			get_wifi2_mesh_router_ssid(cid, (GetWifi2MeshRouterSSID*)data);						 return true;
+		case FID_SET_WIFI2_MESH_ROUTER_SSID:      set_wifi2_mesh_router_ssid(cid, (SetWifi2MeshRouterSSID*)data);						 return true;
+		case FID_GET_WIFI2_MESH_ROUTER_SSID:      get_wifi2_mesh_router_ssid(cid, (GetWifi2MeshRouterSSID*)data);						 return true;
 		case FID_SET_WIFI2_MESH_ROUTER_PASSWORD:  set_wifi2_mesh_router_password(cid, (SetWifi2MeshRouterPassword*)data);		 return true;
 		case FID_GET_WIFI2_MESH_ROUTER_PASSWORD:  get_wifi2_mesh_router_password(cid, (GetWifi2MeshRouterPassword*)data);		 return true;
 		case FID_GET_WIFI2_MESH_COMMON_STATUS:    get_wifi2_mesh_common_status(cid, (GetWifi2MeshCommonStatus*)data);    		 return true;

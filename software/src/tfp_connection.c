@@ -35,7 +35,6 @@
 #include "logging.h"
 #include "tfp_mesh_connection.h"
 
-extern TFPConnection tfp_con_mesh;
 extern GetWifi2StatusReturn gw2sr;
 extern Configuration configuration_current;
 

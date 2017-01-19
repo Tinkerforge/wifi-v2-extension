@@ -30,6 +30,11 @@
 
 #define MESSAGE_HEADER_LENGTH_POSITION 4
 
+#define MESSAGE_ERROR_CODE_OK 0
+#define MESSAGE_ERROR_CODE_INVALID_PARAMETER 1
+#define MESSAGE_ERROR_CODE_NOT_SUPPORTED 2
+
+
 typedef struct {
 	uint32_t uid;
 	uint8_t length;

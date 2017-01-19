@@ -81,7 +81,7 @@ void ICACHE_FLASH_ATTR com_return_setter(const int8_t cid, const void *data);
 #define FID_SET_WIFI2_MESH_ROUTER_PASSWORD 106
 #define FID_GET_WIFI2_MESH_ROUTER_PASSWORD 107
 #define FID_GET_WIFI2_MESH_COMMON_STATUS 108
-#define FID_GET_WIFI2_MESH_STATION_STATUS 109
+#define FID_GET_WIFI2_MESH_CLIENT_STATUS 109
 #define FID_GET_WIFI2_MESH_AP_STATUS 110
 
 typedef struct {
@@ -223,7 +223,7 @@ typedef struct {
 
 typedef struct {
 	MessageHeader header;
-} __attribute__((__packed__)) GetWifi2MeshStationStatus;
+} __attribute__((__packed__)) GetWifi2MeshClientStatus;
 
 typedef struct {
 	MessageHeader header;
@@ -232,7 +232,7 @@ typedef struct {
 	uint8_t sub[4];
 	uint8_t gw[4];
 	uint8_t mac[6];
-} __attribute__((__packed__)) GetWifi2MeshStationStatusReturn;
+} __attribute__((__packed__)) GetWifi2MeshClientStatusReturn;
 
 typedef struct {
 	MessageHeader header;
@@ -407,7 +407,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_ssid(const int8_t cid, const GetWif
 void ICACHE_FLASH_ATTR set_wifi2_mesh_router_password(const int8_t cid, const SetWifi2MeshRouterPassword *data);
 void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid, const GetWifi2MeshRouterPassword *data);
 void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid, const GetWifi2MeshCommonStatus *data);
-void ICACHE_FLASH_ATTR get_wifi2_mesh_station_status(const int8_t cid, const GetWifi2MeshStationStatus *data);
+void ICACHE_FLASH_ATTR get_wifi2_mesh_client_status(const int8_t cid, const GetWifi2MeshClientStatus *data);
 void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid, const GetWifi2MeshAPStatus *data);
 
 #endif

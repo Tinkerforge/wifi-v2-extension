@@ -71,7 +71,7 @@ GetWifi2MeshCommonStatusReturn gw2mcsr = {
 	.tx_count = 0,
 };
 
-GetWifi2MeshStationStatusReturn gw2mssr = {
+GetWifi2MeshClientStatusReturn gw2mssr = {
 	.hostname = "\0",
 	.ip = {0, 0, 0, 0},
 	.sub = {0, 0, 0, 0},
@@ -136,7 +136,7 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		case FID_SET_WIFI2_MESH_ROUTER_PASSWORD:  set_wifi2_mesh_router_password(cid, (SetWifi2MeshRouterPassword*)data);		 return true;
 		case FID_GET_WIFI2_MESH_ROUTER_PASSWORD:  get_wifi2_mesh_router_password(cid, (GetWifi2MeshRouterPassword*)data);		 return true;
 		case FID_GET_WIFI2_MESH_COMMON_STATUS:    get_wifi2_mesh_common_status(cid, (GetWifi2MeshCommonStatus*)data);    		 return true;
-		case FID_GET_WIFI2_MESH_STATION_STATUS:   get_wifi2_mesh_station_status(cid, (GetWifi2MeshStationStatus*)data);  		 return true;
+		case FID_GET_WIFI2_MESH_CLIENT_STATUS:   get_wifi2_mesh_client_status(cid, (GetWifi2MeshClientStatus*)data);  		   return true;
 		case FID_GET_WIFI2_MESH_AP_STATUS:        get_wifi2_mesh_ap_status(cid, (GetWifi2MeshAPStatus*)data);            		 return true;
 	}
 
@@ -409,8 +409,8 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid,
 		com_send(&gw2mcsr, sizeof(GetWifi2MeshCommonStatusReturn), cid);
 }
 
-void ICACHE_FLASH_ATTR get_wifi2_mesh_station_status(const int8_t cid,
-	const GetWifi2MeshStationStatus *data) {
+void ICACHE_FLASH_ATTR get_wifi2_mesh_client_status(const int8_t cid,
+	const GetWifi2MeshClientStatus *data) {
 		uint8_t mac[6];
 		char *hostname_ptr;
 		struct ip_info info_ipv4;
@@ -419,7 +419,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_station_status(const int8_t cid,
 		os_bzero(&gw2mssr.header, sizeof(gw2mssr.header));
 
 		gw2mssr.header = data->header;
-		gw2mssr.header.length = sizeof(GetWifi2MeshStationStatusReturn);
+		gw2mssr.header.length = sizeof(GetWifi2MeshClientStatusReturn);
 
 		if((wifi_get_ip_info(STATION_IF, &info_ipv4)) && (wifi_get_macaddr(STATION_IF, mac))) {
 			hostname_ptr = wifi_station_get_hostname();
@@ -440,7 +440,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_station_status(const int8_t cid,
 			os_memcpy(gw2mssr.mac, mac, sizeof(mac));
 		}
 
-		com_send(&gw2mssr, sizeof(GetWifi2MeshStationStatusReturn), cid);
+		com_send(&gw2mssr, sizeof(GetWifi2MeshClientStatusReturn), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid,

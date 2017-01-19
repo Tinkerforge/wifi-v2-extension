@@ -232,20 +232,7 @@ bool ICACHE_FLASH_ATTR tfp_mesh_send_buffer_check(uint8_t len) {
 }
 
 bool ICACHE_FLASH_ATTR tfp_mesh_reset_recv_handler(void) {
-  tfp_packet_header_t stack_reset_pkt;
-  os_bzero(&stack_reset_pkt, sizeof(stack_reset_pkt));
-
-  // FIXME: UID of the master must be set properly.
-
-  // Send stack enumerate packet to the master.
-  stack_reset_pkt.function_id = FID_MASTER_RESET;
-  stack_reset_pkt.length = 8;
-  stack_reset_pkt.sequence_number_and_options = 16; // Sequence number = 1.
-
-  logi("MSH:Sending stack reset packet to the stack master\n");
-
-  // CID = -2 is for UART.
-  com_send((void *)&stack_reset_pkt, 8, -2);
+  system_restart();
 
   return true;
 }

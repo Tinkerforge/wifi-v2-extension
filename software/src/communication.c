@@ -103,6 +103,9 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 			case BRICKD_FID_GET_AUTHENTICATION_NONCE: brickd_get_authentication_nonce(cid, (GetAuthenticationNonce*)data); return true;
 			case BRICKD_FID_AUTHENTICATE: brickd_authenticate(cid, (Authenticate*)data); return true;
 		}
+
+		com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_NOT_SUPPORTED, cid);
+		return true;
 	}
 
 	switch(header->fid) {

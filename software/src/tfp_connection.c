@@ -75,8 +75,7 @@ void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
 	}
 }
 
-void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data,
-																				 const uint8_t length) {
+void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t length) {
 	// If ringbuffer not empty we add data to ringbuffer (we want to keep order)
 	// Else if we can't immediately send to master brick we also add to ringbuffer
 	if(!ringbuffer_is_empty(&tfp_rb) || uart_con_send(data, length) == 0) {

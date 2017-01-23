@@ -11,9 +11,9 @@
 - Add missing ESP8266 SDK 2.0.0 configration binaries and adapt to ESP8266
   configration API changes to fix boot and connection problems
 
-2016-11-02: 2.0.3 (?)
+2016-11-02: 2.0.3 (665c5d2)
 - Increase inbound and outbound buffer sizes
 - Hold TCP transfer before buffer fills up (messages are buffered at sender)
 
-2017-01-23: 2.1.0
+2017-01-23: 2.1.0 (521b673)
 - Add mesh networking support

@@ -148,6 +148,9 @@ void ICACHE_FLASH_ATTR tfp_mesh_open_connection(void) {
   }
   else if(ret == ESPCONN_MEM) {
     loge("MSH:Connect failed, ESPCONN_MEM\n");
+
+    // Reset the extension.
+    tfp_mesh_reset_recv_handler();
   }
   else if(ret == ESPCONN_ISCONN) {
     loge("MSH:Connect failed, ESPCONN_ISCONN\n");
@@ -318,27 +321,28 @@ int8_t ICACHE_FLASH_ATTR tfp_mesh_send(void *arg, uint8_t *data, uint16_t length
    // Check if there is enough space in the send buffer.
    logd("MSH:Can't send now, buffering (L: %d)...\n", length);
 
-   if(tfp_mesh_send_buffer_check(length)) {
-     // Store the packet in the TFP mesh send buffer.
-     for(uint32_t i = 0; i < length; i++) {
-       if(!ringbuffer_add(&tfp_mesh_send_rb, data[i])) {
-         loge("MSH:Buffering failed, could not add byte\n");
+    if(tfp_mesh_send_buffer_check(length)) {
+      // Store the packet in the TFP mesh send buffer.
+      for(uint32_t i = 0; i < length; i++) {
+        if(!ringbuffer_add(&tfp_mesh_send_rb, data[i])) {
+          loge("MSH:Buffering failed, could not add byte\n");
 
-         tfp_mesh_reset_recv_handler();
-       }
-     }
-     return 0;
-   }
-   else {
-     loge("MSH:Buffering failed, buffer full\n");
+          tfp_mesh_reset_recv_handler();
+        }
+      }
+      return 0;
+    }
+    else {
+      loge("MSH:Buffering failed, buffer full\n");
 
-     tfp_mesh_reset_recv_handler();
-   }
+      // Ring buffer is full, we reset it.
+      ringbuffer_init(&tfp_mesh_send_rb,
+                      tfp_mesh_send_rb_buffer,
+                      sizeof(tfp_mesh_send_rb_buffer));
+    }
   }
   else {
    loge("MSH:Send failed, socket state (S: %d)\n", tfp_con_mesh.state);
-
-   tfp_mesh_reset_recv_handler();
   }
 }
 
@@ -712,7 +716,7 @@ void ICACHE_FLASH_ATTR cb_tfp_mesh_receive(void *arg, char *pdata, unsigned shor
 
         tfp_mesh_olleh_recv_handler();
       }
-      // Reset stack packet.
+      // Reset packet.
 			else if(payload_type == MESH_PACKET_RESET) {
         logd("MSH:Received reset packet\n");
 
@@ -803,13 +807,13 @@ void cb_tmr_tfp_mesh_hb_ping(void *arg) {
 void cb_tmr_tfp_mesh_wait_pong(void *arg) {
 	logi("MSH:Wait pong timedout, resetting...\n");
 
-  // Reset the stack
+  // Reset the extension.
   tfp_mesh_reset_recv_handler();
 }
 
 void cb_tmr_tfp_mesh_wait_olleh(void *arg) {
   logi("MSH:Wait olleh timedout, resetting...\n");
 
-  // Reset the stack
+  // Reset the extension.
   tfp_mesh_reset_recv_handler();
 }

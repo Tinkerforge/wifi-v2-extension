@@ -37,6 +37,7 @@
 
 bool wifi2_status_led_enabled = true;
 extern Configuration configuration_current;
+extern Configuration configuration_current_to_save;
 
 Ringbuffer com_out_rb;
 uint8_t com_out_rb_buffer[COM_OUT_RINGBUFFER_LENGTH];
@@ -136,7 +137,7 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		case FID_SET_WIFI2_MESH_ROUTER_PASSWORD:  set_wifi2_mesh_router_password(cid, (SetWifi2MeshRouterPassword*)data);		 return true;
 		case FID_GET_WIFI2_MESH_ROUTER_PASSWORD:  get_wifi2_mesh_router_password(cid, (GetWifi2MeshRouterPassword*)data);		 return true;
 		case FID_GET_WIFI2_MESH_COMMON_STATUS:    get_wifi2_mesh_common_status(cid, (GetWifi2MeshCommonStatus*)data);    		 return true;
-		case FID_GET_WIFI2_MESH_CLIENT_STATUS:   get_wifi2_mesh_client_status(cid, (GetWifi2MeshClientStatus*)data);  		   return true;
+		case FID_GET_WIFI2_MESH_CLIENT_STATUS:    get_wifi2_mesh_client_status(cid, (GetWifi2MeshClientStatus*)data);  		   return true;
 		case FID_GET_WIFI2_MESH_AP_STATUS:        get_wifi2_mesh_ap_status(cid, (GetWifi2MeshAPStatus*)data);            		 return true;
 	}
 
@@ -221,7 +222,7 @@ void ICACHE_FLASH_ATTR com_return_setter(const int8_t cid, const void *data) {
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_authentication_secret(const int8_t cid, const SetWifi2AuthenticationSecret *data) {
-	os_memcpy(configuration_current.general_authentication_secret, data->secret, CONFIGURATION_SECRET_MAX_LENGTH);
+	os_memcpy(configuration_current_to_save.general_authentication_secret, data->secret, CONFIGURATION_SECRET_MAX_LENGTH);
 	com_return_setter(cid, data);
 }
 
@@ -242,16 +243,16 @@ void ICACHE_FLASH_ATTR set_wifi2_configuration(const int8_t cid, const SetWifi2C
 	os_sprintf(str_fw_version, "%d%d%d", FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR,
 		FIRMWARE_VERSION_REVISION);
 
-	configuration_current.general_port           = data->port;
-	configuration_current.general_websocket_port = data->websocket_port;
-	configuration_current.general_website_port   = data->website_port;
-	configuration_current.general_phy_mode       = data->phy_mode;
-	configuration_current.general_sleep_mode     = data->sleep_mode;
-	configuration_current.general_website        = data->website;
+	configuration_current_to_save.general_port           = data->port;
+	configuration_current_to_save.general_websocket_port = data->websocket_port;
+	configuration_current_to_save.general_website_port   = data->website_port;
+	configuration_current_to_save.general_phy_mode       = data->phy_mode;
+	configuration_current_to_save.general_sleep_mode     = data->sleep_mode;
+	configuration_current_to_save.general_website        = data->website;
 
 	if(strtoul(str_fw_version, NULL, 10) >= 204) {
 		if(data->website != 1) {
-			configuration_current.general_website_port = 1;
+			configuration_current_to_save.general_website_port = 1;
 		}
 	}
 
@@ -276,33 +277,33 @@ void ICACHE_FLASH_ATTR get_wifi2_configuration(const int8_t cid, const GetWifi2C
 void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid,
 	const SetWifi2MeshConfiguration *data) {
 
-	configuration_current.mesh_enable = data->mesh_enable;
+	configuration_current_to_save.mesh_enable = data->mesh_enable;
 
-	os_memcpy(configuration_current.mesh_root_ip, data->mesh_root_ip,
+	os_memcpy(configuration_current_to_save.mesh_root_ip, data->mesh_root_ip,
 		sizeof(data->mesh_root_ip));
 
-	os_memcpy(configuration_current.mesh_root_subnet_mask, data->mesh_root_subnet_mask,
+	os_memcpy(configuration_current_to_save.mesh_root_subnet_mask, data->mesh_root_subnet_mask,
 		sizeof(data->mesh_root_subnet_mask));
 
-	os_memcpy(configuration_current.mesh_root_gateway, data->mesh_root_gateway,
+	os_memcpy(configuration_current_to_save.mesh_root_gateway, data->mesh_root_gateway,
 		sizeof(data->mesh_root_gateway));
 
-	os_memcpy(configuration_current.mesh_router_bssid, data->mesh_router_bssid,
+	os_memcpy(configuration_current_to_save.mesh_router_bssid, data->mesh_router_bssid,
 		sizeof(data->mesh_router_bssid));
 
-	os_memcpy(configuration_current.mesh_group_id, data->mesh_group_id,
+	os_memcpy(configuration_current_to_save.mesh_group_id, data->mesh_group_id,
 		sizeof(data->mesh_group_id));
 
-	os_bzero(configuration_current.mesh_group_ssid_prefix,
-		sizeof(configuration_current.mesh_group_ssid_prefix));
+	os_bzero(configuration_current_to_save.mesh_group_ssid_prefix,
+		sizeof(configuration_current_to_save.mesh_group_ssid_prefix));
 
-	os_memcpy(configuration_current.mesh_group_ssid_prefix, data->mesh_group_ssid_prefix,
+	os_memcpy(configuration_current_to_save.mesh_group_ssid_prefix, data->mesh_group_ssid_prefix,
 		sizeof(data->mesh_group_ssid_prefix));
 
-	os_memcpy(configuration_current.mesh_gateway_ip, data->mesh_gateway_ip,
+	os_memcpy(configuration_current_to_save.mesh_gateway_ip, data->mesh_gateway_ip,
 		sizeof(data->mesh_gateway_ip));
 
-	configuration_current.mesh_gateway_port = data->mesh_gateway_port;
+	configuration_current_to_save.mesh_gateway_port = data->mesh_gateway_port;
 
 	com_return_setter(cid, data);
 }
@@ -346,9 +347,9 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
 
 void ICACHE_FLASH_ATTR set_wifi2_mesh_router_ssid(const int8_t cid,
 	const SetWifi2MeshRouterSSID *data) {
-	os_bzero(configuration_current.mesh_router_ssid, sizeof(configuration_current.mesh_router_ssid));
+	os_bzero(configuration_current_to_save.mesh_router_ssid, sizeof(configuration_current_to_save.mesh_router_ssid));
 
-	os_memcpy(configuration_current.mesh_router_ssid, data->mesh_router_ssid,
+	os_memcpy(configuration_current_to_save.mesh_router_ssid, data->mesh_router_ssid,
 		sizeof(data->mesh_router_ssid));
 
 	com_return_setter(cid, data);
@@ -370,10 +371,10 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_ssid(const int8_t cid, const GetWif
 
 void ICACHE_FLASH_ATTR set_wifi2_mesh_router_password(const int8_t cid,
 	const SetWifi2MeshRouterPassword *data) {
-	os_bzero(configuration_current.mesh_router_password,
-		sizeof(configuration_current.mesh_router_password));
+	os_bzero(configuration_current_to_save.mesh_router_password,
+		sizeof(configuration_current_to_save.mesh_router_password));
 
-	os_memcpy(configuration_current.mesh_router_password, data->mesh_router_password,
+	os_memcpy(configuration_current_to_save.mesh_router_password, data->mesh_router_password,
 		sizeof(data->mesh_router_password));
 
 	com_return_setter(cid, data);
@@ -524,13 +525,13 @@ void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_client_configuration(const int8_t cid, const SetWifi2ClientConfiguration *data) {
-	configuration_current.client_enable = data->enable;
-	os_memcpy(configuration_current.client_ssid, data->ssid, CONFIGURATION_SSID_MAX_LENGTH);
-	os_memcpy(configuration_current.client_ip, data->ip, 4);
-	os_memcpy(configuration_current.client_subnet_mask, data->subnet_mask, 4);
-	os_memcpy(configuration_current.client_gateway, data->gateway, 4);
-	os_memcpy(configuration_current.client_mac_address, data->mac_address, 6);
-	os_memcpy(configuration_current.client_bssid, data->bssid, 6);
+	configuration_current_to_save.client_enable = data->enable;
+	os_memcpy(configuration_current_to_save.client_ssid, data->ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	os_memcpy(configuration_current_to_save.client_ip, data->ip, 4);
+	os_memcpy(configuration_current_to_save.client_subnet_mask, data->subnet_mask, 4);
+	os_memcpy(configuration_current_to_save.client_gateway, data->gateway, 4);
+	os_memcpy(configuration_current_to_save.client_mac_address, data->mac_address, 6);
+	os_memcpy(configuration_current_to_save.client_bssid, data->bssid, 6);
 
 	com_return_setter(cid, data);
 }
@@ -552,7 +553,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_configuration(const int8_t cid, const Ge
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_client_hostname(const int8_t cid, const SetWifi2ClientHostname *data) {
-	os_memcpy(configuration_current.client_hostname, data->hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
+	os_memcpy(configuration_current_to_save.client_hostname, data->hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
 	com_return_setter(cid, data);
 }
 
@@ -567,7 +568,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_hostname(const int8_t cid, const GetWifi
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_client_password(const int8_t cid, const SetWifi2ClientPassword *data) {
-	os_memcpy(configuration_current.client_password, data->password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	os_memcpy(configuration_current_to_save.client_password, data->password, CONFIGURATION_PASSWORD_MAX_LENGTH);
 	com_return_setter(cid, data);
 }
 
@@ -582,15 +583,15 @@ void ICACHE_FLASH_ATTR get_wifi2_client_password(const int8_t cid, const GetWifi
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_ap_configuration(const int8_t cid, const SetWifi2APConfiguration *data) {
-	configuration_current.ap_enable     = data->enable;
-	os_memcpy(configuration_current.ap_ssid, data->ssid, CONFIGURATION_SSID_MAX_LENGTH);
-	os_memcpy(configuration_current.ap_ip, data->ip, 4);
-	os_memcpy(configuration_current.ap_subnet_mask, data->subnet_mask, 4);
-	os_memcpy(configuration_current.ap_gateway, data->gateway, 4);
-	configuration_current.ap_encryption = data->encryption;
-	configuration_current.ap_hidden     = data->hidden;
-	configuration_current.ap_channel    = data->channel;
-	os_memcpy(configuration_current.ap_mac_address, data->mac_address, 6);
+	configuration_current_to_save.ap_enable     = data->enable;
+	os_memcpy(configuration_current_to_save.ap_ssid, data->ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	os_memcpy(configuration_current_to_save.ap_ip, data->ip, 4);
+	os_memcpy(configuration_current_to_save.ap_subnet_mask, data->subnet_mask, 4);
+	os_memcpy(configuration_current_to_save.ap_gateway, data->gateway, 4);
+	configuration_current_to_save.ap_encryption = data->encryption;
+	configuration_current_to_save.ap_hidden     = data->hidden;
+	configuration_current_to_save.ap_channel    = data->channel;
+	os_memcpy(configuration_current_to_save.ap_mac_address, data->mac_address, 6);
 
 	com_return_setter(cid, data);
 }
@@ -614,7 +615,7 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_configuration(const int8_t cid, const GetWif
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_ap_password(const int8_t cid, const SetWifi2APPassword *data) {
-	os_memcpy(configuration_current.ap_password, data->password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	os_memcpy(configuration_current_to_save.ap_password, data->password, CONFIGURATION_PASSWORD_MAX_LENGTH);
 	com_return_setter(cid, data);
 }
 
@@ -642,8 +643,8 @@ void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi
 	 * mesh mode and is enabling either or both of client/AP mode.
 	 */
 	if(configuration_current.mesh_enable) {
-		if(configuration_current.client_enable || configuration_current.ap_enable) {
-			configuration_current.mesh_enable = false;
+		if(configuration_current_to_save.client_enable || configuration_current_to_save.ap_enable) {
+			configuration_current_to_save.mesh_enable = false;
 		}
 	}
 

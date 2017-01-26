@@ -41,6 +41,7 @@
 
 extern Ringbuffer tfp_rb;
 extern Configuration configuration_current;
+extern Configuration configuration_current_to_save;
 extern uint8_t tfp_rb_buffer[TFP_RING_BUFFER_SIZE];
 
 void ICACHE_FLASH_ATTR user_init_done_cb(void) {
@@ -99,6 +100,9 @@ void ICACHE_FLASH_ATTR user_init() {
 	uart_con_init();
 	brickd_init();
 	com_init();
+
+	os_bzero(&configuration_current_to_save, sizeof(configuration_current));
+	os_memcpy(&configuration_current_to_save, &configuration_current, sizeof(configuration_current));
 
 	system_init_done_cb(user_init_done_cb);
 }

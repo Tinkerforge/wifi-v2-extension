@@ -97,11 +97,12 @@ const Configuration configuration_default = {
 };
 
 Configuration configuration_current;
+Configuration configuration_current_to_save;
 
-uint8_t ICACHE_FLASH_ATTR configuration_calculate_checksum(void) {
+uint8_t ICACHE_FLASH_ATTR configuration_calculate_checksum(void *configuration) {
 	uint8_t checksum = 0;
 
-	uint8_t *conf_array = (uint8_t*)&configuration_current;
+	uint8_t *conf_array = (uint8_t *)configuration;
 	for(uint16_t i = 1; i < sizeof(Configuration); i++) {
 		PEARSON(checksum, conf_array[i]);
 	}
@@ -110,7 +111,7 @@ uint8_t ICACHE_FLASH_ATTR configuration_calculate_checksum(void) {
 }
 
 bool ICACHE_FLASH_ATTR configuration_check_checksum(void) {
-	const uint8_t checksum = configuration_calculate_checksum();
+	const uint8_t checksum = configuration_calculate_checksum(&configuration_current);
 	return checksum == configuration_current.conf_checksum;
 }
 
@@ -131,8 +132,8 @@ void ICACHE_FLASH_ATTR configuration_load_from_eeprom(void) {
 }
 
 uint8_t ICACHE_FLASH_ATTR configuration_save_to_eeprom(void) {
-	configuration_current.conf_checksum = configuration_calculate_checksum();
-	if(eeprom_write(CONFIGURATION_ADDRESS, (uint8_t*)&configuration_current, sizeof(Configuration))) {
+	configuration_current_to_save.conf_checksum = configuration_calculate_checksum(&configuration_current_to_save);
+	if(eeprom_write(CONFIGURATION_ADDRESS, (uint8_t*)&configuration_current_to_save, sizeof(Configuration))) {
 		return 0;
 	}
 

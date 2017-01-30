@@ -17,3 +17,7 @@
 
 2017-01-23: 2.1.0 (521b673)
 - Add mesh networking support
+
+2017-01-30: 2.1.1 (<unknown>)
+- Don't change active configuration, this doesn't work with Mesh mode. Instead
+  change the saved configurartion, that is applied on restart.

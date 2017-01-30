@@ -231,7 +231,7 @@ void ICACHE_FLASH_ATTR get_wifi2_authentication_secret(const int8_t cid, const G
 
 	gw2asr.header        = data->header;
 	gw2asr.header.length = sizeof(GetWifi2AuthenticationSecretReturn);
-	os_memcpy(gw2asr.secret, configuration_current.general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH);
+	os_memcpy(gw2asr.secret, configuration_current_to_save.general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH);
 
 	com_send(&gw2asr, sizeof(GetWifi2AuthenticationSecretReturn), cid);
 }
@@ -264,12 +264,12 @@ void ICACHE_FLASH_ATTR get_wifi2_configuration(const int8_t cid, const GetWifi2C
 
 	gw2cr.header         = data->header;
 	gw2cr.header.length  = sizeof(GetWifi2ConfigurationReturn);
-	gw2cr.port           = configuration_current.general_port;
-	gw2cr.websocket_port = configuration_current.general_websocket_port;
-	gw2cr.website_port   = configuration_current.general_website_port;
-	gw2cr.phy_mode       = configuration_current.general_phy_mode;
-	gw2cr.sleep_mode     = configuration_current.general_sleep_mode;
-	gw2cr.website        = configuration_current.general_website;
+	gw2cr.port           = configuration_current_to_save.general_port;
+	gw2cr.websocket_port = configuration_current_to_save.general_websocket_port;
+	gw2cr.website_port   = configuration_current_to_save.general_website_port;
+	gw2cr.phy_mode       = configuration_current_to_save.general_phy_mode;
+	gw2cr.sleep_mode     = configuration_current_to_save.general_sleep_mode;
+	gw2cr.website        = configuration_current_to_save.general_website;
 
 	com_send(&gw2cr, sizeof(GetWifi2ConfigurationReturn), cid);
 }
@@ -317,30 +317,30 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
 	gw2mcr.header         = data->header;
 	gw2mcr.header.length  = sizeof(GetWifi2MeshConfigurationReturn);
 
-	gw2mcr.mesh_enable    = configuration_current.mesh_enable;
+	gw2mcr.mesh_enable    = configuration_current_to_save.mesh_enable;
 
-	os_memcpy(gw2mcr.mesh_root_ip, configuration_current.mesh_root_ip,
-		sizeof(configuration_current.mesh_root_ip));
+	os_memcpy(gw2mcr.mesh_root_ip, configuration_current_to_save.mesh_root_ip,
+		sizeof(configuration_current_to_save.mesh_root_ip));
 
-	os_memcpy(gw2mcr.mesh_root_subnet_mask, configuration_current.mesh_root_subnet_mask,
-		sizeof(configuration_current.mesh_root_subnet_mask));
+	os_memcpy(gw2mcr.mesh_root_subnet_mask, configuration_current_to_save.mesh_root_subnet_mask,
+		sizeof(configuration_current_to_save.mesh_root_subnet_mask));
 
-	os_memcpy(gw2mcr.mesh_root_gateway, configuration_current.mesh_root_gateway,
-		sizeof(configuration_current.mesh_root_gateway));
+	os_memcpy(gw2mcr.mesh_root_gateway, configuration_current_to_save.mesh_root_gateway,
+		sizeof(configuration_current_to_save.mesh_root_gateway));
 
-	os_memcpy(gw2mcr.mesh_router_bssid, configuration_current.mesh_router_bssid,
-		sizeof(configuration_current.mesh_router_bssid));
+	os_memcpy(gw2mcr.mesh_router_bssid, configuration_current_to_save.mesh_router_bssid,
+		sizeof(configuration_current_to_save.mesh_router_bssid));
 
-	os_memcpy(gw2mcr.mesh_group_id, configuration_current.mesh_group_id,
-		sizeof(configuration_current.mesh_group_id));
+	os_memcpy(gw2mcr.mesh_group_id, configuration_current_to_save.mesh_group_id,
+		sizeof(configuration_current_to_save.mesh_group_id));
 
-	os_memcpy(gw2mcr.mesh_group_ssid_prefix, configuration_current.mesh_group_ssid_prefix,
-		sizeof(configuration_current.mesh_group_ssid_prefix));
+	os_memcpy(gw2mcr.mesh_group_ssid_prefix, configuration_current_to_save.mesh_group_ssid_prefix,
+		sizeof(configuration_current_to_save.mesh_group_ssid_prefix));
 
-	os_memcpy(gw2mcr.mesh_gateway_ip, configuration_current.mesh_gateway_ip,
-		sizeof(configuration_current.mesh_gateway_ip));
+	os_memcpy(gw2mcr.mesh_gateway_ip, configuration_current_to_save.mesh_gateway_ip,
+		sizeof(configuration_current_to_save.mesh_gateway_ip));
 
-	gw2mcr.mesh_gateway_port = configuration_current.mesh_gateway_port;
+	gw2mcr.mesh_gateway_port = configuration_current_to_save.mesh_gateway_port;
 
 	com_send(&gw2mcr, sizeof(GetWifi2MeshConfigurationReturn), cid);
 }
@@ -363,7 +363,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_ssid(const int8_t cid, const GetWif
 	gw2mrsr.header         = data->header;
 	gw2mrsr.header.length  = sizeof(GetWifi2MeshRouterSSIDReturn);
 
-	os_memcpy(gw2mrsr.mesh_router_ssid, configuration_current.mesh_router_ssid,
+	os_memcpy(gw2mrsr.mesh_router_ssid, configuration_current_to_save.mesh_router_ssid,
 		sizeof(gw2mrsr.mesh_router_ssid));
 
 	com_send(&gw2mrsr, sizeof(GetWifi2MeshRouterSSIDReturn), cid);
@@ -389,8 +389,8 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
 	gw2mrpr.header         = data->header;
 	gw2mrpr.header.length  = sizeof(GetWifi2MeshRouterPasswordReturn);
 
-	os_memcpy(gw2mrpr.mesh_router_password, configuration_current.mesh_router_password,
-		sizeof(configuration_current.mesh_router_password));
+	os_memcpy(gw2mrpr.mesh_router_password, configuration_current_to_save.mesh_router_password,
+		sizeof(configuration_current_to_save.mesh_router_password));
 
 	com_send(&gw2mrpr, sizeof(GetWifi2MeshRouterPasswordReturn), cid);
 }
@@ -512,8 +512,8 @@ void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *
 	wifi_get_macaddr(STATION_IF, gw2sr.client_mac_address);
 	wifi_get_macaddr(SOFTAP_IF, gw2sr.ap_mac_address);
 
-	gw2sr.client_enabled = configuration_current.client_enable;
-	gw2sr.ap_enabled = configuration_current.ap_enable;
+	gw2sr.client_enabled = configuration_current_to_save.client_enable;
+	gw2sr.ap_enabled = configuration_current_to_save.ap_enable;
 
 	gw2sr.client_rssi = wifi_station_get_rssi();
 
@@ -541,13 +541,13 @@ void ICACHE_FLASH_ATTR get_wifi2_client_configuration(const int8_t cid, const Ge
 
 	gw2ccr.header        = data->header;
 	gw2ccr.header.length = sizeof(GetWifi2ClientConfigurationReturn);
-	gw2ccr.enable        = configuration_current.client_enable;
-	os_memcpy(gw2ccr.ssid, configuration_current.client_ssid, CONFIGURATION_SSID_MAX_LENGTH);
-	os_memcpy(gw2ccr.ip, configuration_current.client_ip, 4);
-	os_memcpy(gw2ccr.subnet_mask, configuration_current.client_subnet_mask, 4);
-	os_memcpy(gw2ccr.gateway, configuration_current.client_gateway, 4);
-	os_memcpy(gw2ccr.mac_address, configuration_current.client_mac_address, 6);
-	os_memcpy(gw2ccr.bssid, configuration_current.client_bssid, 6);
+	gw2ccr.enable        = configuration_current_to_save.client_enable;
+	os_memcpy(gw2ccr.ssid, configuration_current_to_save.client_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	os_memcpy(gw2ccr.ip, configuration_current_to_save.client_ip, 4);
+	os_memcpy(gw2ccr.subnet_mask, configuration_current_to_save.client_subnet_mask, 4);
+	os_memcpy(gw2ccr.gateway, configuration_current_to_save.client_gateway, 4);
+	os_memcpy(gw2ccr.mac_address, configuration_current_to_save.client_mac_address, 6);
+	os_memcpy(gw2ccr.bssid, configuration_current_to_save.client_bssid, 6);
 
 	com_send(&gw2ccr, sizeof(GetWifi2ClientConfigurationReturn), cid);
 }
@@ -562,7 +562,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_hostname(const int8_t cid, const GetWifi
 
 	gw2chr.header        = data->header;
 	gw2chr.header.length = sizeof(GetWifi2ClientHostnameReturn);
-	os_memcpy(gw2chr.hostname, configuration_current.client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
+	os_memcpy(gw2chr.hostname, configuration_current_to_save.client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
 
 	com_send(&gw2chr, sizeof(GetWifi2ClientHostnameReturn), cid);
 }
@@ -577,7 +577,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_password(const int8_t cid, const GetWifi
 
 	gw2cpr.header        = data->header;
 	gw2cpr.header.length = sizeof(GetWifi2ClientPasswordReturn);
-	os_memcpy(gw2cpr.password, configuration_current.client_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	os_memcpy(gw2cpr.password, configuration_current_to_save.client_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
 
 	com_send(&gw2cpr, sizeof(GetWifi2ClientPasswordReturn), cid);
 }
@@ -601,15 +601,15 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_configuration(const int8_t cid, const GetWif
 
 	gw2apcr.header        = data->header;
 	gw2apcr.header.length = sizeof(GetWifi2APConfigurationReturn);
-	gw2apcr.enable        = configuration_current.ap_enable;
-	os_memcpy(gw2apcr.ssid, configuration_current.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
-	os_memcpy(gw2apcr.ip, configuration_current.ap_ip, 4);
-	os_memcpy(gw2apcr.subnet_mask, configuration_current.ap_subnet_mask, 4);
-	os_memcpy(gw2apcr.gateway, configuration_current.ap_gateway, 4);
-	gw2apcr.encryption    = configuration_current.ap_encryption;
-	gw2apcr.hidden        = configuration_current.ap_hidden;
-	gw2apcr.channel       = configuration_current.ap_channel;
-	os_memcpy(gw2apcr.mac_address, configuration_current.ap_mac_address, 6);
+	gw2apcr.enable        = configuration_current_to_save.ap_enable;
+	os_memcpy(gw2apcr.ssid, configuration_current_to_save.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	os_memcpy(gw2apcr.ip, configuration_current_to_save.ap_ip, 4);
+	os_memcpy(gw2apcr.subnet_mask, configuration_current_to_save.ap_subnet_mask, 4);
+	os_memcpy(gw2apcr.gateway, configuration_current_to_save.ap_gateway, 4);
+	gw2apcr.encryption    = configuration_current_to_save.ap_encryption;
+	gw2apcr.hidden        = configuration_current_to_save.ap_hidden;
+	gw2apcr.channel       = configuration_current_to_save.ap_channel;
+	os_memcpy(gw2apcr.mac_address, configuration_current_to_save.ap_mac_address, 6);
 
 	com_send(&gw2apcr, sizeof(GetWifi2APConfigurationReturn), cid);
 }
@@ -624,7 +624,7 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_password(const int8_t cid, const GetWifi2APP
 
 	gw2appr.header        = data->header;
 	gw2appr.header.length = sizeof(GetWifi2APPasswordReturn);
-	os_memcpy(gw2appr.password, configuration_current.ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	os_memcpy(gw2appr.password, configuration_current_to_save.ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
 
 	com_send(&gw2appr, sizeof(GetWifi2APPasswordReturn), cid);
 }

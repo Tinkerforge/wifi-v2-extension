@@ -52,12 +52,10 @@ void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid) {
 	tfp_cons[cid].websocket_state = WEBSOCKET_STATE_NO_WEBSOCKET;
 
 	if(configuration_current.general_authentication_secret[0] != '\0') {
-		tfp_cons[cid].brickd_authentication_state = \
-			BRICKD_AUTHENTICATION_STATE_ENABLED;
+		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
 	}
 	else {
-		tfp_cons[cid].brickd_authentication_state = \
-			BRICKD_AUTHENTICATION_STATE_DISABLED;
+		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_DISABLED;
 	}
 }
 
@@ -87,9 +85,7 @@ void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t leng
 				}
 			}
 		} else {
-			logw("Message does not fit in Buffer: %d < %d\n",
-					 ringbuffer_get_free(&tfp_rb),
-					 length + 2);
+			logw("Message does not fit in Buffer: %d < %d\n", ringbuffer_get_free(&tfp_rb), length + 2);
 		}
 	}
 }
@@ -97,8 +93,7 @@ void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t leng
 void ICACHE_FLASH_ATTR tfp_recv_hold(void) {
 	if(!tfp_is_hold) {
 		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
-			if(tfp_cons[i].state == TFP_CON_STATE_OPEN \
-				 || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
+			if(tfp_cons[i].state == TFP_CON_STATE_OPEN || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
 				espconn_recv_hold(tfp_cons[i].con);
 			}
 		}
@@ -111,8 +106,7 @@ void ICACHE_FLASH_ATTR tfp_recv_hold(void) {
 void ICACHE_FLASH_ATTR tfp_recv_unhold(void) {
 	if(tfp_is_hold) {
 		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
-			if(tfp_cons[i].state == TFP_CON_STATE_OPEN \
-				 || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
+			if(tfp_cons[i].state == TFP_CON_STATE_OPEN || tfp_cons[i].state == TFP_CON_STATE_SENDING) {
 				espconn_recv_unhold(tfp_cons[i].con);
 			}
 		}
@@ -122,9 +116,7 @@ void ICACHE_FLASH_ATTR tfp_recv_unhold(void) {
 	}
 }
 
-void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg,
-																				 char *pdata,
-																				 unsigned short len) {
+void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short len) {
 	struct espconn *con = (struct espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
@@ -134,18 +126,17 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg,
 		tfp_con->recv_buffer[tfp_con->recv_buffer_index] = pdata[i];
 		if(tfp_con->recv_buffer_index == TFP_RECV_INDEX_LENGTH) {
 			// TODO: Sanity-check length
-			tfp_con->recv_buffer_expected_length = \
-				tfp_con->recv_buffer[TFP_RECV_INDEX_LENGTH];
+			tfp_con->recv_buffer_expected_length = tfp_con->recv_buffer[TFP_RECV_INDEX_LENGTH];
 		}
 
 		tfp_con->recv_buffer_index++;
 		if(tfp_con->recv_buffer_index == tfp_con->recv_buffer_expected_length) {
 			if(!com_handle_message(tfp_con->recv_buffer,
-														 tfp_con->recv_buffer_expected_length,
-														 tfp_con->cid)) {
+			                       tfp_con->recv_buffer_expected_length,
+			                       tfp_con->cid)) {
 				brickd_route_from(tfp_con->recv_buffer, tfp_con->cid);
 				tfp_handle_packet(tfp_con->recv_buffer,
-													tfp_con->recv_buffer_expected_length);
+				                  tfp_con->recv_buffer_expected_length);
 			}
 
 			tfp_con->recv_buffer_index = 0;
@@ -245,8 +236,8 @@ static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const int8_t cid) {
 }
 
 bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data,
-																			const uint8_t length,
-																			const uint8_t cid) {
+                                      const uint8_t length,
+                                      const uint8_t cid) {
 	if(!configuration_current.mesh_enable) {
 		/*
 		 * FIXME: Shouldn't the buffering mechanism used for sending mesh mode packets
@@ -290,10 +281,8 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 	}
 
 	// Add websocket header if necessary
-	uint8_t data_with_websocket_header[TFP_SEND_BUFFER_SIZE + \
-																		 sizeof(WebsocketFrameClientToServer)];
-	int16_t length_with_websocket_header = \
-		tfpw_insert_websocket_header(cid, data_with_websocket_header, data, length);
+	uint8_t data_with_websocket_header[TFP_SEND_BUFFER_SIZE + sizeof(WebsocketFrameClientToServer)];
+	int16_t length_with_websocket_header = tfpw_insert_websocket_header(cid, data_with_websocket_header, data, length);
 
 	// -1 = We use websocket but state is not OK for sending
 	if(length_with_websocket_header == -1) {
@@ -339,9 +328,7 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 						os_memcpy(tfp_cons[i].send_buffer, data, length);
 					}
 					else {
-						os_memcpy(tfp_cons[i].send_buffer,
-											data_with_websocket_header,
-											length_with_websocket_header);
+						os_memcpy(tfp_cons[i].send_buffer, data_with_websocket_header, length_with_websocket_header);
 						length_to_send = length_with_websocket_header;
 					}
 
@@ -358,9 +345,7 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 				os_memcpy(tfp_cons[cid].send_buffer, data, length);
 			}
 			else {
-				os_memcpy(tfp_cons[cid].send_buffer,
-								  data_with_websocket_header,
-									length_with_websocket_header);
+				os_memcpy(tfp_cons[cid].send_buffer, data_with_websocket_header, length_with_websocket_header);
 
 				length_to_send = length_with_websocket_header;
 			}
@@ -490,10 +475,11 @@ void ICACHE_FLASH_ATTR packet_counter(struct espconn *con, uint8_t direction) {
 			(ap_ip[2] & ap_netmask[2])) &&
 		   ((connection_remote_ip[3] & ap_netmask[3]) == \
 			(ap_ip[3] & ap_netmask[3]))) {
-				if(direction == PACKET_COUNT_RX)
+				if(direction == PACKET_COUNT_RX) {
 					gw2sr.ap_rx_count++;
-				else if(direction == PACKET_COUNT_TX)
+				} else if(direction == PACKET_COUNT_TX) {
 					gw2sr.ap_tx_count++;
+				}
 		}
 	}
 
@@ -519,10 +505,11 @@ void ICACHE_FLASH_ATTR packet_counter(struct espconn *con, uint8_t direction) {
 			(station_ip[2] & station_netmask[2])) &&
 		   ((connection_remote_ip[3] & station_netmask[3]) == \
 			(station_ip[3] & station_netmask[3]))) {
-				if(direction == PACKET_COUNT_RX)
+				if(direction == PACKET_COUNT_RX) {
 					gw2sr.client_rx_count++;
-				else if(direction == PACKET_COUNT_TX)
+				} else if(direction == PACKET_COUNT_TX) {
 					gw2sr.client_tx_count++;
+				}
 		}
 	}
 }

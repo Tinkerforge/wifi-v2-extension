@@ -31,7 +31,7 @@
 #include "tfp_connection.h"
 #include "logging.h"
 
-#define ACK_TIMEOUT_MS 250
+#define ACK_TIMEOUT_MS 10
 
 #define uart_con_prio         0
 #define uart_con_queue_length 1

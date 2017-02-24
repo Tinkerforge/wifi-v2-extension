@@ -413,6 +413,25 @@ void ICACHE_FLASH_ATTR tfp_open_connection(void) {
 
 }
 
+// Check send buffer for unsent data
+void ICACHE_FLASH_ATTR tfp_check_send_buffer(void) {
+	for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
+		if(tfp_cons[i].state == TFP_CON_STATE_OPEN && tfp_cons[i].send_buffer_length != 0) {
+			tfp_cons[i].state = TFP_CON_STATE_SENDING;
+
+			int ret = -42;
+			if(system_get_free_heap_size() > TFP_MIN_ESP_HEAP_SIZE) {
+				ret = espconn_send(tfp_cons[i].con, tfp_cons[i].send_buffer, tfp_cons[i].send_buffer_length);
+			}
+			if(ret == ESPCONN_OK) {
+				tfp_cons[i].send_buffer_length = 0;
+			} else {
+				tfp_cons[i].state = TFP_CON_STATE_OPEN;
+			}
+		}
+	}
+}
+
 void ICACHE_FLASH_ATTR tfp_poll(void) {
 	if(ringbuffer_is_empty(&tfp_rb)) {
 		return;

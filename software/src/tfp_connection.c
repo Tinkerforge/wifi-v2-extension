@@ -208,14 +208,14 @@ void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const int8_t cid) {
 	if(cid == -1) { // Broadcast
 		for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
-			if(tfp_cons[i].state == TFP_CON_STATE_SENDING) {
+			if(tfp_cons[i].state == TFP_CON_STATE_SENDING || tfp_cons[i].send_buffer_length != 0) {
 				// If we need to broadcast and one of the recipients has a full
 				// buffer, we have to return false
 				return false;
 			}
 		}
 	} else {
-		if(tfp_cons[cid].state == TFP_CON_STATE_SENDING) {
+		if(tfp_cons[cid].state == TFP_CON_STATE_SENDING || tfp_cons[cid].send_buffer_length != 0) {
 			return false;
 		}
 	}

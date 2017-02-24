@@ -109,8 +109,8 @@ void tfpw_close_frame(const WebsocketFrame *wsf, const int8_t cid) {
 }
 
 
-void ICACHE_FLASH_ATTR tfpw_sent_callback(void *arg) {
-	tfp_sent_callback(arg);
+void ICACHE_FLASH_ATTR tfpw_write_finish_callback(void *arg) {
+	tfp_write_finish_callback(arg);
 }
 
 void ICACHE_FLASH_ATTR tfpw_recv_callback(void *arg, char *pdata, unsigned short len) {
@@ -275,7 +275,8 @@ void ICACHE_FLASH_ATTR tfpw_connect_callback(void *arg) {
 
 	espconn_regist_recvcb(arg, tfpw_recv_callback);
 	espconn_regist_disconcb(arg, tfpw_disconnect_callback);
-	espconn_regist_sentcb(arg, tfpw_sent_callback);
+	espconn_regist_write_finish(arg, tfpw_write_finish_callback);
+	espconn_regist_sentcb(arg, tfpw_write_finish_callback);
 }
 
 static espconn tfpw_con_listen;

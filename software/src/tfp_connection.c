@@ -174,9 +174,12 @@ void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 
 	for(; i < TFP_MAX_CONNECTIONS; i++) {
 		if(tfp_cons[i].state == TFP_CON_STATE_CLOSED) {
+			// If there are any remaining routes in brickd routing table, remove them now
+			brickd_disconnect(i);
 			tfp_cons[i].con = arg;
 			tfp_cons[i].con->reverse = &tfp_cons[i];
 			tfp_cons[i].state = TFP_CON_STATE_OPEN;
+			tfp_cons[i].send_buffer_length = 0;
 			logd("tfp_connect_callback: cid %d\n", tfp_cons[i].cid);
 			break;
 		}

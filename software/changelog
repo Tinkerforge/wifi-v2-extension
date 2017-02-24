@@ -21,3 +21,11 @@
 2017-01-30: 2.1.1 (<unknown>)
 - Don't change active configuration, this doesn't work with Mesh mode. Instead
   change the saved configurartion, that is applied on restart.
+
+<unkown>: 2.1.2 (<unknown>)
+- Send new packets even if others are not yet acked to support Windows delayed ACK properly
+- Fix bug in route match removal
+- Increase routing table size from 10 to 16 to allow more packets at once
+- Decrease ACK timeout significantly, Master Brick 2.4.2 handles messages with new rx peak functionality
+- Don't resend data if rx buffer is full, in this case the ACK is likely already in the buffer
+- Fix broken length check

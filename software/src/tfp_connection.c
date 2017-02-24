@@ -288,20 +288,6 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		return false;
 	}
 
-	// Remove match from brickd routing table only if we now that we can fit
-	// the data in the buffer
-	if(match != NULL) {
-		match->uid = 0;
-		match->func_id = 0;
-		match->sequence_number = 0;
-		match->cid = -1;
-	}
-
-	/*
-	 * FIXME: Shouldn't the buffering mechanism used for sending mesh mode packets
-	 * also be used for non-mesh send? As it is documented that packets should be
-	 * sent from the sent callback of the previous packet.
-	 */
 	if (!configuration_current.mesh_enable) {
 		/*
 		 * First let's check if everything fits in the buffers. This is only done if
@@ -310,6 +296,15 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		 */
 		if(!tfp_send_check_buffer(cid)) {
 			return false;
+		}
+
+		// Remove match from brickd routing table only if we now that we can fit
+		// the data in the buffer
+		if(match != NULL) {
+			match->uid = 0;
+			match->func_id = 0;
+			match->sequence_number = 0;
+			match->cid = -1;
 		}
 
 		// Broadcast.
@@ -375,6 +370,14 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		return true;
 	}
 	else {
+		// Remove match from brickd routing table
+		if(match != NULL) {
+			match->uid = 0;
+			match->func_id = 0;
+			match->sequence_number = 0;
+			match->cid = -1;
+		}
+
 		tfp_mesh_send_handler(data, length);
 
 		return true;

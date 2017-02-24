@@ -196,8 +196,9 @@ void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 		return;
 	}
 
-
 	espconn_set_opt(arg, ESPCONN_NODELAY);
+	espconn_set_opt(arg, ESPCONN_COPY);
+
 	espconn_regist_recvcb((struct espconn *)arg, tfp_recv_callback);
 	espconn_regist_disconcb((struct espconn *)arg, tfp_disconnect_callback);
 	espconn_regist_sentcb((struct espconn *)arg, tfp_sent_callback);

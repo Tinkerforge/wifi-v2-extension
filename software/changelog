@@ -18,11 +18,11 @@
 2017-01-23: 2.1.0 (521b673)
 - Add mesh networking support
 
-2017-01-30: 2.1.1 (<unknown>)
+2017-01-30: 2.1.1 (85efc82)
 - Don't change active configuration, this doesn't work with Mesh mode. Instead
   change the saved configurartion, that is applied on restart.
 
-<unkown>: 2.1.2 (<unknown>)
+2017-02-24: 2.1.2 (707a4d6)
 - Send new packets even if others are not yet acked to support Windows delayed ACK properly
 - Fix bug in route match removal
 - Increase routing table size from 10 to 16 to allow more packets at once

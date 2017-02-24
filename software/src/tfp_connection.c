@@ -201,7 +201,8 @@ void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 
 	espconn_regist_recvcb((struct espconn *)arg, tfp_recv_callback);
 	espconn_regist_disconcb((struct espconn *)arg, tfp_disconnect_callback);
-	espconn_regist_sentcb((struct espconn *)arg, tfp_sent_callback);
+	espconn_regist_write_finish((struct espconn *)arg, tfp_write_finish_callback);
+	espconn_regist_sentcb((struct espconn *)arg, tfp_write_finish_callback);
 }
 
 static bool ICACHE_FLASH_ATTR tfp_send_check_buffer(const int8_t cid) {

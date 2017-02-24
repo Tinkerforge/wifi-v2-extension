@@ -74,9 +74,9 @@ void ICACHE_FLASH_ATTR brickd_route_from(const void *data, const uint8_t cid) {
 		return;
 	}
 
-	BrickdRouting *smallest = &brickd_routing_table[0];
+	BrickdRouting *oldest = &brickd_routing_table[0];
 	brickd_counter++;
-	uint32_t diff = brickd_counter_diff(brickd_counter, smallest->counter);
+	uint32_t diff = brickd_counter_diff(brickd_counter, oldest->counter);
 
 	for(uint8_t i = 0; i < BRICKD_ROUTING_TABLE_SIZE; i++) {
 		if(brickd_routing_table[i].cid == -1) {
@@ -90,17 +90,17 @@ void ICACHE_FLASH_ATTR brickd_route_from(const void *data, const uint8_t cid) {
 		} else {
 			uint32_t new_diff = brickd_counter_diff(brickd_counter, brickd_routing_table[i].counter);
 			if(new_diff > diff) {
-				smallest = &brickd_routing_table[i];
+				oldest = &brickd_routing_table[i];
 				diff = new_diff;
 			}
 		}
 	}
 
-	smallest->uid = data_header->uid;
-	smallest->func_id = data_header->fid;
-	smallest->sequence_number = data_header->sequence_num;
-	smallest->cid = cid;
-	smallest->counter = brickd_counter;
+	oldest->uid = data_header->uid;
+	oldest->func_id = data_header->fid;
+	oldest->sequence_number = data_header->sequence_num;
+	oldest->cid = cid;
+	oldest->counter = brickd_counter;
 }
 
 int8_t ICACHE_FLASH_ATTR brickd_route_to_peak(const void *data, BrickdRouting **match) {

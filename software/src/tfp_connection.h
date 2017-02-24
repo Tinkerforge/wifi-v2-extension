@@ -73,12 +73,13 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short 
 void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error);
 void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg);
 void ICACHE_FLASH_ATTR tfp_disconnect_callback(void *arg);
-void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg);
+void ICACHE_FLASH_ATTR tfp_write_finish_callback(void *arg);
 void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid);
 bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data, const uint8_t length, const uint8_t cid);
 void ICACHE_FLASH_ATTR tfp_handle_packet(const uint8_t *data, const uint8_t length);
 void ICACHE_FLASH_ATTR tfp_open_connection(void);
 bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length);
+void ICACHE_FLASH_ATTR tfp_check_send_buffer(void);
 void ICACHE_FLASH_ATTR tfp_poll(void);
 void ICACHE_FLASH_ATTR packet_counter(struct espconn *con, uint8_t direction);
 

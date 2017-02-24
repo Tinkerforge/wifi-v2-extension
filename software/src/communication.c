@@ -109,6 +109,8 @@ bool ICACHE_FLASH_ATTR com_handle_message(const uint8_t *data, const uint8_t len
 		return true;
 	}
 
+	// TODO: Check for UID of master of stack Master Brick
+	//       Where do we get the UID?
 	switch(header->fid) {
 		case FID_SET_WIFI2_AUTHENTICATION_SECRET: set_wifi2_authentication_secret(cid, (SetWifi2AuthenticationSecret*)data); return true;
 		case FID_GET_WIFI2_AUTHENTICATION_SECRET: get_wifi2_authentication_secret(cid, (GetWifi2AuthenticationSecret*)data); return true;

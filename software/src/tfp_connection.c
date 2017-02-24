@@ -234,9 +234,20 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data,
 		 */
 		if(tfp_cons[cid].state == TFP_CON_STATE_OPEN) {
 			tfp_cons[cid].state = TFP_CON_STATE_SENDING;
+			tfp_cons[cid].send_buffer_length = length;
 			os_memcpy(tfp_cons[cid].send_buffer, data, length);
-			espconn_send(tfp_cons[cid].con, (uint8_t*)data, length);
+			int8_t ret = espconn_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length);
+			if(ret == ESPCONN_OK) {
+				tfp_cons[cid].send_buffer_length = 0;
+			} else {
+				tfp_cons[cid].state = TFP_CON_STATE_OPEN;
+			}
 
+			return true;
+		}
+
+		// If the connection has been closed by now we throw the packet away
+		if(tfp_cons[cid].state == TFP_CON_STATE_CLOSED) {
 			return true;
 		}
 
@@ -305,40 +316,56 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 		if(cid == -1) {
 			/*
 			 * Broadcast is handled differently when mesh is enabled as then there is
-			 * only one socket connection invovled.
+			 * only one socket connection involved.
 			 */
 			for(uint8_t i = 0; i < TFP_MAX_CONNECTIONS; i++) {
 				if(tfp_cons[i].state == TFP_CON_STATE_OPEN) {
-					// TODO: sent data (return value)
 					tfp_cons[i].state = TFP_CON_STATE_SENDING;
-					uint8_t length_to_send = length;
+					tfp_cons[i].send_buffer_length = length;
 					if(tfp_cons[i].websocket_state == WEBSOCKET_STATE_NO_WEBSOCKET) {
 						os_memcpy(tfp_cons[i].send_buffer, data, length);
 					}
 					else {
 						os_memcpy(tfp_cons[i].send_buffer, data_with_websocket_header, length_with_websocket_header);
-						length_to_send = length_with_websocket_header;
+						tfp_cons[i].send_buffer_length = length_with_websocket_header;
 					}
 
-					espconn_send(tfp_cons[i].con, tfp_cons[i].send_buffer, length_to_send);
+					int ret = -42;
+					if(system_get_free_heap_size() > TFP_MIN_ESP_HEAP_SIZE) {
+						ret = espconn_send(tfp_cons[i].con, tfp_cons[i].send_buffer, tfp_cons[i].send_buffer_length);
+					}
+					if(ret == ESPCONN_OK) {
+						tfp_cons[i].send_buffer_length = 0;
+					} else {
+						tfp_cons[i].state = TFP_CON_STATE_OPEN;
+					}
 				}
 			}
 		}
 		// Unicast.
 		else {
-			uint8_t length_to_send = length;
-			tfp_cons[cid].state = TFP_CON_STATE_SENDING;
+			// If the socket has been closed by now, we just ignore the packet.
+			if(tfp_cons[cid].state == TFP_CON_STATE_OPEN) {
+				tfp_cons[cid].send_buffer_length =  length;
+				tfp_cons[cid].state = TFP_CON_STATE_SENDING;
 
-			if(tfp_cons[cid].websocket_state == WEBSOCKET_STATE_NO_WEBSOCKET) {
-				os_memcpy(tfp_cons[cid].send_buffer, data, length);
+				if(tfp_cons[cid].websocket_state == WEBSOCKET_STATE_NO_WEBSOCKET) {
+					os_memcpy(tfp_cons[cid].send_buffer, data, length);
+				} else {
+					os_memcpy(tfp_cons[cid].send_buffer, data_with_websocket_header, length_with_websocket_header);
+					tfp_cons[cid].send_buffer_length = length_with_websocket_header;
+				}
+
+				int ret = -42;
+				if(system_get_free_heap_size() > TFP_MIN_ESP_HEAP_SIZE) {
+					ret = espconn_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, tfp_cons[cid].send_buffer_length);
+				}
+				if(ret == ESPCONN_OK) {
+					tfp_cons[cid].send_buffer_length = 0;
+				} else {
+					tfp_cons[cid].state = TFP_CON_STATE_OPEN;
+				}
 			}
-			else {
-				os_memcpy(tfp_cons[cid].send_buffer, data_with_websocket_header, length_with_websocket_header);
-
-				length_to_send = length_with_websocket_header;
-			}
-
-			espconn_send(tfp_cons[cid].con, tfp_cons[cid].send_buffer, length_to_send);
 		}
 
 		if(ringbuffer_get_free(&tfp_rb) > (6*MTU_LENGTH + 2)) {

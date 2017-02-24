@@ -116,12 +116,12 @@ static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
 		uart_con_buffer_recv[uart_con_buffer_recv_index] = uart_rx(UART_CONNECTION);
 
 		if(uart_con_buffer_recv_index == UART_CON_INDEX_LENGTH) {
-			// TODO: Sanity-check length
 			uart_con_buffer_recv_expected_length = uart_con_buffer_recv[UART_CON_INDEX_LENGTH];
 
-			if(uart_con_buffer_recv_expected_length > UART_CON_BUFFER_SIZE) {
-				logw("Length is malformed: %d > %d\n", uart_con_buffer_recv_expected_length, UART_CON_BUFFER_SIZE);
+			if(uart_con_buffer_recv_expected_length > UART_CON_BUFFER_SIZE || (uart_con_buffer_recv_expected_length < 11 && uart_con_buffer_recv_expected_length != 3)) {
+				logw("Length is malformed: %d (not 3 || 11-83)\n", uart_con_buffer_recv_expected_length);
 				uart_con_clear_rx_dma();
+				break;
 			}
 		}
 

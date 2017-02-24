@@ -50,6 +50,7 @@ void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid) {
 	tfp_cons[cid].cid   = cid;
 	tfp_cons[cid].con   = NULL;
 	tfp_cons[cid].websocket_state = WEBSOCKET_STATE_NO_WEBSOCKET;
+	tfp_cons[cid].send_buffer_length = 0;
 
 	if(configuration_current.general_authentication_secret[0] != '\0') {
 		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;

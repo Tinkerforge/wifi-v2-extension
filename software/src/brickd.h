@@ -25,7 +25,7 @@
 #include "espmissingincludes.h"
 #include "communication.h"
 
-#define BRICKD_ROUTING_TABLE_SIZE 10
+#define BRICKD_ROUTING_TABLE_SIZE 16
 
 typedef struct BrickdRouting BrickdRouting;
 

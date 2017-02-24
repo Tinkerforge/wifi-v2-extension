@@ -60,7 +60,7 @@ void ICACHE_FLASH_ATTR tfp_init_con(const int8_t cid) {
 	}
 }
 
-void ICACHE_FLASH_ATTR tfp_sent_callback(void *arg) {
+void ICACHE_FLASH_ATTR tfp_write_finish_callback(void *arg) {
 	struct espconn *con = (struct espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 

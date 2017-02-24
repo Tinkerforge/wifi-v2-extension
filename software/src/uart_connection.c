@@ -112,6 +112,8 @@ static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
 		return;
 	}
 
+	bool clear_after_next_message = uart_get_rx_fifo_count(UART_CONNECTION) == 128;
+
 	while(uart_get_rx_fifo_count(UART_CONNECTION) > 0) {
 		uart_con_buffer_recv[uart_con_buffer_recv_index] = uart_rx(UART_CONNECTION);
 
@@ -180,7 +182,12 @@ static void ICACHE_FLASH_ATTR uart_con_loop(os_event_t *events) {
 		}
 	}
 
-//	os_timer_arm(&test_timer, 2, 0);
+	if(clear_after_next_message) {
+		// The FIFO was completely full at the beginning of the function.
+		// We read one message from it (one message is at most 84 byte, so it fits in the 128 byte FIFO).
+		// But we have to assume that the next message is broken, we will clear the buffer here preemptively.
+		uart_con_clear_rx_dma();
+	}
     system_os_post(uart_con_prio, 0, 0);
 }
 

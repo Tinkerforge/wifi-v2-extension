@@ -48,15 +48,15 @@
 
 typedef struct {
 	uint8_t recv_buffer[TFP_RECV_BUFFER_SIZE\
-											+ sizeof(struct mesh_header_format)\
-											+ 1];
+	                    + sizeof(struct mesh_header_format)\
+	                    + 1];
 	uint8_t recv_buffer_index;
 	uint8_t recv_buffer_expected_length;
 
 	uint8_t send_buffer[TFP_SEND_BUFFER_SIZE\
-											+ sizeof(WebsocketFrameClientToServer)\
-											+ sizeof(struct mesh_header_format)\
-											+ 1];
+	                    + sizeof(WebsocketFrameClientToServer)\
+	                    + sizeof(struct mesh_header_format)\
+	                    + 1];
 	uint8_t state;
 	BrickdAuthenticationState brickd_authentication_state;
 

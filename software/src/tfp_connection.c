@@ -196,19 +196,6 @@ void ICACHE_FLASH_ATTR tfp_connect_callback(void *arg) {
 		return;
 	}
 
-	/*
-		uint8_t param = 10;
-		espconn_set_keepalive(arg, ESPCONN_KEEPIDLE, &param);
-		param = 2;
-		espconn_set_keepalive(arg, ESPCONN_KEEPINTVL, &param);
-		param = 10;
-		espconn_set_keepalive(arg, ESPCONN_KEEPCNT, &param);
-
-		espconn_set_opt(arg, ESPCONN_KEEPALIVE);
-		espconn_set_opt(arg, ESPCONN_REUSEADDR);
-		espconn_set_opt(arg, ESPCONN_COPY);
-		espconn_set_opt(arg, ESPCONN_NODELAY);
-	*/
 
 	espconn_set_opt(arg, ESPCONN_NODELAY);
 	espconn_regist_recvcb((struct espconn *)arg, tfp_recv_callback);

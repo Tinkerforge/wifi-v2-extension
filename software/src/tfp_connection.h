@@ -27,6 +27,10 @@
 #include "websocket.h"
 #include "tfp_websocket_connection.h"
 
+// The ESP8266 seems to allocate 1648 per message that is send.
+// We make sure that it has at least 4 messages free space left at all times.
+#define TFP_MIN_ESP_HEAP_SIZE (1648*4)
+
 #define TFP_SEND_BUFFER_SIZE 80
 #define TFP_RECV_BUFFER_SIZE 80
 #define TFP_MAX_CONNECTIONS 5
@@ -57,6 +61,7 @@ typedef struct {
 	                    + sizeof(WebsocketFrameClientToServer)\
 	                    + sizeof(struct mesh_header_format)\
 	                    + 1];
+	uint16_t send_buffer_length;
 	uint8_t state;
 	BrickdAuthenticationState brickd_authentication_state;
 

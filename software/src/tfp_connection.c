@@ -154,22 +154,17 @@ void ICACHE_FLASH_ATTR tfp_disconnect_callback(void *arg) {
 	struct espconn *con = (struct espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
-	brickd_disconnect(tfp_con->cid);
 	tfp_init_con(tfp_con->cid);
 
 	logd("tfp_disconnect_callback: cid %d\n", tfp_con->cid);
 }
 
+// This is called if an error is detected, it does not reconnect...
 void ICACHE_FLASH_ATTR tfp_reconnect_callback(void *arg, sint8 error) {
 	struct espconn *con = (struct espconn *)arg;
 	TFPConnection *tfp_con = (TFPConnection *)con->reverse;
 
-	brickd_disconnect(tfp_con->cid);
 	tfp_init_con(tfp_con->cid);
-
-	if(error == ESPCONN_TIMEOUT) {
-		// espconn_disconnect(arg);
-	}
 
 	logd("tfp_reconnect_callback: cid %d -> %d\n", tfp_con->cid, error);
 }

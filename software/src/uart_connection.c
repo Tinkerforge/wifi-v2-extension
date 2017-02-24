@@ -84,7 +84,11 @@ static void ICACHE_FLASH_ATTR uart_con_clear_rx_dma(void) {
 }
 
 static void ICACHE_FLASH_ATTR uart_con_timeout() {
-	uart_con_send_next_try();
+	// We don't send again if our receive buffer is full,
+	// in this case we have to assume that we did not yet parse the ACK.
+	if(!uart_con_buffer_recv_wait_for_tfp) {
+		uart_con_send_next_try();
+	}
 	os_timer_disarm(&timeout_timer);
 	os_timer_arm(&timeout_timer, ACK_TIMEOUT_MS, 0);
 }

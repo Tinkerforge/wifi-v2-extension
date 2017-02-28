@@ -195,15 +195,22 @@ void ICACHE_FLASH_ATTR brickd_disconnect(const uint8_t cid) {
 }
 
 void ICACHE_FLASH_ATTR brickd_print_routing_table(void) {
+	bool print_something = false;
 	for(uint8_t i = 0; i < BRICKD_ROUTING_TABLE_SIZE; i++) {
 		if(brickd_routing_table[i].cid != -1) {
+			print_something = true;
 			logwohd("r %d:", i);
 			logwohd(" t %d,", brickd_routing_table[i].tmp);
 			logwohd(" s %d,", brickd_routing_table[i].sequence_number);
+			logwohd(" id %d,", brickd_routing_table[i].cid);
+			logwohd(" f %d,", brickd_routing_table[i].func_id);
+			logwohd(" u %d,", brickd_routing_table[i].uid);
 			logwohd(" c %d\n", brickd_routing_table[i].counter);
 		}
 	}
-	logwohd("bc: %d\n", brickd_counter);
+	if(print_something) {
+		logwohd("bc: %d\n", brickd_counter);
+	}
 }
 
 void ICACHE_FLASH_ATTR brickd_set_authentication_seed(const uint32_t seed) {

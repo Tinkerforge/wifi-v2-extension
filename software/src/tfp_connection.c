@@ -261,9 +261,6 @@ bool ICACHE_FLASH_ATTR tfp_send_w_cid(const uint8_t *data,
 }
 
 bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
-	// TODO: Sanity check length again?
-	// TODO: Are we sure that data is always a full TFP packet?
-
 	// cid == -2 => send back via UART
 	if(com_handle_message(data, length, -2)) {
 		return true;

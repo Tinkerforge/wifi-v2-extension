@@ -86,14 +86,11 @@ void ICACHE_FLASH_ATTR brickd_route_from(const void *data, const uint8_t cid) {
 
 	for(uint8_t i = 0; i < BRICKD_ROUTING_TABLE_SIZE; i++) {
 		if(brickd_routing_table[i].cid == -1) {
-			brickd_routing_table[i].uid = data_header->uid;
-			brickd_routing_table[i].func_id = data_header->fid;
-			brickd_routing_table[i].sequence_number = data_header->sequence_num;
-			brickd_routing_table[i].cid = cid;
-			brickd_routing_table[i].counter = brickd_counter;
-			brickd_routing_table[i].tmp = ((uint8_t*)data)[8];
-			return;
+			// If we find an empty route we use it immediately
+			oldest = &brickd_routing_table[i];
+			break;
 		} else {
+			// Otherwise we use the olders one
 			uint32_t new_diff = brickd_counter_diff(brickd_counter, brickd_routing_table[i].counter);
 			if(new_diff > diff) {
 				oldest = &brickd_routing_table[i];
@@ -107,6 +104,7 @@ void ICACHE_FLASH_ATTR brickd_route_from(const void *data, const uint8_t cid) {
 	oldest->sequence_number = data_header->sequence_num;
 	oldest->cid = cid;
 	oldest->counter = brickd_counter;
+	oldest->tmp = ((uint8_t*)data)[8];
 }
 
 int8_t ICACHE_FLASH_ATTR brickd_route_to_peak(const void *data, BrickdRouting **match) {

@@ -117,34 +117,29 @@ int8_t ICACHE_FLASH_ATTR brickd_route_to_peak(const void *data, BrickdRouting **
 		return -1;
 	}
 
-	BrickdRouting *current_match = NULL;
+	*match = NULL;
 	uint32_t current_diff = 0;
 
 	for(uint8_t i = 0; i < BRICKD_ROUTING_TABLE_SIZE; i++) {
 		if(brickd_routing_table[i].uid == data_header->uid &&
 		   brickd_routing_table[i].func_id == data_header->fid &&
 		   brickd_routing_table[i].sequence_number == data_header->sequence_num) {
-			if(current_match == NULL) {
-				current_match = &brickd_routing_table[i];
-				current_diff = brickd_counter_diff(brickd_counter, current_match->counter);
+			if(*match == NULL) {
+				*match = &brickd_routing_table[i];
+				current_diff = brickd_counter_diff(brickd_counter, (*match)->counter);
 			} else {
 				uint32_t new_diff = brickd_counter_diff(brickd_counter, brickd_routing_table[i].counter);
 				if(new_diff > current_diff) {
-					current_match = &brickd_routing_table[i];
+					*match = &brickd_routing_table[i];
 					current_diff = new_diff;
 				}
 			}
 		}
 	}
 
-	if(current_match != NULL) {
-		int8_t cid = current_match->cid;
-		*match = current_match;
-
-		return cid;
+	if(*match != NULL) {
+		return (*match)->cid;
 	}
-
-	*match = NULL;
 
 	return -1;
 }

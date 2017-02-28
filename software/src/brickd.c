@@ -144,7 +144,7 @@ int8_t ICACHE_FLASH_ATTR brickd_route_to_peak(const void *data, BrickdRouting **
 		return cid;
 	}
 
-	match = NULL;
+	*match = NULL;
 
 	return -1;
 }

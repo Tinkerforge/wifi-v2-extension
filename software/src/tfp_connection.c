@@ -126,8 +126,15 @@ void ICACHE_FLASH_ATTR tfp_recv_callback(void *arg, char *pdata, unsigned short 
 	for(uint32_t i = 0; i < len; i++) {
 		tfp_con->recv_buffer[tfp_con->recv_buffer_index] = pdata[i];
 		if(tfp_con->recv_buffer_index == TFP_RECV_INDEX_LENGTH) {
-			// TODO: Sanity-check length
-			tfp_con->recv_buffer_expected_length = tfp_con->recv_buffer[TFP_RECV_INDEX_LENGTH];
+			const uint8_t length = tfp_con->recv_buffer[TFP_RECV_INDEX_LENGTH];
+			if(length < TFP_MIN_LENGTH || length > TFP_MAX_LENGTH) {
+				logi("Received malformed packet with length %d\n\r", tfp_con->recv_buffer_index);
+				tfp_con->recv_buffer_index = 0;
+				tfp_con->recv_buffer_expected_length = TFP_MIN_LENGTH;
+				espconn_disconnect(con);
+				return;
+			}
+			tfp_con->recv_buffer_expected_length = length;
 		}
 
 		tfp_con->recv_buffer_index++;

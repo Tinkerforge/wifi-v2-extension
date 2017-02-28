@@ -90,7 +90,7 @@ void ICACHE_FLASH_ATTR brickd_route_from(const void *data, const uint8_t cid) {
 			oldest = &brickd_routing_table[i];
 			break;
 		} else {
-			// Otherwise we use the olders one
+			// Otherwise we use the oldest one
 			uint32_t new_diff = brickd_counter_diff(brickd_counter, brickd_routing_table[i].counter);
 			if(new_diff > diff) {
 				oldest = &brickd_routing_table[i];

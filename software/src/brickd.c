@@ -248,13 +248,8 @@ void ICACHE_FLASH_ATTR brickd_get_authentication_nonce(const int8_t cid, const G
 	brickd_authentication_nonce++;
 
 	memcpy(ganr.server_nonce, &brickd_authentication_nonce, 4);
-	/*uint8_t length = */com_send(&ganr, sizeof(GetAuthenticationNonceReturn), cid);
+	com_send(&ganr, sizeof(GetAuthenticationNonceReturn), cid);
 	tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_NONCE_SEND;
-	/*if(length != sizeof(GetAuthenticationNonceReturn)) {
-		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_ENABLED;
-	} else {
-		tfp_cons[cid].brickd_authentication_state = BRICKD_AUTHENTICATION_STATE_NONCE_SEND;
-	}*/
 }
 
 void ICACHE_FLASH_ATTR brickd_authenticate(const int8_t cid, const Authenticate *data) {

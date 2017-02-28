@@ -72,6 +72,7 @@ bool ICACHE_FLASH_ATTR brickd_check_auth(const MessageHeader *header, const int8
 
 void ICACHE_FLASH_ATTR brickd_init(void);
 uint32_t ICACHE_FLASH_ATTR brickd_counter_diff(const uint32_t new, const uint32_t old);
+void ICACHE_FLASH_ATTR brickd_remove_route(BrickdRouting *route);
 void ICACHE_FLASH_ATTR brickd_route_from(const void *data, const uint8_t cid);
 int8_t ICACHE_FLASH_ATTR brickd_route_to_peak(const void *data, BrickdRouting **match);
 int8_t ICACHE_FLASH_ATTR brickd_route_to(const void *data);

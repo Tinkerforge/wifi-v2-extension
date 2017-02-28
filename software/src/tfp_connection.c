@@ -276,6 +276,7 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 	int8_t cid = brickd_route_to_peak(data, &match);
 
 	if(!brickd_check_auth((const MessageHeader*)data, cid)) {
+		brickd_remove_route(match);
 		return true;
 	}
 
@@ -300,12 +301,7 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 
 		// Remove match from brickd routing table only if we now that we can fit
 		// the data in the buffer
-		if(match != NULL) {
-			match->uid = 0;
-			match->func_id = 0;
-			match->sequence_number = 0;
-			match->cid = -1;
-		}
+		brickd_remove_route(match);
 
 		// Broadcast.
 		if(cid == -1) {
@@ -371,12 +367,7 @@ bool ICACHE_FLASH_ATTR tfp_send(const uint8_t *data, const uint8_t length) {
 	}
 	else {
 		// Remove match from brickd routing table
-		if(match != NULL) {
-			match->uid = 0;
-			match->func_id = 0;
-			match->sequence_number = 0;
-			match->cid = -1;
-		}
+		brickd_remove_route(match);
 
 		tfp_mesh_send_handler(data, length);
 

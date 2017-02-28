@@ -50,11 +50,7 @@ uint32_t brickd_authentication_nonce = 42; // Will be randomized
 
 void ICACHE_FLASH_ATTR brickd_init(void) {
 	for(uint8_t i = 0; i < BRICKD_ROUTING_TABLE_SIZE; i++) {
-		brickd_routing_table[i].uid = 0;
-		brickd_routing_table[i].counter = 0;
-		brickd_routing_table[i].func_id = 0;
-		brickd_routing_table[i].sequence_number = 0;
-		brickd_routing_table[i].cid = -1;
+		brickd_remove_route(&brickd_routing_table[i]);
 	}
 }
 
@@ -64,6 +60,16 @@ uint32_t ICACHE_FLASH_ATTR brickd_counter_diff(const uint32_t new, const uint32_
 	}
 
 	return new + (0xFFFFFFFFL - old);
+}
+
+void ICACHE_FLASH_ATTR brickd_remove_route(BrickdRouting *route) {
+	if(route != NULL) {
+		route->uid = 0;
+		route->counter = 0;
+		route->func_id = 0;
+		route->sequence_number = 0;
+		route->cid = -1;
+	}
 }
 
 void ICACHE_FLASH_ATTR brickd_route_from(const void *data, const uint8_t cid) {
@@ -173,11 +179,7 @@ int8_t ICACHE_FLASH_ATTR brickd_route_to(const void *data) {
 
 	if(current_match != NULL) {
 		int8_t cid = current_match->cid;
-		current_match->uid = 0;
-		current_match->func_id = 0;
-		current_match->sequence_number = 0;
-		current_match->cid = -1;
-
+		brickd_remove_route(current_match);
 		return cid;
 	}
 
@@ -187,10 +189,7 @@ int8_t ICACHE_FLASH_ATTR brickd_route_to(const void *data) {
 void ICACHE_FLASH_ATTR brickd_disconnect(const uint8_t cid) {
 	for(uint8_t i = 0; i < BRICKD_ROUTING_TABLE_SIZE; i++) {
 		if(brickd_routing_table[i].cid == cid) {
-			brickd_routing_table[i].cid = -1;
-			brickd_routing_table[i].func_id = 0;
-			brickd_routing_table[i].uid = 0;
-			brickd_routing_table[i].sequence_number = 0;
+			brickd_remove_route(&brickd_routing_table[i]);
 		}
 	}
 }

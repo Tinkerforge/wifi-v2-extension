@@ -579,7 +579,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_password(const int8_t cid, const GetWifi
 
 	gw2cpr.header        = data->header;
 	gw2cpr.header.length = sizeof(GetWifi2ClientPasswordReturn);
-	os_memcpy(gw2cpr.password, configuration_current_to_save.client_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	os_memset(gw2cpr.password, '\0', CONFIGURATION_PASSWORD_MAX_LENGTH);
 
 	com_send(&gw2cpr, sizeof(GetWifi2ClientPasswordReturn), cid);
 }
@@ -626,7 +626,7 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_password(const int8_t cid, const GetWifi2APP
 
 	gw2appr.header        = data->header;
 	gw2appr.header.length = sizeof(GetWifi2APPasswordReturn);
-	os_memcpy(gw2appr.password, configuration_current_to_save.ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	os_memset(gw2appr.password, '\0', CONFIGURATION_PASSWORD_MAX_LENGTH);
 
 	com_send(&gw2appr, sizeof(GetWifi2APPasswordReturn), cid);
 }

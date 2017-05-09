@@ -90,7 +90,6 @@ const char *fmt_response_json_settings_data = \
 \"client_mac_address\":[%d,%d,%d,%d,%d,%d], \
 \"client_bssid\":[%d,%d,%d,%d,%d,%d], \
 \"client_hostname\":\"%s\", \
-\"client_password\":\"%s\", \
 \"ap_enable\":%d, \
 \"ap_ssid\":\"%s\", \
 \"ap_ip\":[%d,%d,%d,%d], \
@@ -100,8 +99,7 @@ const char *fmt_response_json_settings_data = \
 \"ap_hidden\":%d, \
 \"ap_mac_address\":[%d,%d,%d,%d,%d,%d], \
 \"ap_channel\":%d, \
-\"ap_hostname\":\"%s\", \
-\"ap_password\":\"%s\"\
+\"ap_hostname\":\"%s\"\
 }";
 
 const char *fmt_set_session_cookie = "sid=%lu";
@@ -112,13 +110,14 @@ extern GetWifi2StatusReturn gw2sr;
 char buffer_post_form[POST_BUFFER_SIZE];
 uint8_t current_session_cookie_index = 0;
 extern Configuration configuration_current;
+extern Configuration configuration_current_to_save;
 uint8_t current_authentication_slot_index = 0;
 unsigned long active_sessions[MAX_ACTIVE_SESSION_COOKIES];
 unsigned long authentication_slots[MAX_AUTHENTICATION_SLOTS];
 
-// httpdFindArg (actually httpdUrlDecode) only NUL-terminates the string in the
+// httpdFindArg (actually httpdUrlDecode) only NULL-terminates the string in the
 // buffer if there is free space in the buffer to do so. find_arg ensures that
-// the string in the buffer is always NUL-terminated
+// the string in the buffer is always NULL-terminated
 int ICACHE_FLASH_ATTR find_arg(char *line, char *arg, char *buff, int buffLen) {
 	if (buffLen < 1) {
 		return 0;
@@ -150,7 +149,7 @@ int ICACHE_FLASH_ATTR do_get_sid(unsigned long *sid) {
 }
 
 int ICACHE_FLASH_ATTR do_is_auth_enabled(void) {
-	if(configuration_current.general_authentication_secret[0] == '\0')
+	if(configuration_current_to_save.general_authentication_secret[0] == '\0')
 		return -1;
 
 	return 1;
@@ -161,7 +160,7 @@ int ICACHE_FLASH_ATTR do_get_cookie_field(char *cookie,
 										unsigned char type_field,
 										void *value) {
 	char *token;
-	char _cookie[GENERIC_BUFFER_SIZE + 1]; // +1 for NUL-terminator
+	char _cookie[GENERIC_BUFFER_SIZE + 1]; // +1 for NULL-terminator
 
 	if(!strstr(cookie, field)) {
 		return -1;
@@ -666,88 +665,82 @@ int ICACHE_FLASH_ATTR cgi_authenticate(HttpdConnData *connection_data) {
 int ICACHE_FLASH_ATTR cgi_get_settings(HttpdConnData *connection_data) {
 	char response[GENERIC_BUFFER_SIZE];
 	char response_settings[GENERIC_BUFFER_SIZE];
-	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
-	char client_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
-	char client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
-	char client_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
-	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
-	char ap_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
-	char ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
+	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
+	char client_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
+	char client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
+	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
+	char ap_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
 
 	if(((do_check_session(connection_data)) == 1) &&
 	   ((do_check_request(connection_data->post->buff, JSON_REQUEST_GET_SETTINGS)) == 1)) {
 
-		// ensure that those config strings are NUL-terminated
-		os_memcpy(general_authentication_secret, configuration_current.general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH);
-		os_memcpy(client_ssid, configuration_current.client_ssid, CONFIGURATION_SSID_MAX_LENGTH);
-		os_memcpy(client_hostname, configuration_current.client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
-		os_memcpy(client_password, configuration_current.client_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
-		os_memcpy(ap_ssid, configuration_current.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
-		os_memcpy(ap_hostname, configuration_current.ap_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
-		os_memcpy(ap_password, configuration_current.ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+		// ensure that those config strings are NULL-terminated
+		os_memcpy(general_authentication_secret, configuration_current_to_save.general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH);
+		os_memcpy(client_ssid, configuration_current_to_save.client_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+		os_memcpy(client_hostname, configuration_current_to_save.client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
+		os_memcpy(ap_ssid, configuration_current_to_save.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+		os_memcpy(ap_hostname, configuration_current_to_save.ap_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
 
 	 	sprintf(response_settings,
-				fmt_response_json_settings_data,
-				configuration_current.general_port,
-				configuration_current.general_websocket_port,
-				configuration_current.general_website_port,
-				configuration_current.general_phy_mode,
-				configuration_current.general_sleep_mode,
-				configuration_current.general_website,
-				general_authentication_secret,
-				configuration_current.client_enable,
-				client_ssid,
-				configuration_current.client_ip[0],
-				configuration_current.client_ip[1],
-				configuration_current.client_ip[2],
-				configuration_current.client_ip[3],
-				configuration_current.client_subnet_mask[0],
-				configuration_current.client_subnet_mask[1],
-				configuration_current.client_subnet_mask[2],
-				configuration_current.client_subnet_mask[3],
-				configuration_current.client_gateway[0],
-				configuration_current.client_gateway[1],
-				configuration_current.client_gateway[2],
-				configuration_current.client_gateway[3],
-				configuration_current.client_mac_address[0],
-				configuration_current.client_mac_address[1],
-				configuration_current.client_mac_address[2],
-				configuration_current.client_mac_address[3],
-				configuration_current.client_mac_address[4],
-				configuration_current.client_mac_address[5],
-				configuration_current.client_bssid[0],
-				configuration_current.client_bssid[1],
-				configuration_current.client_bssid[2],
-				configuration_current.client_bssid[3],
-				configuration_current.client_bssid[4],
-				configuration_current.client_bssid[5],
-				client_hostname,
-				client_password,
-				configuration_current.ap_enable,
-				ap_ssid,
-				configuration_current.ap_ip[0],
-				configuration_current.ap_ip[1],
-				configuration_current.ap_ip[2],
-				configuration_current.ap_ip[3],
-				configuration_current.ap_subnet_mask[0],
-				configuration_current.ap_subnet_mask[1],
-				configuration_current.ap_subnet_mask[2],
-				configuration_current.ap_subnet_mask[3],
-				configuration_current.ap_gateway[0],
-				configuration_current.ap_gateway[1],
-				configuration_current.ap_gateway[2],
-				configuration_current.ap_gateway[3],
-				configuration_current.ap_encryption,
-				configuration_current.ap_hidden,
-				configuration_current.ap_mac_address[0],
-				configuration_current.ap_mac_address[1],
-				configuration_current.ap_mac_address[2],
-				configuration_current.ap_mac_address[3],
-				configuration_current.ap_mac_address[4],
-				configuration_current.ap_mac_address[5],
-				configuration_current.ap_channel,
-				ap_hostname,
-				ap_password);
+		        fmt_response_json_settings_data,
+		        configuration_current_to_save.general_port,
+		        configuration_current_to_save.general_websocket_port,
+		        configuration_current_to_save.general_website_port,
+		        configuration_current_to_save.general_phy_mode,
+		        configuration_current_to_save.general_sleep_mode,
+		        configuration_current_to_save.general_website,
+		        general_authentication_secret,
+		        configuration_current_to_save.client_enable,
+		        client_ssid,
+		        configuration_current_to_save.client_ip[0],
+		        configuration_current_to_save.client_ip[1],
+		        configuration_current_to_save.client_ip[2],
+		        configuration_current_to_save.client_ip[3],
+		        configuration_current_to_save.client_subnet_mask[0],
+		        configuration_current_to_save.client_subnet_mask[1],
+		        configuration_current_to_save.client_subnet_mask[2],
+		        configuration_current_to_save.client_subnet_mask[3],
+		        configuration_current_to_save.client_gateway[0],
+		        configuration_current_to_save.client_gateway[1],
+		        configuration_current_to_save.client_gateway[2],
+		        configuration_current_to_save.client_gateway[3],
+		        configuration_current_to_save.client_mac_address[0],
+		        configuration_current_to_save.client_mac_address[1],
+		        configuration_current_to_save.client_mac_address[2],
+		        configuration_current_to_save.client_mac_address[3],
+		        configuration_current_to_save.client_mac_address[4],
+		        configuration_current_to_save.client_mac_address[5],
+		        configuration_current_to_save.client_bssid[0],
+		        configuration_current_to_save.client_bssid[1],
+		        configuration_current_to_save.client_bssid[2],
+		        configuration_current_to_save.client_bssid[3],
+		        configuration_current_to_save.client_bssid[4],
+		        configuration_current_to_save.client_bssid[5],
+		        client_hostname,
+		        configuration_current_to_save.ap_enable,
+		        ap_ssid,
+		        configuration_current_to_save.ap_ip[0],
+		        configuration_current_to_save.ap_ip[1],
+		        configuration_current_to_save.ap_ip[2],
+		        configuration_current_to_save.ap_ip[3],
+		        configuration_current_to_save.ap_subnet_mask[0],
+		        configuration_current_to_save.ap_subnet_mask[1],
+		        configuration_current_to_save.ap_subnet_mask[2],
+		        configuration_current_to_save.ap_subnet_mask[3],
+		        configuration_current_to_save.ap_gateway[0],
+		        configuration_current_to_save.ap_gateway[1],
+		        configuration_current_to_save.ap_gateway[2],
+		        configuration_current_to_save.ap_gateway[3],
+		        configuration_current_to_save.ap_encryption,
+		        configuration_current_to_save.ap_hidden,
+		        configuration_current_to_save.ap_mac_address[0],
+		        configuration_current_to_save.ap_mac_address[1],
+		        configuration_current_to_save.ap_mac_address[2],
+		        configuration_current_to_save.ap_mac_address[3],
+		        configuration_current_to_save.ap_mac_address[4],
+		        configuration_current_to_save.ap_mac_address[5],
+		        configuration_current_to_save.ap_channel,
+		        ap_hostname);
 
 		sprintf(response,
 				fmt_response_json,
@@ -793,9 +786,9 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 	char ap_static_gateway_1[4];
 	char ap_static_gateway_2[4];
 	char ap_static_gateway_3[4];
-	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
+	char ap_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
 	char ap_encryption[2];
-	char ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
+	char ap_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
 	char ap_channel[3];
 	char ap_hide_ssid[2];
 	char ap_mac_address[2];
@@ -805,13 +798,14 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 	char ap_mac_address_3[3];
 	char ap_mac_address_4[3];
 	char ap_mac_address_5[3];
+	int ret = 0;
 
 	if((find_arg(data, "ap_ip_configuration", ap_ip_configuration, 2)) > 0) {
 		// DHCP.
 		if(strtoul(ap_ip_configuration, NULL, 10) == 0){
-			os_memset(configuration_current.ap_ip, 0, 4);
-			os_memset(configuration_current.ap_subnet_mask, 0, 4);
-			os_memset(configuration_current.ap_gateway, 0, 4);
+			os_memset(configuration_current_to_save.ap_ip, 0, 4);
+			os_memset(configuration_current_to_save.ap_subnet_mask, 0, 4);
+			os_memset(configuration_current_to_save.ap_gateway, 0, 4);
 		}
 		// Static.
 		else if(strtoul(ap_ip_configuration, NULL, 10) == 1){
@@ -827,68 +821,70 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 			   ((find_arg(data, "ap_static_gateway_1", ap_static_gateway_1, 4)) > 0) &&
 			   ((find_arg(data, "ap_static_gateway_2", ap_static_gateway_2, 4)) > 0) &&
 			   ((find_arg(data, "ap_static_gateway_3", ap_static_gateway_3, 4)) > 0)) {
-			   		configuration_current.ap_ip[0] = (uint8_t)strtoul(ap_static_ip_0, NULL, 10);
-			   		configuration_current.ap_ip[1] = (uint8_t)strtoul(ap_static_ip_1, NULL, 10);
-			   		configuration_current.ap_ip[2] = (uint8_t)strtoul(ap_static_ip_2, NULL, 10);
-			   		configuration_current.ap_ip[3] = (uint8_t)strtoul(ap_static_ip_3, NULL, 10);
-			   		configuration_current.ap_subnet_mask[0] = (uint8_t)strtoul(ap_static_netmask_0, NULL, 10);
-			   		configuration_current.ap_subnet_mask[1] = (uint8_t)strtoul(ap_static_netmask_1, NULL, 10);
-			   		configuration_current.ap_subnet_mask[2] = (uint8_t)strtoul(ap_static_netmask_2, NULL, 10);
-			   		configuration_current.ap_subnet_mask[3] = (uint8_t)strtoul(ap_static_netmask_3, NULL, 10);
-			   		configuration_current.ap_gateway[0] = (uint8_t)strtoul(ap_static_gateway_0, NULL, 10);
-			   		configuration_current.ap_gateway[1] = (uint8_t)strtoul(ap_static_gateway_1, NULL, 10);
-			   		configuration_current.ap_gateway[2] = (uint8_t)strtoul(ap_static_gateway_2, NULL, 10);
-			   		configuration_current.ap_gateway[3] = (uint8_t)strtoul(ap_static_gateway_3, NULL, 10);
+				configuration_current_to_save.ap_ip[0] = (uint8_t)strtoul(ap_static_ip_0, NULL, 10);
+				configuration_current_to_save.ap_ip[1] = (uint8_t)strtoul(ap_static_ip_1, NULL, 10);
+				configuration_current_to_save.ap_ip[2] = (uint8_t)strtoul(ap_static_ip_2, NULL, 10);
+				configuration_current_to_save.ap_ip[3] = (uint8_t)strtoul(ap_static_ip_3, NULL, 10);
+				configuration_current_to_save.ap_subnet_mask[0] = (uint8_t)strtoul(ap_static_netmask_0, NULL, 10);
+				configuration_current_to_save.ap_subnet_mask[1] = (uint8_t)strtoul(ap_static_netmask_1, NULL, 10);
+				configuration_current_to_save.ap_subnet_mask[2] = (uint8_t)strtoul(ap_static_netmask_2, NULL, 10);
+				configuration_current_to_save.ap_subnet_mask[3] = (uint8_t)strtoul(ap_static_netmask_3, NULL, 10);
+				configuration_current_to_save.ap_gateway[0] = (uint8_t)strtoul(ap_static_gateway_0, NULL, 10);
+				configuration_current_to_save.ap_gateway[1] = (uint8_t)strtoul(ap_static_gateway_1, NULL, 10);
+				configuration_current_to_save.ap_gateway[2] = (uint8_t)strtoul(ap_static_gateway_2, NULL, 10);
+				configuration_current_to_save.ap_gateway[3] = (uint8_t)strtoul(ap_static_gateway_3, NULL, 10);
 			}
 		}
 	}
 
 	// AP SSID.
-	if((find_arg(data, "ap_ssid", ap_ssid, CONFIGURATION_SSID_MAX_LENGTH + 1)) > 0) { // +1 for NUL-terminator
-		os_memcpy(configuration_current.ap_ssid, ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	if((find_arg(data, "ap_ssid", ap_ssid, CONFIGURATION_SSID_MAX_LENGTH + 1)) > 0) { // +1 for NULL-terminator
+		os_memcpy(configuration_current_to_save.ap_ssid, ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
 	}
 	else{
-		os_memset(configuration_current.ap_ssid, 0, CONFIGURATION_SSID_MAX_LENGTH);
+		os_memset(configuration_current_to_save.ap_ssid, 0, CONFIGURATION_SSID_MAX_LENGTH);
 	}
 
-	// AP Encryption and Password.
-	if((find_arg(data, "ap_encryption", ap_encryption, 2)) > 0){
-		configuration_current.ap_encryption = (uint8_t)strtoul(ap_encryption, NULL,  10);
+	// AP Password
+	ret = find_arg(data, "ap_password", ap_password,
+								 CONFIGURATION_PASSWORD_MAX_LENGTH + 1); // +1 for NULL-terminator
 
-		if((configuration_current.ap_encryption > 0) &&
-		   ((find_arg(data, "ap_password", ap_password,
-		              CONFIGURATION_PASSWORD_MAX_LENGTH + 1)) > 0)){ // +1 for NUL-terminator
-			os_memcpy(configuration_current.ap_password, ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
-		}
-		else{
-			configuration_current.ap_encryption = 0;
-			os_memset(configuration_current.ap_password, 0, CONFIGURATION_PASSWORD_MAX_LENGTH);
-		}
+	if(ret > 0) {
+		os_memcpy(configuration_current_to_save.ap_password, ap_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
 	}
-	else{
-		configuration_current.ap_encryption = 0;
-		os_memset(configuration_current.ap_password, 0, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	else if(ret == 0) {
+		os_memset(configuration_current_to_save.ap_password, 0, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	}
+
+	// AP Encryption.
+	ret = find_arg(data, "ap_encryption", ap_encryption, 2);
+
+	if(ret > 0) {
+		configuration_current_to_save.ap_encryption = (uint8_t)strtoul(ap_encryption, NULL,  10);
+	}
+	else if(ret == 0) {
+		configuration_current_to_save.ap_encryption = 0;
 	}
 
 	// AP Channel.
 	if((find_arg(data, "ap_channel", ap_channel, 3)) > 0) {
-		configuration_current.ap_channel = (uint8_t)strtoul(ap_channel, NULL, 10);
+		configuration_current_to_save.ap_channel = (uint8_t)strtoul(ap_channel, NULL, 10);
 	}
 
 	// Hide AP SSID.
 	if((find_arg(data, "ap_hide_ssid", ap_hide_ssid, 2)) > 0) {
 		if(strtoul(ap_hide_ssid, NULL, 10) == 0) {
-			configuration_current.ap_hidden = 0;
+			configuration_current_to_save.ap_hidden = 0;
 		}
 		else if(strtoul(ap_hide_ssid, NULL, 10) == 1){
-			configuration_current.ap_hidden = 1;
+			configuration_current_to_save.ap_hidden = 1;
 		}
 	}
 
 	// AP MAC.
 	if((find_arg(data, "ap_mac_address", ap_mac_address, 2)) > 0) {
 		if(strtoul(ap_mac_address, NULL, 10) == 0){
-			os_memset(configuration_current.ap_mac_address, 0, 6);
+			os_memset(configuration_current_to_save.ap_mac_address, 0, 6);
 		}
 		else if(strtoul(ap_mac_address, NULL, 10) == 1){
 			if(((find_arg(data, "ap_mac_address_0", ap_mac_address_0, 3)) > 0) &&
@@ -897,12 +893,12 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 			   ((find_arg(data, "ap_mac_address_3", ap_mac_address_3, 3)) > 0) &&
 			   ((find_arg(data, "ap_mac_address_4", ap_mac_address_4, 3)) > 0) &&
 			   ((find_arg(data, "ap_mac_address_5", ap_mac_address_5, 3)) > 0)) {
-					configuration_current.ap_mac_address[0] = (uint8_t)strtoul(ap_mac_address_0, NULL, 16);
-					configuration_current.ap_mac_address[1] = (uint8_t)strtoul(ap_mac_address_1, NULL, 16);
-					configuration_current.ap_mac_address[2] = (uint8_t)strtoul(ap_mac_address_2, NULL, 16);
-					configuration_current.ap_mac_address[3] = (uint8_t)strtoul(ap_mac_address_3, NULL, 16);
-					configuration_current.ap_mac_address[4] = (uint8_t)strtoul(ap_mac_address_4, NULL, 16);
-					configuration_current.ap_mac_address[5] = (uint8_t)strtoul(ap_mac_address_5, NULL, 16);
+					configuration_current_to_save.ap_mac_address[0] = (uint8_t)strtoul(ap_mac_address_0, NULL, 16);
+					configuration_current_to_save.ap_mac_address[1] = (uint8_t)strtoul(ap_mac_address_1, NULL, 16);
+					configuration_current_to_save.ap_mac_address[2] = (uint8_t)strtoul(ap_mac_address_2, NULL, 16);
+					configuration_current_to_save.ap_mac_address[3] = (uint8_t)strtoul(ap_mac_address_3, NULL, 16);
+					configuration_current_to_save.ap_mac_address[4] = (uint8_t)strtoul(ap_mac_address_4, NULL, 16);
+					configuration_current_to_save.ap_mac_address[5] = (uint8_t)strtoul(ap_mac_address_5, NULL, 16);
 			}
 		}
 	}
@@ -912,7 +908,7 @@ int ICACHE_FLASH_ATTR do_update_settings_ap(char *data) {
 
 int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 	// Client fields.
-	char client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
+	char client_hostname[CONFIGURATION_HOSTNAME_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
 	char client_ip_configuration[2];
 	char client_static_ip_0[4];
 	char client_static_ip_1[4];
@@ -926,8 +922,8 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 	char client_static_gateway_1[4];
 	char client_static_gateway_2[4];
 	char client_static_gateway_3[4];
-	char client_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
-	char client_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
+	char client_ssid[CONFIGURATION_SSID_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
+	char client_password[CONFIGURATION_PASSWORD_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
 	char client_connect_to_ap_with_specific_bssid[2];
 	char client_bssid_0[3];
 	char client_bssid_1[3];
@@ -942,23 +938,24 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 	char client_mac_address_3[3];
 	char client_mac_address_4[3];
 	char client_mac_address_5[3];
+	int ret = 0;
 
 	// Hostname in client mode.
 	if((find_arg(data, "client_hostname", client_hostname,
-	             CONFIGURATION_HOSTNAME_MAX_LENGTH + 1)) > 0) { // +1 for NUL-terminator
-		os_memcpy(configuration_current.client_hostname, client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
+	             CONFIGURATION_HOSTNAME_MAX_LENGTH + 1)) > 0) { // +1 for NULL-terminator
+		os_memcpy(configuration_current_to_save.client_hostname, client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
 	}
 	else{
-		os_memset(configuration_current.client_hostname, 0, CONFIGURATION_HOSTNAME_MAX_LENGTH);
+		os_memset(configuration_current_to_save.client_hostname, 0, CONFIGURATION_HOSTNAME_MAX_LENGTH);
 	}
 
 	// Client mode IP configuration.
 	if((find_arg(data, "client_ip_configuration", client_ip_configuration, 2)) > 0) {
 		// DHCP.
 		if(strtoul(client_ip_configuration, NULL, 10) == 0) {
-			os_memset(configuration_current.client_ip, 0,  4);
-			os_memset(configuration_current.client_subnet_mask, 0, 4);
-			os_memset(configuration_current.client_gateway, 0, 4);
+			os_memset(configuration_current_to_save.client_ip, 0,  4);
+			os_memset(configuration_current_to_save.client_subnet_mask, 0, 4);
+			os_memset(configuration_current_to_save.client_gateway, 0, 4);
 		}
 		// Static.
 		else if(strtoul(client_ip_configuration, NULL, 10) == 1) {
@@ -974,45 +971,47 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 			   ((find_arg(data, "client_static_gateway_1", client_static_gateway_1, 4)) > 0) &&
 			   ((find_arg(data, "client_static_gateway_2", client_static_gateway_2, 4)) > 0) &&
 			   ((find_arg(data, "client_static_gateway_3", client_static_gateway_3, 4)) > 0)) {
-			   		configuration_current.client_ip[0] = (uint8_t)strtoul(client_static_ip_0, NULL, 10);
-			   		configuration_current.client_ip[1] = (uint8_t)strtoul(client_static_ip_1, NULL, 10);
-			   		configuration_current.client_ip[2] = (uint8_t)strtoul(client_static_ip_2, NULL, 10);
-			   		configuration_current.client_ip[3] = (uint8_t)strtoul(client_static_ip_3, NULL, 10);
-			   		configuration_current.client_subnet_mask[0] = (uint8_t)strtoul(client_static_netmask_0, NULL, 10);
-			   		configuration_current.client_subnet_mask[1] = (uint8_t)strtoul(client_static_netmask_1, NULL, 10);
-			   		configuration_current.client_subnet_mask[2] = (uint8_t)strtoul(client_static_netmask_2, NULL, 10);
-			   		configuration_current.client_subnet_mask[3] = (uint8_t)strtoul(client_static_netmask_3, NULL, 10);
-			   		configuration_current.client_gateway[0] = (uint8_t)strtoul(client_static_gateway_0, NULL, 10);
-			   		configuration_current.client_gateway[1] = (uint8_t)strtoul(client_static_gateway_1, NULL, 10);
-			   		configuration_current.client_gateway[2] = (uint8_t)strtoul(client_static_gateway_2, NULL, 10);
-			   		configuration_current.client_gateway[3] = (uint8_t)strtoul(client_static_gateway_3, NULL, 10);
+				configuration_current_to_save.client_ip[0] = (uint8_t)strtoul(client_static_ip_0, NULL, 10);
+				configuration_current_to_save.client_ip[1] = (uint8_t)strtoul(client_static_ip_1, NULL, 10);
+				configuration_current_to_save.client_ip[2] = (uint8_t)strtoul(client_static_ip_2, NULL, 10);
+				configuration_current_to_save.client_ip[3] = (uint8_t)strtoul(client_static_ip_3, NULL, 10);
+				configuration_current_to_save.client_subnet_mask[0] = (uint8_t)strtoul(client_static_netmask_0, NULL, 10);
+				configuration_current_to_save.client_subnet_mask[1] = (uint8_t)strtoul(client_static_netmask_1, NULL, 10);
+				configuration_current_to_save.client_subnet_mask[2] = (uint8_t)strtoul(client_static_netmask_2, NULL, 10);
+				configuration_current_to_save.client_subnet_mask[3] = (uint8_t)strtoul(client_static_netmask_3, NULL, 10);
+				configuration_current_to_save.client_gateway[0] = (uint8_t)strtoul(client_static_gateway_0, NULL, 10);
+				configuration_current_to_save.client_gateway[1] = (uint8_t)strtoul(client_static_gateway_1, NULL, 10);
+				configuration_current_to_save.client_gateway[2] = (uint8_t)strtoul(client_static_gateway_2, NULL, 10);
+				configuration_current_to_save.client_gateway[3] = (uint8_t)strtoul(client_static_gateway_3, NULL, 10);
 			}
 		}
 	}
 
 	// SSID to connect to in client mode.
 	if((find_arg(data, "client_ssid", client_ssid,
-	             CONFIGURATION_SSID_MAX_LENGTH + 1)) > 0) { // +1 for NUL-terminator
-		os_memcpy(configuration_current.client_ssid, client_ssid, CONFIGURATION_SSID_MAX_LENGTH);
+	             CONFIGURATION_SSID_MAX_LENGTH + 1)) > 0) { // +1 for NULL-terminator
+		os_memcpy(configuration_current_to_save.client_ssid, client_ssid, CONFIGURATION_SSID_MAX_LENGTH);
 	}
 	else {
-		os_memset(configuration_current.client_ssid, 0, CONFIGURATION_SSID_MAX_LENGTH);
+		os_memset(configuration_current_to_save.client_ssid, 0, CONFIGURATION_SSID_MAX_LENGTH);
 	}
 
+	ret = find_arg(data, "client_password", client_password,
+							   CONFIGURATION_PASSWORD_MAX_LENGTH + 1); // +1 for NULL-terminator
+
 	// Encryption in client mode.
-	if((find_arg(data, "client_password", client_password,
-	             CONFIGURATION_PASSWORD_MAX_LENGTH + 1)) > 0) { // +1 for NUL-terminator
-		os_memcpy(configuration_current.client_password, client_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	if(ret > 0) {
+		os_memcpy(configuration_current_to_save.client_password, client_password, CONFIGURATION_PASSWORD_MAX_LENGTH);
 	}
-	else{
-		os_memset(configuration_current.client_password, 0, CONFIGURATION_PASSWORD_MAX_LENGTH);
+	else if(ret == 0) {
+		os_memset(configuration_current_to_save.client_password, 0, CONFIGURATION_PASSWORD_MAX_LENGTH);
 	}
 
 	// Connect to specific BSSID.
 	if((find_arg(data, "client_connect_to_ap_with_specific_bssid",
 	             client_connect_to_ap_with_specific_bssid, 2)) > 0) {
 		if(strtoul(client_connect_to_ap_with_specific_bssid, NULL, 10) == 0) {
-			os_memset(configuration_current.client_bssid, 0, 6);
+			os_memset(configuration_current_to_save.client_bssid, 0, 6);
 		}
 		else if(strtoul(client_connect_to_ap_with_specific_bssid, NULL, 10) == 1) {
 			if(((find_arg(data, "client_bssid_0", client_bssid_0, 3)) > 0) &&
@@ -1021,12 +1020,12 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 			   ((find_arg(data, "client_bssid_3", client_bssid_3, 3)) > 0) &&
 			   ((find_arg(data, "client_bssid_4", client_bssid_4, 3)) > 0) &&
 			   ((find_arg(data, "client_bssid_5", client_bssid_5, 3)) > 0)) {
-					configuration_current.client_bssid[0] = (uint8_t)strtoul(client_bssid_0, NULL, 16);
-					configuration_current.client_bssid[1] = (uint8_t)strtoul(client_bssid_1, NULL, 16);
-					configuration_current.client_bssid[2] = (uint8_t)strtoul(client_bssid_2, NULL, 16);
-					configuration_current.client_bssid[3] = (uint8_t)strtoul(client_bssid_3, NULL, 16);
-					configuration_current.client_bssid[4] = (uint8_t)strtoul(client_bssid_4, NULL, 16);
-					configuration_current.client_bssid[5] = (uint8_t)strtoul(client_bssid_5, NULL, 16);
+					configuration_current_to_save.client_bssid[0] = (uint8_t)strtoul(client_bssid_0, NULL, 16);
+					configuration_current_to_save.client_bssid[1] = (uint8_t)strtoul(client_bssid_1, NULL, 16);
+					configuration_current_to_save.client_bssid[2] = (uint8_t)strtoul(client_bssid_2, NULL, 16);
+					configuration_current_to_save.client_bssid[3] = (uint8_t)strtoul(client_bssid_3, NULL, 16);
+					configuration_current_to_save.client_bssid[4] = (uint8_t)strtoul(client_bssid_4, NULL, 16);
+					configuration_current_to_save.client_bssid[5] = (uint8_t)strtoul(client_bssid_5, NULL, 16);
 			}
 		}
 	}
@@ -1034,7 +1033,7 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 	// Custom MAC address to be used in client mode.
 	if((find_arg(data, "client_mac_address", client_mac_address, 2)) > 0) {
 		if(strtoul(client_mac_address, NULL, 10) == 0) {
-			os_memset(configuration_current.client_mac_address, 0, 6);
+			os_memset(configuration_current_to_save.client_mac_address, 0, 6);
 		}
 		else if(strtoul(client_mac_address, NULL, 10) == 1) {
 			if(((find_arg(data, "client_mac_address_0", client_mac_address_0, 3)) > 0) &&
@@ -1043,12 +1042,12 @@ int ICACHE_FLASH_ATTR do_update_settings_client(char *data) {
 			   ((find_arg(data, "client_mac_address_3", client_mac_address_3, 3)) > 0) &&
 			   ((find_arg(data, "client_mac_address_4", client_mac_address_4, 3)) > 0) &&
 			   ((find_arg(data, "client_mac_address_5", client_mac_address_5, 3)) > 0)) {
-					configuration_current.client_mac_address[0] = (uint8_t)strtoul(client_mac_address_0, NULL, 16);
-					configuration_current.client_mac_address[1] = (uint8_t)strtoul(client_mac_address_1, NULL, 16);
-					configuration_current.client_mac_address[2] = (uint8_t)strtoul(client_mac_address_2, NULL, 16);
-					configuration_current.client_mac_address[3] = (uint8_t)strtoul(client_mac_address_3, NULL, 16);
-					configuration_current.client_mac_address[4] = (uint8_t)strtoul(client_mac_address_4, NULL, 16);
-					configuration_current.client_mac_address[5] = (uint8_t)strtoul(client_mac_address_5, NULL, 16);
+					configuration_current_to_save.client_mac_address[0] = (uint8_t)strtoul(client_mac_address_0, NULL, 16);
+					configuration_current_to_save.client_mac_address[1] = (uint8_t)strtoul(client_mac_address_1, NULL, 16);
+					configuration_current_to_save.client_mac_address[2] = (uint8_t)strtoul(client_mac_address_2, NULL, 16);
+					configuration_current_to_save.client_mac_address[3] = (uint8_t)strtoul(client_mac_address_3, NULL, 16);
+					configuration_current_to_save.client_mac_address[4] = (uint8_t)strtoul(client_mac_address_4, NULL, 16);
+					configuration_current_to_save.client_mac_address[5] = (uint8_t)strtoul(client_mac_address_5, NULL, 16);
 			}
 		}
 	}
@@ -1067,7 +1066,7 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 	char general_website_port[6];
 	char general_phy_mode[2];
 	char general_use_authentication[2];
-	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH + 1] = {0}; // +1 for NUL-terminator
+	char general_authentication_secret[CONFIGURATION_SECRET_MAX_LENGTH + 1] = {0}; // +1 for NULL-terminator
 	char general_mode[2];
 
 	// Partial arrival processing.
@@ -1091,31 +1090,31 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 
 			// General settings.
 			if((find_arg(data, "general_port", general_port, 6)) > 0) {
-				configuration_current.general_port = (uint16_t)strtoul(general_port, NULL, 10);
+				configuration_current_to_save.general_port = (uint16_t)strtoul(general_port, NULL, 10);
 			}
 			if((find_arg(data, "general_websocket_port", general_websocket_port, 6)) > 0) {
-				configuration_current.general_websocket_port = (uint16_t)strtoul(general_websocket_port, NULL, 10);
+				configuration_current_to_save.general_websocket_port = (uint16_t)strtoul(general_websocket_port, NULL, 10);
 			}
 			if((find_arg(data, "general_website_port", general_website_port, 6)) > 0) {
-				configuration_current.general_website_port = (uint16_t)strtoul(general_website_port, NULL, 10);
+				configuration_current_to_save.general_website_port = (uint16_t)strtoul(general_website_port, NULL, 10);
 			}
 			if((find_arg(data, "general_phy_mode", general_phy_mode, 2)) > 0) {
-				configuration_current.general_phy_mode = (uint8_t)strtoul(general_phy_mode, NULL, 10);
+				configuration_current_to_save.general_phy_mode = (uint8_t)strtoul(general_phy_mode, NULL, 10);
 			}
 
 			if((find_arg(data, "general_use_authentication", general_use_authentication, 2)) > 0) {
 				if(((strtoul(general_use_authentication, NULL, 10)) == 1) &&
 				   ((find_arg(data, "general_authentication_secret", general_authentication_secret,
-				              CONFIGURATION_SECRET_MAX_LENGTH + 1)) > 0)) { // +1 for NUL-terminator
-					os_memcpy(configuration_current.general_authentication_secret,
+				              CONFIGURATION_SECRET_MAX_LENGTH + 1)) > 0)) { // +1 for NULL-terminator
+					os_memcpy(configuration_current_to_save.general_authentication_secret,
 					          general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH);
 				}
 				else{
-					os_memset(configuration_current.general_authentication_secret, 0, CONFIGURATION_SECRET_MAX_LENGTH);
+					os_memset(configuration_current_to_save.general_authentication_secret, 0, CONFIGURATION_SECRET_MAX_LENGTH);
 				}
 			}
 			else{
-				os_memset(configuration_current.general_authentication_secret, 0, CONFIGURATION_SECRET_MAX_LENGTH);
+				os_memset(configuration_current_to_save.general_authentication_secret, 0, CONFIGURATION_SECRET_MAX_LENGTH);
 			}
 
 			// Client and AP mode settings based on operating mode.
@@ -1124,24 +1123,24 @@ int ICACHE_FLASH_ATTR cgi_update_settings(HttpdConnData *connection_data) {
 
 				// Only client mode.
 				if(numeric_general_mode == 0) {
-					configuration_current.ap_enable = 0;
-					configuration_current.client_enable = 1;
+					configuration_current_to_save.ap_enable = 0;
+					configuration_current_to_save.client_enable = 1;
 
 					do_update_settings_client(data);
 				}
 
 				// Only AP mode.
 				else if(numeric_general_mode == 1) {
-					configuration_current.ap_enable = 1;
-					configuration_current.client_enable = 0;
+					configuration_current_to_save.ap_enable = 1;
+					configuration_current_to_save.client_enable = 0;
 
 					do_update_settings_ap(data);
 				}
 
 				// Client and AP mode.
 				else if(numeric_general_mode == 2) {
-					configuration_current.ap_enable = 1;
-					configuration_current.client_enable = 1;
+					configuration_current_to_save.ap_enable = 1;
+					configuration_current_to_save.client_enable = 1;
 
 					do_update_settings_ap(data);
 					do_update_settings_client(data);
@@ -1219,8 +1218,8 @@ int ICACHE_FLASH_ATTR do_check_secret(uint8_t slot, uint8_t *bytes_rn_client,
 
 		os_memcpy(&data[4], bytes_rn_client, 4);
 
-		if(hmac_sha1(configuration_current.general_authentication_secret,
-		             strnlen(configuration_current.general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH),
+		if(hmac_sha1(configuration_current_to_save.general_authentication_secret,
+		             strnlen(configuration_current_to_save.general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH),
 		             data, 8, bytes_sha1_hmac_server) != 0){
 			return -1;
 		}

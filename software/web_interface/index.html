@@ -699,17 +699,22 @@
                     id="client_encryption_password_group">
                         <label class="control-label col-sm-2"
                         for="general_password">Password:</label>
+                        <div class="checkbox col-sm-2">
+                            <label><input id="client_password_change"
+                              type="checkbox"> Change Password</label>
+                        </div>
+
                         <div class="col-sm-5">
-                            <input class="form-control" id="client_password"
-                            name="client_password"
+                            <input class="form-control" id="_client_password"
+                            name="_client_password"
                             placeholder="Password for connecting to the SSID"
-                            type="password" maxlength="64">
+                            type="password" maxlength="64" disabled>
                             <p class="help-block hidden" id="hb_client_password_ascii">
                                 Only ASCII characters are allowed for password
                             </p>
                         </div>
 
-                        <div class="checkbox col-sm-5">
+                        <div class="checkbox col-sm-3">
                             <label><input id="client_password_show_characters"
                               type="checkbox"> Show Characters</label>
                         </div>
@@ -980,17 +985,22 @@
                     id="ap_encryption_password_elements">
                         <label class="control-label col-sm-2"
                         for="ap_password">Password:</label>
+                        <div class="checkbox col-sm-2">
+                            <label><input id="ap_password_change"
+                              type="checkbox"> Change Password</label>
+                        </div>
+
                         <div class="col-sm-5">
-                            <input class="form-control" id="ap_password"
-                            name="ap_password"
+                            <input class="form-control filter_serialize" id="_ap_password"
+                            name="_ap_password"
                             placeholder="Password for connecting to the access point"
-                            type="password" maxlength="64">
+                            type="password" maxlength="64" disabled>
                             <p class="help-block hidden" id="hb_ap_password_ascii">
                                 Only ASCII characters are allowed for access point SSID
                             </p>
                         </div>
 
-                        <div class="checkbox col-sm-5">
+                        <div class="checkbox col-sm-3">
                             <label><input id="ap_password_show_characters" type=
                             "checkbox"> Show Characters</label>
                         </div>
@@ -1319,16 +1329,7 @@
             }
 
             $('#client_ssid').val(settings.data.client_ssid);
-
-            $('#client_password').val(settings.data.client_password);
-
-            if (settings.data.client_password === '') {
-                if ($('#client_encryption').val() !== '0')
-                    $('#client_encryption').val(0).change();
-            } else {
-                if ($('#client_encryption').val() !== '1')
-                    $('#client_encryption').val(1).change();
-            }
+            $('#client_encryption').val(1).change();
 
             $('#client_bssid_0').val(settings.data.client_bssid[0].toString(16));
             $('#client_bssid_1').val(settings.data.client_bssid[1].toString(16));
@@ -1397,16 +1398,11 @@
 
             $('#ap_ssid').val(settings.data.ap_ssid);
 
-            $('#ap_password').val(settings.data.ap_password)
-
-            if (settings.data.ap_password === '') {
-                $('#ap_encryption').val(0).change();
-            }
-            else if(settings.data.ap_encryption == 1){
-              $('#ap_encryption').val(4).change();
+            if(settings.data.ap_encryption == 1){
+                $('#ap_encryption').val(4).change();
             }
             else{
-              $('#ap_encryption').val(settings.data.ap_encryption).change();
+                $('#ap_encryption').val(settings.data.ap_encryption).change();
             }
 
             $('#ap_channel').val(settings.data.ap_channel);
@@ -1576,15 +1572,14 @@
                 $('#hb_client_ssid_ascii').removeClass('hidden');
             }
 
-            var client_encryption = $('#client_encryption').val();
-            var client_password = $('#client_password').val();
+            if ($('#client_password_change').prop('checked')) {
+              var client_password = $('#_client_password').val();
 
-            if (client_encryption > '0') {
-                if (!isASCII(client_password)) {
-                    validation_ok = false;
-                    $('#client_encryption_password_group').addClass('has-error');
-                    $('#hb_client_password_ascii').removeClass('hidden');
-                }
+              if (!isASCII(client_password)) {
+                validation_ok = false;
+                $('#client_encryption_password_group').addClass('has-error');
+                $('#hb_client_password_ascii').removeClass('hidden');
+              }
             }
 
             var client_mac_address_0 = $('#client_mac_address_0').val();
@@ -1605,15 +1600,14 @@
                 $('#hb_ap_ssid_ascii').removeClass('hidden');
             }
 
-            var ap_encryption = $('#ap_encryption').val();
-            var ap_password = $('#ap_password').val();
+            if ($("#ap_password_change").prop('checked')) {
+              var ap_password = $('#_ap_password').val();
 
-            if (ap_encryption > '0') {
-                if (!isASCII(ap_password)) {
-                    validation_ok = false;
-                    $('#ap_encryption_password_elements').addClass('has-error');
-                    $('#hb_ap_password_ascii').removeClass('hidden');
-                }
+              if (!isASCII(ap_password)) {
+                  validation_ok = false;
+                  $('#ap_encryption_password_elements').addClass('has-error');
+                  $('#hb_ap_password_ascii').removeClass('hidden');
+              }
             }
 
             var ap_channel = parseInt($('#ap_channel').val());
@@ -1665,6 +1659,24 @@
                 $('#main_toolbar_about').removeClass('active');
             });
             $('input[type="checkbox"]').change(function(e) {
+                if ($(this).attr('id') === 'client_password_change') {
+                  if ($(this).is(':checked')) {
+                      $('#_client_password').prop('disabled', false);
+                      $('#client_password_show_characters').removeAttr('disabled');
+                  } else {
+                      $('#_client_password').prop('disabled', true);
+                      $('#client_password_show_characters').attr('disabled', true);
+                  }
+                }
+                if ($(this).attr('id') === 'ap_password_change') {
+                  if ($(this).is(':checked')) {
+                      $('#_ap_password').prop('disabled', false);
+                      $('#ap_password_show_characters').removeAttr('disabled');
+                  } else {
+                      $('#_ap_password').prop('disabled', true);
+                      $('#ap_password_show_characters').attr('disabled', true);
+                  }
+                }
                 if ($(this).attr('id') === 'general_disable_web_interface') {
                     if ($(this).is(':checked')) {
                         $('#general_website_port').prop('disabled', true);
@@ -1701,16 +1713,16 @@
                 }
                 if ($(this).attr("id") === "client_password_show_characters") {
                     if (this.checked) {
-                        $('#client_password').attr("type", "text");
+                        $('#_client_password').attr("type", "text");
                     } else {
-                        $('#client_password').attr("type", "password");
+                        $('#_client_password').attr("type", "password");
                     }
                 }
                 if ($(this).attr("id") === "ap_password_show_characters") {
                     if (this.checked) {
-                        $('#ap_password').attr("type", "text");
+                        $('#_ap_password').attr("type", "text");
                     } else {
-                        $('#ap_password').attr("type", "password");
+                        $('#_ap_password').attr("type", "password");
                     }
                 }
 
@@ -1883,6 +1895,64 @@
 
             $('#button_modal_warning_save_reset_ok').click(function(e) {
                 var serialized_data = $("#form_settings").serialize();
+
+                if ($('#client_password_change').is(':checked')) {
+                    var _serialized_data = '';
+                    var serialized_data_arr = serialized_data.split('&');
+
+                    for(var i = 0; i < serialized_data_arr.length; i++) {
+                      if(serialized_data_arr[i].startsWith('_client_password')) {
+                        serialized_data_arr[i] = serialized_data_arr[i].replace('_client_password', 'client_password');
+                        break;
+                      }
+                    }
+
+                    _serialized_data = serialized_data_arr.join('&');
+                    serialized_data = _serialized_data;
+                }
+                else {
+                    var _serialized_data = '';
+                    var serialized_data_arr = serialized_data.split('&');
+
+                    for(var i = 0; i < serialized_data_arr.length; i++) {
+                      if(serialized_data_arr[i].startsWith('_client_password')) {
+                        serialized_data_arr[i].splice(i, 1);
+                        break;
+                      }
+                    }
+
+                    _serialized_data = serialized_data_arr.join('&');
+                    serialized_data = _serialized_data;
+                }
+
+                if ($('#ap_password_change').is(':checked')) {
+                    var _serialized_data = '';
+                    var serialized_data_arr = serialized_data.split('&');
+
+                    for(var i = 0; i < serialized_data_arr.length; i++) {
+                      if(serialized_data_arr[i].startsWith('_ap_password')) {
+                        serialized_data_arr[i] = serialized_data_arr[i].replace('_ap_password', 'ap_password');
+                        break;
+                      }
+                    }
+
+                    _serialized_data = serialized_data_arr.join('&');
+                    serialized_data = _serialized_data;
+                }
+                else {
+                  var _serialized_data = '';
+                  var serialized_data_arr = serialized_data.split('&');
+
+                  for(var i = 0; i < serialized_data_arr.length; i++) {
+                    if(serialized_data_arr[i].startsWith('_ap_password')) {
+                      serialized_data_arr[i].splice(i, 1);
+                      break;
+                    }
+                  }
+
+                  _serialized_data = serialized_data_arr.join('&');
+                  serialized_data = _serialized_data;
+                }
 
                 if ($("#general_disable_web_interface").prop('checked')) {
                     serialized_data += '&general_website_port=1';

@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:tinkerforge
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -10,7 +11,6 @@ LIBS:cmos4000
 LIBS:adc-dac
 LIBS:memory
 LIBS:xilinx
-LIBS:special
 LIBS:microcontrollers
 LIBS:dsp
 LIBS:microchip
@@ -29,8 +29,6 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
-LIBS:tinkerforge
-LIBS:wifi-extension-cache
 EELAYER 25 0
 EELAYER END
 $Descr A4 11693 8268
@@ -345,7 +343,7 @@ U 1 1 5005817A
 P 1250 5000
 F 0 "R3" V 1330 5000 50  0000 C CNN
 F 1 "10k" V 1250 5000 50  0000 C CNN
-F 2 "kicad-libraries:0603E" H 1250 5000 60  0001 C CNN
+F 2 "kicad-libraries:R0603E" H 1250 5000 60  0001 C CNN
 F 3 "" H 1250 5000 60  0001 C CNN
 	1    1250 5000
 	1    0    0    -1  
@@ -480,7 +478,7 @@ U 1 1 4CC046A4
 P 6250 2250
 F 0 "R4" V 6330 2250 50  0000 C CNN
 F 1 "1k" V 6250 2250 50  0000 C CNN
-F 2 "kicad-libraries:0603E" H 6250 2250 60  0001 C CNN
+F 2 "kicad-libraries:R0603E" H 6250 2250 60  0001 C CNN
 F 3 "" H 6250 2250 60  0001 C CNN
 	1    6250 2250
 	1    0    0    -1  

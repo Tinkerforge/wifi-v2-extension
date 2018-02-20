@@ -7,3 +7,4 @@ toolchain/
 combined.js
 combined.css
 software/web_interface/build
+hardware/kicad-libraries

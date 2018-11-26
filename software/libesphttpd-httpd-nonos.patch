@@ -1,6 +1,6 @@
 --- ./core/httpd-nonos.c
 +++ ./core/httpd-nonos.c
-@@ -9,10 +9,15 @@ ESP8266 web server - platform-dependent routines, nonos version
+@@ -9,10 +9,15 @@
  
  #ifndef FREERTOS
  
@@ -16,7 +16,7 @@
  //Set/clear global httpd lock.
  //Not needed on nonoos.
  void ICACHE_FLASH_ATTR httpdPlatLock() {
-@@ -37,11 +42,13 @@ static void ICACHE_FLASH_ATTR platDisconCb(void *arg) {
+@@ -37,11 +42,13 @@
  
  static void ICACHE_FLASH_ATTR platRecvCb(void *arg, char *data, unsigned short len) {
  	ConnTypePtr conn=arg;
@@ -29,3 +29,11 @@
 +	packet_counter(conn, PACKET_COUNT_TX);
  	httpdSentCb(conn, (char*)conn->proto.tcp->remote_ip, conn->proto.tcp->remote_port);
  }
+ 
+@@ -85,4 +92,4 @@
+ }
+ 
+ 
+-#endif
+\ No newline at end of file
++#endif

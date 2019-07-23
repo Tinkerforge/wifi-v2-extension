@@ -34,6 +34,11 @@
  * Also note that when debugging of any level is enabled then the extension
  * will not use the configuration saved in the EEPROM but will use the default
  * configuration. Debugging is meant solely for development purpose.
+ *
+ * The IO2 pin of the ESP8266 module becomes UART1 TX and cannot be used as SDA
+ * for the EEPROM any more. Use a Debug Brick to access the IO2 pin. On the Debug
+ * Brick JTAG connector pin 5 is UART1 TX and pin 6 is GND. The baudrate is
+ * 1000000 instead of the more common 115200.
  */
 #define LOGGING_LEVEL LOGGING_NONE
 

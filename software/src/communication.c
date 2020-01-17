@@ -393,7 +393,16 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
 
 	gw2mrpr.header         = data->header;
 	gw2mrpr.header.length  = sizeof(GetWifi2MeshRouterPasswordReturn);
+
+	// brickv deduces encryption type from the length of the password. an empty
+	// password maps to "Open (No Encryption)". a non-empty password maps to
+	// "WPA/WPA2 PSK". therefore, always returning an empty string here would break
+	// this logic. instead return a fake password if there is a real password.
 	os_memset(gw2mrpr.mesh_router_password, '\0', CONFIGURATION_PASSWORD_MAX_LENGTH);
+
+	if (configuration_current_to_save.mesh_router_password[0] != '\0') {
+		strncpy(gw2mrpr.mesh_router_password, "this password is fake", CONFIGURATION_PASSWORD_MAX_LENGTH);
+	}
 
 	com_send(&gw2mrpr, sizeof(GetWifi2MeshRouterPasswordReturn), cid);
 }
@@ -580,7 +589,16 @@ void ICACHE_FLASH_ATTR get_wifi2_client_password(const int8_t cid, const GetWifi
 
 	gw2cpr.header        = data->header;
 	gw2cpr.header.length = sizeof(GetWifi2ClientPasswordReturn);
+
+	// brickv deduces encryption type from the length of the password. an empty
+	// password maps to "Open (No Encryption)". a non-empty password maps to
+	// "WPA/WPA2 PSK". therefore, always returning an empty string here would break
+	// this logic. instead return a fake password if there is a real password.
 	os_memset(gw2cpr.password, '\0', CONFIGURATION_PASSWORD_MAX_LENGTH);
+
+	if (configuration_current_to_save.client_password[0] != '\0') {
+		strncpy(gw2cpr.password, "this password is fake", CONFIGURATION_PASSWORD_MAX_LENGTH);
+	}
 
 	com_send(&gw2cpr, sizeof(GetWifi2ClientPasswordReturn), cid);
 }

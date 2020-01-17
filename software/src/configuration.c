@@ -121,15 +121,17 @@ void ICACHE_FLASH_ATTR configuration_use_default(void) {
 }
 
 void ICACHE_FLASH_ATTR configuration_load_from_eeprom(void) {
-	if(!((eeprom_read(CONFIGURATION_ADDRESS, (uint8_t*)&configuration_current, sizeof(Configuration))) &&
-	     (configuration_current.conf_version == CONFIGURATION_EXPECTED_VERSION) &&
-	     (configuration_check_checksum()))) {
-
-		// In case of any kind of error we use the default configuration
-		// and save it to the eeprom for the next restart.
-		configuration_use_default();
-		configuration_save_to_eeprom();
+	for(uint8_t i = 0; i < 3; ++i) {
+		if(eeprom_read(CONFIGURATION_ADDRESS, (uint8_t*)&configuration_current, sizeof(Configuration)) &&
+		   configuration_current.conf_version == CONFIGURATION_EXPECTED_VERSION &&
+		   configuration_check_checksum()) {
+			return; // Success
+		}
 	}
+
+	// In case of any kind of error we use the default configuration
+	// but don't save it to the EEPROM for the next restart.
+	configuration_use_default();
 }
 
 uint8_t ICACHE_FLASH_ATTR configuration_save_to_eeprom(void) {

@@ -390,9 +390,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
 
 	gw2mrpr.header         = data->header;
 	gw2mrpr.header.length  = sizeof(GetWifi2MeshRouterPasswordReturn);
-
-	os_memcpy(gw2mrpr.mesh_router_password, configuration_current_to_save.mesh_router_password,
-		sizeof(configuration_current_to_save.mesh_router_password));
+	os_memset(gw2mrpr.mesh_router_password, '\0', CONFIGURATION_PASSWORD_MAX_LENGTH);
 
 	com_send(&gw2mrpr, sizeof(GetWifi2MeshRouterPasswordReturn), cid);
 }

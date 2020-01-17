@@ -1,6 +1,7 @@
 /* WIFI Extension 2.0
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
  * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
+ * Copyright (C) 2020 Matthias Bolte <matthias@tinkerforge.com>
  *
  * configuration.c: WIFI Extension configuration handling
  *
@@ -58,18 +59,18 @@ const Configuration configuration_default = {
 
 	// Client configuration
 	.client_enable = 1,
-	.client_ssid = "Tinkerforge WLAN",
+	.client_ssid = "Your Access Point",
 	.client_ip = {0, 0, 0, 0},
 	.client_subnet_mask = {0, 0, 0, 0},
 	.client_gateway = {0, 0, 0, 0},
 	.client_mac_address = {0, 0, 0, 0, 0, 0},
 	.client_bssid = {0, 0, 0, 0, 0, 0},
 	.client_hostname = "wifi-extension-v2",
-	.client_password = "25842149320894763607",
+	.client_password = "password",
 
 	// AP configuration
 	.ap_enable = 1,
-	.ap_ssid = "Wifi Extension 2.0 Access Point",
+	.ap_ssid = "WIFI Extension 2.0 Access Point",
 	.ap_ip = {0, 0, 0, 0},
 	.ap_subnet_mask = {0, 0, 0, 0},
 	.ap_gateway = {0, 0, 0, 0},
@@ -82,8 +83,8 @@ const Configuration configuration_default = {
 
 	// Mesh configuration
 	.mesh_enable = 0,
-	.mesh_router_ssid = "Tinkerforge WLAN",
-	.mesh_router_password = "25842149320894763607",
+	.mesh_router_ssid = "Your Access Point",
+	.mesh_router_password = "password",
 	.mesh_root_ip = {0, 0, 0, 0},
 	.mesh_root_subnet_mask = {0, 0, 0, 0},
 	.mesh_root_gateway = {0, 0, 0, 0},
@@ -92,7 +93,7 @@ const Configuration configuration_default = {
 	.mesh_password = "password",
 	.mesh_group_id = {0x1A, 0xFE, 0x34, 0x00, 0x00, 0x00},
 	.mesh_gateway_hostname = "\0", // Currently unused.
-	.mesh_gateway_ip = {192, 168, 178, 67}, // IP of the brickd to connect the mesh network to.
+	.mesh_gateway_ip = {0, 0, 0, 0}, // IP of the brickd to connect the mesh network to.
 	.mesh_gateway_port = 4240, // Port of the brickd to connect the mesh network to.
 };
 

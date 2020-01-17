@@ -21,6 +21,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#define _GNU_SOURCE // for strnlen
+#undef __STRICT_ANSI__ // for strnlen
+
 #include "communication.h"
 #include "tfp_connection.h"
 #include "configuration.h"

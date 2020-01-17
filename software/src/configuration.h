@@ -1,6 +1,7 @@
 /* WIFI Extension 2.0
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
  * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
+ * Copyright (C) 2020 Matthias Bolte <matthias@tinkerforge.com>
  *
  * configuration.h: WIFI Extension configuration handling
  *
@@ -35,6 +36,7 @@
 #define CONFIGURATION_HOSTNAME_MAX_LENGTH 32
 #define CONFIGURATION_PASSWORD_MAX_LENGTH 64
 #define CONFIGURATION_SSID_MAX_LENGTH 32
+#define CONFIGURATION_AP_PASSWORD_MIN_LENGTH 8
 
 typedef struct {
 	// Configuration info

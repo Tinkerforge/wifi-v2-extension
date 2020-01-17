@@ -1,6 +1,7 @@
 /* WIFI Extension 2.0
  * Copyright (C) 2015 Olaf Lüke <olaf@tinkerforge.com>
  * Copyright (C) 2016 Ishraq Ibne Ashraf <ishraq@tinkerforge.com>
+ * Copyright (C) 2020 Matthias Bolte <matthias@tinkerforge.com>
  *
  * communication.c: Handling of communication between PC and WIFI Extension
  *
@@ -616,6 +617,11 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_configuration(const int8_t cid, const GetWif
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_ap_password(const int8_t cid, const SetWifi2APPassword *data) {
+	if (strnlen(data->password, CONFIGURATION_PASSWORD_MAX_LENGTH) < CONFIGURATION_AP_PASSWORD_MIN_LENGTH) {
+		com_return_error(data, sizeof(MessageHeader), MESSAGE_ERROR_CODE_INVALID_PARAMETER, cid);
+		return;
+	}
+
 	os_memcpy(configuration_current_to_save.ap_password, data->password, CONFIGURATION_PASSWORD_MAX_LENGTH);
 	com_return_setter(cid, data);
 }

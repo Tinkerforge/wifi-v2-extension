@@ -277,33 +277,32 @@ void ICACHE_FLASH_ATTR get_wifi2_configuration(const int8_t cid, const GetWifi2C
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid,
-	const SetWifi2MeshConfiguration *data) {
-
+                                                    const SetWifi2MeshConfiguration *data) {
 	configuration_current_to_save.mesh_enable = data->mesh_enable;
 
 	os_memcpy(configuration_current_to_save.mesh_root_ip, data->mesh_root_ip,
-		sizeof(data->mesh_root_ip));
+	          sizeof(data->mesh_root_ip));
 
 	os_memcpy(configuration_current_to_save.mesh_root_subnet_mask, data->mesh_root_subnet_mask,
-		sizeof(data->mesh_root_subnet_mask));
+	          sizeof(data->mesh_root_subnet_mask));
 
 	os_memcpy(configuration_current_to_save.mesh_root_gateway, data->mesh_root_gateway,
-		sizeof(data->mesh_root_gateway));
+	          sizeof(data->mesh_root_gateway));
 
 	os_memcpy(configuration_current_to_save.mesh_router_bssid, data->mesh_router_bssid,
-		sizeof(data->mesh_router_bssid));
+	          sizeof(data->mesh_router_bssid));
 
 	os_memcpy(configuration_current_to_save.mesh_group_id, data->mesh_group_id,
-		sizeof(data->mesh_group_id));
+	          sizeof(data->mesh_group_id));
 
 	os_bzero(configuration_current_to_save.mesh_group_ssid_prefix,
-		sizeof(configuration_current_to_save.mesh_group_ssid_prefix));
+	         sizeof(configuration_current_to_save.mesh_group_ssid_prefix));
 
 	os_memcpy(configuration_current_to_save.mesh_group_ssid_prefix, data->mesh_group_ssid_prefix,
-		sizeof(data->mesh_group_ssid_prefix));
+	          sizeof(data->mesh_group_ssid_prefix));
 
 	os_memcpy(configuration_current_to_save.mesh_gateway_ip, data->mesh_gateway_ip,
-		sizeof(data->mesh_gateway_ip));
+	          sizeof(data->mesh_gateway_ip));
 
 	configuration_current_to_save.mesh_gateway_port = data->mesh_gateway_port;
 
@@ -311,7 +310,7 @@ void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid,
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
-	const GetWifi2MeshConfiguration *data) {
+                                                    const GetWifi2MeshConfiguration *data) {
 	GetWifi2MeshConfigurationReturn gw2mcr;
 
 	os_bzero(&gw2mcr, sizeof(GetWifi2MeshConfigurationReturn));
@@ -322,25 +321,25 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
 	gw2mcr.mesh_enable    = configuration_current_to_save.mesh_enable;
 
 	os_memcpy(gw2mcr.mesh_root_ip, configuration_current_to_save.mesh_root_ip,
-		sizeof(configuration_current_to_save.mesh_root_ip));
+	          sizeof(configuration_current_to_save.mesh_root_ip));
 
 	os_memcpy(gw2mcr.mesh_root_subnet_mask, configuration_current_to_save.mesh_root_subnet_mask,
-		sizeof(configuration_current_to_save.mesh_root_subnet_mask));
+	          sizeof(configuration_current_to_save.mesh_root_subnet_mask));
 
 	os_memcpy(gw2mcr.mesh_root_gateway, configuration_current_to_save.mesh_root_gateway,
-		sizeof(configuration_current_to_save.mesh_root_gateway));
+	          sizeof(configuration_current_to_save.mesh_root_gateway));
 
 	os_memcpy(gw2mcr.mesh_router_bssid, configuration_current_to_save.mesh_router_bssid,
-		sizeof(configuration_current_to_save.mesh_router_bssid));
+	          sizeof(configuration_current_to_save.mesh_router_bssid));
 
 	os_memcpy(gw2mcr.mesh_group_id, configuration_current_to_save.mesh_group_id,
-		sizeof(configuration_current_to_save.mesh_group_id));
+	          sizeof(configuration_current_to_save.mesh_group_id));
 
 	os_memcpy(gw2mcr.mesh_group_ssid_prefix, configuration_current_to_save.mesh_group_ssid_prefix,
-		sizeof(configuration_current_to_save.mesh_group_ssid_prefix));
+	          sizeof(configuration_current_to_save.mesh_group_ssid_prefix));
 
 	os_memcpy(gw2mcr.mesh_gateway_ip, configuration_current_to_save.mesh_gateway_ip,
-		sizeof(configuration_current_to_save.mesh_gateway_ip));
+	          sizeof(configuration_current_to_save.mesh_gateway_ip));
 
 	gw2mcr.mesh_gateway_port = configuration_current_to_save.mesh_gateway_port;
 
@@ -348,11 +347,11 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_mesh_router_ssid(const int8_t cid,
-	const SetWifi2MeshRouterSSID *data) {
+                                                  const SetWifi2MeshRouterSSID *data) {
 	os_bzero(configuration_current_to_save.mesh_router_ssid, sizeof(configuration_current_to_save.mesh_router_ssid));
 
 	os_memcpy(configuration_current_to_save.mesh_router_ssid, data->mesh_router_ssid,
-		sizeof(data->mesh_router_ssid));
+	          sizeof(data->mesh_router_ssid));
 
 	com_return_setter(cid, data);
 }
@@ -366,24 +365,24 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_ssid(const int8_t cid, const GetWif
 	gw2mrsr.header.length  = sizeof(GetWifi2MeshRouterSSIDReturn);
 
 	os_memcpy(gw2mrsr.mesh_router_ssid, configuration_current_to_save.mesh_router_ssid,
-		sizeof(gw2mrsr.mesh_router_ssid));
+	          sizeof(gw2mrsr.mesh_router_ssid));
 
 	com_send(&gw2mrsr, sizeof(GetWifi2MeshRouterSSIDReturn), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_mesh_router_password(const int8_t cid,
-	const SetWifi2MeshRouterPassword *data) {
+                                                      const SetWifi2MeshRouterPassword *data) {
 	os_bzero(configuration_current_to_save.mesh_router_password,
-		sizeof(configuration_current_to_save.mesh_router_password));
+	         sizeof(configuration_current_to_save.mesh_router_password));
 
 	os_memcpy(configuration_current_to_save.mesh_router_password, data->mesh_router_password,
-		sizeof(data->mesh_router_password));
+	          sizeof(data->mesh_router_password));
 
 	com_return_setter(cid, data);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
-	const GetWifi2MeshRouterPassword *data) {
+                                                      const GetWifi2MeshRouterPassword *data) {
 	GetWifi2MeshRouterPasswordReturn gw2mrpr;
 
 	os_bzero(&gw2mrpr, sizeof(GetWifi2MeshRouterPasswordReturn));
@@ -398,84 +397,84 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid,
-	const GetWifi2MeshCommonStatus *data) {
-		os_bzero(&gw2mcsr.header, sizeof(gw2mcsr.header));
+                                                    const GetWifi2MeshCommonStatus *data) {
+	os_bzero(&gw2mcsr.header, sizeof(gw2mcsr.header));
 
-		gw2mcsr.header = data->header;
-		gw2mcsr.header.length = sizeof(GetWifi2MeshCommonStatusReturn);
+	gw2mcsr.header = data->header;
+	gw2mcsr.header.length = sizeof(GetWifi2MeshCommonStatusReturn);
 
-		gw2mcsr.status = espconn_mesh_get_status();
-		gw2mcsr.is_root_node = espconn_mesh_is_root();
-		gw2mcsr.is_root_candidate = espconn_mesh_is_root_candidate();
-		gw2mcsr.connected_nodes = espconn_mesh_get_sub_dev_count();
+	gw2mcsr.status = espconn_mesh_get_status();
+	gw2mcsr.is_root_node = espconn_mesh_is_root();
+	gw2mcsr.is_root_candidate = espconn_mesh_is_root_candidate();
+	gw2mcsr.connected_nodes = espconn_mesh_get_sub_dev_count();
 
-		com_send(&gw2mcsr, sizeof(GetWifi2MeshCommonStatusReturn), cid);
+	com_send(&gw2mcsr, sizeof(GetWifi2MeshCommonStatusReturn), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_client_status(const int8_t cid,
-	const GetWifi2MeshClientStatus *data) {
-		uint8_t mac[6];
-		char *hostname_ptr;
-		struct ip_info info_ipv4;
-		struct station_config *config_st;
+                                                    const GetWifi2MeshClientStatus *data) {
+	uint8_t mac[6];
+	char *hostname_ptr;
+	struct ip_info info_ipv4;
+	struct station_config *config_st;
 
-		os_bzero(&gw2mssr.header, sizeof(gw2mssr.header));
+	os_bzero(&gw2mssr.header, sizeof(gw2mssr.header));
 
-		gw2mssr.header = data->header;
-		gw2mssr.header.length = sizeof(GetWifi2MeshClientStatusReturn);
+	gw2mssr.header = data->header;
+	gw2mssr.header.length = sizeof(GetWifi2MeshClientStatusReturn);
 
-		if((wifi_get_ip_info(STATION_IF, &info_ipv4)) && (wifi_get_macaddr(STATION_IF, mac))) {
-			hostname_ptr = wifi_station_get_hostname();
+	if((wifi_get_ip_info(STATION_IF, &info_ipv4)) && (wifi_get_macaddr(STATION_IF, mac))) {
+		hostname_ptr = wifi_station_get_hostname();
 
-			os_bzero(gw2mssr.hostname, sizeof(gw2mssr.hostname));
-			os_memcpy(gw2mssr.hostname, hostname_ptr, sizeof(gw2mssr.hostname));
+		os_bzero(gw2mssr.hostname, sizeof(gw2mssr.hostname));
+		os_memcpy(gw2mssr.hostname, hostname_ptr, sizeof(gw2mssr.hostname));
 
-			os_bzero(gw2mssr.ip, sizeof(gw2mssr.ip));
-			os_memcpy(gw2mssr.ip, (uint8_t *)&info_ipv4.ip.addr, sizeof(info_ipv4.ip.addr));
+		os_bzero(gw2mssr.ip, sizeof(gw2mssr.ip));
+		os_memcpy(gw2mssr.ip, (uint8_t *)&info_ipv4.ip.addr, sizeof(info_ipv4.ip.addr));
 
-			os_bzero(gw2mssr.sub, sizeof(gw2mssr.sub));
-			os_memcpy(gw2mssr.sub, (uint8_t *)&info_ipv4.netmask.addr, sizeof(info_ipv4.netmask.addr));
+		os_bzero(gw2mssr.sub, sizeof(gw2mssr.sub));
+		os_memcpy(gw2mssr.sub, (uint8_t *)&info_ipv4.netmask.addr, sizeof(info_ipv4.netmask.addr));
 
-			os_bzero(gw2mssr.gw, sizeof(gw2mssr.gw));
-			os_memcpy(gw2mssr.gw, (uint8_t *)&info_ipv4.gw.addr, sizeof(info_ipv4.gw.addr));
+		os_bzero(gw2mssr.gw, sizeof(gw2mssr.gw));
+		os_memcpy(gw2mssr.gw, (uint8_t *)&info_ipv4.gw.addr, sizeof(info_ipv4.gw.addr));
 
-			os_bzero(gw2mssr.mac, sizeof(gw2mssr.mac));
-			os_memcpy(gw2mssr.mac, mac, sizeof(mac));
-		}
+		os_bzero(gw2mssr.mac, sizeof(gw2mssr.mac));
+		os_memcpy(gw2mssr.mac, mac, sizeof(mac));
+	}
 
-		com_send(&gw2mssr, sizeof(GetWifi2MeshClientStatusReturn), cid);
+	com_send(&gw2mssr, sizeof(GetWifi2MeshClientStatusReturn), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid,
-	const GetWifi2MeshAPStatus *data) {
-		uint8_t mac[6];
-		struct ip_info info_ipv4;
-		struct softap_config config_ap;
+                                                const GetWifi2MeshAPStatus *data) {
+	uint8_t mac[6];
+	struct ip_info info_ipv4;
+	struct softap_config config_ap;
 
-		os_bzero(&gw2masr.header, sizeof(gw2masr.header));
+	os_bzero(&gw2masr.header, sizeof(gw2masr.header));
 
-		gw2masr.header = data->header;
-		gw2masr.header.length = sizeof(GetWifi2MeshAPStatusReturn);
+	gw2masr.header = data->header;
+	gw2masr.header.length = sizeof(GetWifi2MeshAPStatusReturn);
 
-		if((wifi_softap_get_config(&config_ap)) && (wifi_get_ip_info(SOFTAP_IF, &info_ipv4)) \
-		&& (wifi_get_macaddr(SOFTAP_IF, mac))) {
-			os_bzero(gw2masr.ssid, sizeof(gw2masr.ssid));
-			os_memcpy(gw2masr.ssid, config_ap.ssid, sizeof(config_ap.ssid));
+	if((wifi_softap_get_config(&config_ap)) && (wifi_get_ip_info(SOFTAP_IF, &info_ipv4)) \
+	&& (wifi_get_macaddr(SOFTAP_IF, mac))) {
+		os_bzero(gw2masr.ssid, sizeof(gw2masr.ssid));
+		os_memcpy(gw2masr.ssid, config_ap.ssid, sizeof(config_ap.ssid));
 
-			os_bzero(gw2masr.ip, sizeof(gw2masr.ip));
-			os_memcpy(gw2masr.ip, (uint8_t *)&info_ipv4.ip.addr, sizeof(info_ipv4.ip.addr));
+		os_bzero(gw2masr.ip, sizeof(gw2masr.ip));
+		os_memcpy(gw2masr.ip, (uint8_t *)&info_ipv4.ip.addr, sizeof(info_ipv4.ip.addr));
 
-			os_bzero(gw2masr.sub, sizeof(gw2masr.sub));
-			os_memcpy(gw2masr.sub, (uint8_t *)&info_ipv4.netmask.addr, sizeof(info_ipv4.ip.addr));
+		os_bzero(gw2masr.sub, sizeof(gw2masr.sub));
+		os_memcpy(gw2masr.sub, (uint8_t *)&info_ipv4.netmask.addr, sizeof(info_ipv4.ip.addr));
 
-			os_bzero(gw2masr.gw, sizeof(gw2masr.gw));
-			os_memcpy(gw2masr.gw, (uint8_t *)&info_ipv4.gw.addr, sizeof(info_ipv4.ip.addr));
+		os_bzero(gw2masr.gw, sizeof(gw2masr.gw));
+		os_memcpy(gw2masr.gw, (uint8_t *)&info_ipv4.gw.addr, sizeof(info_ipv4.ip.addr));
 
-			os_bzero(gw2masr.mac, sizeof(gw2masr.mac));
-			os_memcpy(gw2masr.mac, mac, sizeof(mac));
-		}
+		os_bzero(gw2masr.mac, sizeof(gw2masr.mac));
+		os_memcpy(gw2masr.mac, mac, sizeof(mac));
+	}
 
-		com_send(&gw2masr, sizeof(GetWifi2MeshAPStatusReturn), cid);
+	com_send(&gw2masr, sizeof(GetWifi2MeshAPStatusReturn), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *data) {

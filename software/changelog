@@ -19,8 +19,8 @@
 - Add mesh networking support
 
 2017-01-30: 2.1.1 (85efc82)
-- Don't change active configuration, this doesn't work with Mesh mode. Instead
-  change the saved configuration, that is applied on restart.
+- Don't change active configuration, this doesn't work with mesh mode, instead
+  change the saved configuration, that is applied on restart
 
 2017-02-24: 2.1.2 (707a4d6)
 - Send new packets even if others are not yet ACKed to support Windows delayed
@@ -36,7 +36,7 @@
 2017-05-11 2.1.3 (a8cee90)
 - Remove support for WIFI password getters
 
-2020-01-20 2.1.4 (<unknown>)
+2020-01-20 2.1.4 (a6dd106)
 - Enforce minimum AP password length of 8 chars
 - Try three times to load config from EEPROM before using default config
-- Remove support for Mesh password getter
+- Remove support for mesh router password getter

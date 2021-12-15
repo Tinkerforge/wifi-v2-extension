@@ -42,4 +42,4 @@
 - Remove support for mesh router password getter
 
 2021-12-15: 2.1.5 (<unknown>)
-- Workaround status LED staying off in client mode after enabling the LED again
+- Workaround LED staying off in client mode after enabling the LED again

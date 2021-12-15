@@ -36,7 +36,7 @@ into toolchain/ directory. The following instructions apply for ESP8266 SDK 1.5.
  sudo apt-get install build-essential gperf libtool libtool-bin help2man texinfo libncurses5-dev python2.7-dev autoconf
  mkdir toolchain
  cd toolchain
- git clone --recursive https://github.com/pfalcon/esp-open-sdk.git
+ git clone --recursive https://github.com/Tinkerforge/esp-open-sdk.git
  cd esp-open-sdk
  make STANDALONE=y VENDOR_SDK=1.5.3
 

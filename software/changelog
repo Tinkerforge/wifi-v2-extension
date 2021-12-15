@@ -41,5 +41,5 @@
 - Try three times to load config from EEPROM before using default config
 - Remove support for mesh router password getter
 
-2021-12-15: 2.1.5 (<unknown>)
+2021-12-15: 2.1.5 (86867ec)
 - Workaround LED staying off in client mode after enabling the LED again

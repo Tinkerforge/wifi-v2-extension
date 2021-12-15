@@ -695,6 +695,11 @@ void ICACHE_FLASH_ATTR get_wifi2_firmware_version(const int8_t cid, const GetWif
 
 void ICACHE_FLASH_ATTR enable_wifi2_status_led(const int8_t cid, const EnableWifi2StatusLED *data) {
 	if(!wifi2_status_led_enabled) {
+		// FIXME: enable status LED to workround potential bug in wifi_status_led_install
+		//        that doesnt turn on the LED again on calling it. it seems the LED logic
+		//        is fully event driven and calling the wifi_status_led_install function
+		//        doesnt restore the currently expected state.
+		gpio_output_set(0, BIT12, BIT12, 0);
 		wifi_status_led_install(12, PERIPHS_IO_MUX_MTDI_U, FUNC_GPIO12);
 		wifi2_status_led_enabled = true;
 	}

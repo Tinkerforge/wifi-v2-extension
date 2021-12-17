@@ -222,8 +222,8 @@ void ICACHE_FLASH_ATTR com_return_error(const void *data, const uint8_t ret_leng
 void ICACHE_FLASH_ATTR com_return_setter(const int8_t cid, const void *data) {
 	if(((MessageHeader*)data)->return_expected) {
 		MessageHeader ret = *((MessageHeader*)data);
-		ret.length = sizeof(MessageHeader);
-		com_send(&ret, sizeof(MessageHeader), cid);
+		ret.length = sizeof(ret);
+		com_send(&ret, sizeof(ret), cid);
 	}
 }
 
@@ -236,10 +236,10 @@ void ICACHE_FLASH_ATTR get_wifi2_authentication_secret(const int8_t cid, const G
 	GetWifi2AuthenticationSecretReturn gw2asr;
 
 	gw2asr.header        = data->header;
-	gw2asr.header.length = sizeof(GetWifi2AuthenticationSecretReturn);
+	gw2asr.header.length = sizeof(gw2asr);
 	os_memcpy(gw2asr.secret, configuration_current_to_save.general_authentication_secret, CONFIGURATION_SECRET_MAX_LENGTH);
 
-	com_send(&gw2asr, sizeof(GetWifi2AuthenticationSecretReturn), cid);
+	com_send(&gw2asr, sizeof(gw2asr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_configuration(const int8_t cid, const SetWifi2Configuration *data) {
@@ -269,7 +269,7 @@ void ICACHE_FLASH_ATTR get_wifi2_configuration(const int8_t cid, const GetWifi2C
 	GetWifi2ConfigurationReturn gw2cr;
 
 	gw2cr.header         = data->header;
-	gw2cr.header.length  = sizeof(GetWifi2ConfigurationReturn);
+	gw2cr.header.length  = sizeof(gw2cr);
 	gw2cr.port           = configuration_current_to_save.general_port;
 	gw2cr.websocket_port = configuration_current_to_save.general_websocket_port;
 	gw2cr.website_port   = configuration_current_to_save.general_website_port;
@@ -277,7 +277,7 @@ void ICACHE_FLASH_ATTR get_wifi2_configuration(const int8_t cid, const GetWifi2C
 	gw2cr.sleep_mode     = configuration_current_to_save.general_sleep_mode;
 	gw2cr.website        = configuration_current_to_save.general_website;
 
-	com_send(&gw2cr, sizeof(GetWifi2ConfigurationReturn), cid);
+	com_send(&gw2cr, sizeof(gw2cr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_mesh_configuration(const int8_t cid,
@@ -317,10 +317,10 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
                                                     const GetWifi2MeshConfiguration *data) {
 	GetWifi2MeshConfigurationReturn gw2mcr;
 
-	os_bzero(&gw2mcr, sizeof(GetWifi2MeshConfigurationReturn));
+	os_bzero(&gw2mcr, sizeof(gw2mcr));
 
 	gw2mcr.header         = data->header;
-	gw2mcr.header.length  = sizeof(GetWifi2MeshConfigurationReturn);
+	gw2mcr.header.length  = sizeof(gw2mcr);
 
 	gw2mcr.mesh_enable    = configuration_current_to_save.mesh_enable;
 
@@ -347,7 +347,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_configuration(const int8_t cid,
 
 	gw2mcr.mesh_gateway_port = configuration_current_to_save.mesh_gateway_port;
 
-	com_send(&gw2mcr, sizeof(GetWifi2MeshConfigurationReturn), cid);
+	com_send(&gw2mcr, sizeof(gw2mcr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_mesh_router_ssid(const int8_t cid,
@@ -363,17 +363,17 @@ void ICACHE_FLASH_ATTR set_wifi2_mesh_router_ssid(const int8_t cid,
 void ICACHE_FLASH_ATTR get_wifi2_mesh_router_ssid(const int8_t cid, const GetWifi2MeshRouterSSID *data) {
 	GetWifi2MeshRouterSSIDReturn gw2mrsr;
 
-	os_bzero(&gw2mrsr, sizeof(GetWifi2MeshRouterSSID));
+	os_bzero(&gw2mrsr, sizeof(gw2mrsr));
 
 	gw2mrsr.header         = data->header;
-	gw2mrsr.header.length  = sizeof(GetWifi2MeshRouterSSIDReturn);
+	gw2mrsr.header.length  = sizeof(gw2mrsr);
 
 	if(configuration_current.mesh_enable) {
 		os_memcpy(gw2mrsr.mesh_router_ssid, configuration_current_to_save.mesh_router_ssid,
 		          sizeof(gw2mrsr.mesh_router_ssid));
 	}
 
-	com_send(&gw2mrsr, sizeof(GetWifi2MeshRouterSSIDReturn), cid);
+	com_send(&gw2mrsr, sizeof(gw2mrsr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_mesh_router_password(const int8_t cid,
@@ -391,10 +391,10 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
                                                       const GetWifi2MeshRouterPassword *data) {
 	GetWifi2MeshRouterPasswordReturn gw2mrpr;
 
-	os_bzero(&gw2mrpr, sizeof(GetWifi2MeshRouterPasswordReturn));
+	os_bzero(&gw2mrpr, sizeof(gw2mrpr));
 
 	gw2mrpr.header         = data->header;
-	gw2mrpr.header.length  = sizeof(GetWifi2MeshRouterPasswordReturn);
+	gw2mrpr.header.length  = sizeof(gw2mrpr);
 
 	// brickv deduces encryption type from the length of the password. an empty
 	// password maps to "Open (No Encryption)". a non-empty password maps to
@@ -406,7 +406,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_router_password(const int8_t cid,
 		strncpy(gw2mrpr.mesh_router_password, "this password is fake", CONFIGURATION_PASSWORD_MAX_LENGTH);
 	}
 
-	com_send(&gw2mrpr, sizeof(GetWifi2MeshRouterPasswordReturn), cid);
+	com_send(&gw2mrpr, sizeof(gw2mrpr), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid,
@@ -414,7 +414,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid,
 	os_bzero(&gw2mcsr, sizeof(gw2mcsr));
 
 	gw2mcsr.header = data->header;
-	gw2mcsr.header.length = sizeof(GetWifi2MeshCommonStatusReturn);
+	gw2mcsr.header.length = sizeof(gw2mcsr);
 
 	if(configuration_current.mesh_enable) {
 		gw2mcsr.status = espconn_mesh_get_status();
@@ -423,7 +423,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_common_status(const int8_t cid,
 		gw2mcsr.connected_nodes = espconn_mesh_get_sub_dev_count();
 	}
 
-	com_send(&gw2mcsr, sizeof(GetWifi2MeshCommonStatusReturn), cid);
+	com_send(&gw2mcsr, sizeof(gw2mcsr), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_client_status(const int8_t cid,
@@ -436,7 +436,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_client_status(const int8_t cid,
 	os_bzero(&gw2mssr, sizeof(gw2mssr));
 
 	gw2mssr.header = data->header;
-	gw2mssr.header.length = sizeof(GetWifi2MeshClientStatusReturn);
+	gw2mssr.header.length = sizeof(gw2mssr);
 
 	if(configuration_current.mesh_enable && wifi_get_ip_info(STATION_IF, &info_ipv4) && wifi_get_macaddr(STATION_IF, mac)) {
 		hostname_ptr = wifi_station_get_hostname();
@@ -452,7 +452,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_client_status(const int8_t cid,
 		os_memcpy(gw2mssr.mac, mac, sizeof(mac));
 	}
 
-	com_send(&gw2mssr, sizeof(GetWifi2MeshClientStatusReturn), cid);
+	com_send(&gw2mssr, sizeof(gw2mssr), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid,
@@ -464,7 +464,7 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid,
 	os_bzero(&gw2masr, sizeof(gw2masr));
 
 	gw2masr.header = data->header;
-	gw2masr.header.length = sizeof(GetWifi2MeshAPStatusReturn);
+	gw2masr.header.length = sizeof(gw2masr);
 
 	if(configuration_current.mesh_enable && wifi_softap_get_config(&config_ap) && wifi_get_ip_info(SOFTAP_IF, &info_ipv4)
 	&& wifi_get_macaddr(SOFTAP_IF, mac)) {
@@ -479,12 +479,12 @@ void ICACHE_FLASH_ATTR get_wifi2_mesh_ap_status(const int8_t cid,
 		os_memcpy(gw2masr.mac, mac, sizeof(mac));
 	}
 
-	com_send(&gw2masr, sizeof(GetWifi2MeshAPStatusReturn), cid);
+	com_send(&gw2masr, sizeof(gw2masr), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *data) {
 	gw2sr.header = data->header;
-	gw2sr.header.length = sizeof(GetWifi2StatusReturn);
+	gw2sr.header.length = sizeof(gw2sr);
 
 	struct ip_info info;
 	wifi_get_ip_info(STATION_IF, &info);
@@ -527,7 +527,7 @@ void ICACHE_FLASH_ATTR get_wifi2_status(const int8_t cid, const GetWifi2Status *
 
 	gw2sr.ap_connected_count = wifi_softap_get_station_num();
 
-	com_send(&gw2sr, sizeof(GetWifi2StatusReturn), cid);
+	com_send(&gw2sr, sizeof(gw2sr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_client_configuration(const int8_t cid, const SetWifi2ClientConfiguration *data) {
@@ -546,7 +546,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_configuration(const int8_t cid, const Ge
 	GetWifi2ClientConfigurationReturn gw2ccr;
 
 	gw2ccr.header        = data->header;
-	gw2ccr.header.length = sizeof(GetWifi2ClientConfigurationReturn);
+	gw2ccr.header.length = sizeof(gw2ccr);
 	gw2ccr.enable        = configuration_current_to_save.client_enable;
 	os_memcpy(gw2ccr.ssid, configuration_current_to_save.client_ssid, CONFIGURATION_SSID_MAX_LENGTH);
 	os_memcpy(gw2ccr.ip, configuration_current_to_save.client_ip, 4);
@@ -555,7 +555,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_configuration(const int8_t cid, const Ge
 	os_memcpy(gw2ccr.mac_address, configuration_current_to_save.client_mac_address, 6);
 	os_memcpy(gw2ccr.bssid, configuration_current_to_save.client_bssid, 6);
 
-	com_send(&gw2ccr, sizeof(GetWifi2ClientConfigurationReturn), cid);
+	com_send(&gw2ccr, sizeof(gw2ccr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_client_hostname(const int8_t cid, const SetWifi2ClientHostname *data) {
@@ -567,10 +567,10 @@ void ICACHE_FLASH_ATTR get_wifi2_client_hostname(const int8_t cid, const GetWifi
 	GetWifi2ClientHostnameReturn gw2chr;
 
 	gw2chr.header        = data->header;
-	gw2chr.header.length = sizeof(GetWifi2ClientHostnameReturn);
+	gw2chr.header.length = sizeof(gw2chr);
 	os_memcpy(gw2chr.hostname, configuration_current_to_save.client_hostname, CONFIGURATION_HOSTNAME_MAX_LENGTH);
 
-	com_send(&gw2chr, sizeof(GetWifi2ClientHostnameReturn), cid);
+	com_send(&gw2chr, sizeof(gw2chr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_client_password(const int8_t cid, const SetWifi2ClientPassword *data) {
@@ -582,7 +582,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_password(const int8_t cid, const GetWifi
 	GetWifi2ClientPasswordReturn gw2cpr;
 
 	gw2cpr.header        = data->header;
-	gw2cpr.header.length = sizeof(GetWifi2ClientPasswordReturn);
+	gw2cpr.header.length = sizeof(gw2cpr);
 
 	// brickv deduces encryption type from the length of the password. an empty
 	// password maps to "Open (No Encryption)". a non-empty password maps to
@@ -594,7 +594,7 @@ void ICACHE_FLASH_ATTR get_wifi2_client_password(const int8_t cid, const GetWifi
 		strncpy(gw2cpr.password, "this password is fake", CONFIGURATION_PASSWORD_MAX_LENGTH);
 	}
 
-	com_send(&gw2cpr, sizeof(GetWifi2ClientPasswordReturn), cid);
+	com_send(&gw2cpr, sizeof(gw2cpr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_ap_configuration(const int8_t cid, const SetWifi2APConfiguration *data) {
@@ -615,7 +615,7 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_configuration(const int8_t cid, const GetWif
 	GetWifi2APConfigurationReturn gw2apcr;
 
 	gw2apcr.header        = data->header;
-	gw2apcr.header.length = sizeof(GetWifi2APConfigurationReturn);
+	gw2apcr.header.length = sizeof(gw2apcr);
 	gw2apcr.enable        = configuration_current_to_save.ap_enable;
 	os_memcpy(gw2apcr.ssid, configuration_current_to_save.ap_ssid, CONFIGURATION_SSID_MAX_LENGTH);
 	os_memcpy(gw2apcr.ip, configuration_current_to_save.ap_ip, 4);
@@ -626,7 +626,7 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_configuration(const int8_t cid, const GetWif
 	gw2apcr.channel       = configuration_current_to_save.ap_channel;
 	os_memcpy(gw2apcr.mac_address, configuration_current_to_save.ap_mac_address, 6);
 
-	com_send(&gw2apcr, sizeof(GetWifi2APConfigurationReturn), cid);
+	com_send(&gw2apcr, sizeof(gw2apcr), cid);
 }
 
 void ICACHE_FLASH_ATTR set_wifi2_ap_password(const int8_t cid, const SetWifi2APPassword *data) {
@@ -643,10 +643,10 @@ void ICACHE_FLASH_ATTR get_wifi2_ap_password(const int8_t cid, const GetWifi2APP
 	GetWifi2APPasswordReturn gw2appr;
 
 	gw2appr.header        = data->header;
-	gw2appr.header.length = sizeof(GetWifi2APPasswordReturn);
+	gw2appr.header.length = sizeof(gw2appr);
 	os_memset(gw2appr.password, '\0', CONFIGURATION_PASSWORD_MAX_LENGTH);
 
-	com_send(&gw2appr, sizeof(GetWifi2APPasswordReturn), cid);
+	com_send(&gw2appr, sizeof(gw2appr), cid);
 }
 
 void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi2Configuration *data) {
@@ -669,22 +669,22 @@ void ICACHE_FLASH_ATTR save_wifi2_configuration(const int8_t cid, const SaveWifi
 	}
 
 	sw2cr.header        = data->header;
-	sw2cr.header.length = sizeof(SaveWifi2ConfigurationReturn);
+	sw2cr.header.length = sizeof(sw2cr);
 	sw2cr.result        = configuration_save_to_eeprom();
 
-	com_send(&sw2cr, sizeof(SaveWifi2ConfigurationReturn), cid);
+	com_send(&sw2cr, sizeof(sw2cr), cid);
 }
 
 void ICACHE_FLASH_ATTR get_wifi2_firmware_version(const int8_t cid, const GetWifi2FirmwareVersion *data) {
 	GetWifi2FirmwareVersionReturn gw2fvr;
 
 	gw2fvr.header        = data->header;
-	gw2fvr.header.length = sizeof(GetWifi2FirmwareVersionReturn);
+	gw2fvr.header.length = sizeof(gw2fvr);
 	gw2fvr.version_fw[0] = FIRMWARE_VERSION_MAJOR;
 	gw2fvr.version_fw[1] = FIRMWARE_VERSION_MINOR;
 	gw2fvr.version_fw[2] = FIRMWARE_VERSION_REVISION;
 
-	com_send(&gw2fvr, sizeof(GetWifi2FirmwareVersionReturn), cid);
+	com_send(&gw2fvr, sizeof(gw2fvr), cid);
 }
 
 void ICACHE_FLASH_ATTR enable_wifi2_status_led(const int8_t cid, const EnableWifi2StatusLED *data) {
@@ -714,8 +714,8 @@ void ICACHE_FLASH_ATTR is_wifi2_status_led_enabled(const int8_t cid, const IsWif
 	IsWifi2StatusLEDEnabledReturn iw2sleder;
 
 	iw2sleder.header        = data->header;
-	iw2sleder.header.length = sizeof(IsWifi2StatusLEDEnabledReturn);
+	iw2sleder.header.length = sizeof(iw2sleder);
 	iw2sleder.enabled       = wifi2_status_led_enabled;
 
-	com_send(&iw2sleder, sizeof(IsWifi2StatusLEDEnabledReturn), cid);
+	com_send(&iw2sleder, sizeof(iw2sleder), cid);
 }

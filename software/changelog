@@ -28,7 +28,7 @@
 - Fix bug in route match removal
 - Increase routing table size from 10 to 16 to allow more packets at once
 - Decrease ACK timeout significantly, Master Brick 2.4.2 handles messages with
-  new rx peak functionality
+  new RX peak functionality
 - Don't resend data if RX buffer is full, in this case the ACK is likely already
   in the buffer
 - Fix broken length check
@@ -43,3 +43,6 @@
 
 2021-12-15: 2.1.5 (86867ec)
 - Workaround LED staying off in client mode after enabling the LED again
+
+2021-12-17: 2.1.6 (<unknown>)
+- Avoid crash when using mesh functions in non-mesh mode
